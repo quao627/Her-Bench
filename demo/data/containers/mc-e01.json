@@ -243,6 +243,81 @@
       }
     },
     {
+      "task_id": "mc-e01-t11",
+      "type": "query",
+      "anchor_sec": 3650,
+      "context_window_sec": [
+        0,
+        3650
+      ],
+      "question": "他打开了一个全是旗帜图案的界面，研究半天不知道是什么，这是啥？",
+      "hint_level": "full",
+      "scene": "第一天基地：打开了织布机（Loom）界面",
+      "resources": [
+        "mc_crafting"
+      ],
+      "grading": {
+        "rubric_points": [
+          "这是织布机（Loom），专门用来给旗帜添加图案的工作站",
+          "跟工作台、熔炉一样是功能性方块，只是这个的作用比较小众（旗帜设计）",
+          "现在没有旗帜和染料原料，界面自然摆弄不出什么"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/mc-e01-t11.m4a"
+    },
+    {
+      "task_id": "mc-e01-t12",
+      "type": "query",
+      "anchor_sec": 4293,
+      "context_window_sec": [
+        0,
+        4293
+      ],
+      "question": "他在沙滩边采的这个绿色长条植物是什么？",
+      "hint_level": "full",
+      "scene": "沙滩：第一次收集甘蔗（Sugar Canes）",
+      "resources": [
+        "mc_basics"
+      ],
+      "grading": {
+        "rubric_points": [
+          "是甘蔗（Sugar Canes），常长在水边的沙地/草地上",
+          "主要用途是做糖、酿造原料，以及合成书本和纸",
+          "不需要种子就能直接采集，采完底部会继续生长"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/mc-e01-t12.m4a"
+    },
+    {
+      "task_id": "mc-e01-t13",
+      "type": "query",
+      "anchor_sec": 4827,
+      "context_window_sec": [
+        0,
+        4827
+      ],
+      "question": "他进了一间带营火和床的小屋，这是他自己搭的还是捡到的？",
+      "hint_level": "full",
+      "scene": "村庄边缘：进入一间带营火和床的木屋，翻找箱子",
+      "resources": [
+        "mc_basics"
+      ],
+      "grading": {
+        "rubric_points": [
+          "从摆设（营火、床、箱子）来看，这更像是游戏自动生成的村庄民居，不是他自己搭的",
+          "箱子里通常会有随机战利品，值得翻找",
+          "这类房子说明附近就是一个村庄"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": false
+      },
+      "tts": "/data/tts/mc-e01-t13.m4a"
+    },
+    {
       "task_id": "mc-e01-t07",
       "type": "query",
       "anchor_sec": 5500,
@@ -295,31 +370,6 @@
       "tts": "/data/tts/mc-e01-t08.m4a"
     },
     {
-      "task_id": "mc-e01-t09",
-      "type": "query",
-      "anchor_sec": 8100,
-      "context_window_sec": [
-        0,
-        8100
-      ],
-      "question": "他往炉子里塞了半天东西怎么什么都烧不出来？这炉子到底怎么用？",
-      "hint_level": "full",
-      "scene": "基地：8040s 起长达 3 分多钟的熔炉实验——反复放入各种不对的物品组合",
-      "resources": [
-        "mc_crafting"
-      ],
-      "grading": {
-        "rubric_points": [
-          "熔炉的用法：上格放待烧炼的东西（矿石/生食），下格放燃料（煤/木头）",
-          "指出他失败的原因：放进去的物品不是可烧炼项（或燃料槽放错）",
-          "常见正确用途举例：铁矿烧铁锭、生肉烤熟、圆石烧石头"
-        ],
-        "spoiler_blocklist": [],
-        "must_cite": true
-      },
-      "tts": "/data/tts/mc-e01-t09.m4a"
-    },
-    {
       "task_id": "mc-e01-t10",
       "type": "query",
       "anchor_sec": 6500,
@@ -344,6 +394,31 @@
         "must_cite": true
       },
       "tts": "/data/tts/mc-e01-t10.m4a"
+    },
+    {
+      "task_id": "mc-e01-t09",
+      "type": "query",
+      "anchor_sec": 8100,
+      "context_window_sec": [
+        0,
+        8100
+      ],
+      "question": "他往炉子里塞了半天东西怎么什么都烧不出来？这炉子到底怎么用？",
+      "hint_level": "full",
+      "scene": "基地：8040s 起长达 3 分多钟的熔炉实验——反复放入各种不对的物品组合",
+      "resources": [
+        "mc_crafting"
+      ],
+      "grading": {
+        "rubric_points": [
+          "熔炉的用法：上格放待烧炼的东西（矿石/生食），下格放燃料（煤/木头）",
+          "指出他失败的原因：放进去的物品不是可烧炼项（或燃料槽放错）",
+          "常见正确用途举例：铁矿烧铁锭、生肉烤熟、圆石烧石头"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/mc-e01-t09.m4a"
     }
   ]
 }

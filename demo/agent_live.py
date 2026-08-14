@@ -29,10 +29,12 @@ ARGS = None
 
 PROMPT_TMPL = """你是一个直播「陪看助手」。观众正在看的直播: {game}。
 
-当前直播画面截图: {frame_path}
-（先 Read 这张图。）
+{image_note}
 
-可查的资料在目录 {resources}/ 下（多份 markdown，文件名前缀区分内容：无前缀=Human Fall Flat、portal_*=Portal、mc_*=Minecraft、rust_*=Rust、blender_*=Blender）。需要时先 ls 再 Read 相关的。
+下面是这场直播可查的全部资料，已经帮你准备好了，不用自己找文件，直接从里面找答案：
+---
+{resource_docs}
+---
 
 {task_desc}
 {research_context}
@@ -40,9 +42,9 @@ PROMPT_TMPL = """你是一个直播「陪看助手」。观众正在看的直播
 1. 提示分级为 {hint_level}: direction_only 表示只给方向性提示、绝不给完整解法步骤; full 表示可以完整解释。
 2. 严禁剧透: 不要提及玩家当前进度之后的关卡、剧情、谜题内容。当前进度: 视频第 {anchor_min} 分钟。
 3. 口语化中文, 2-4 句, 像坐在旁边一起看直播的朋友, 不要列条目。
-4. 最后单独一行输出 "SOURCES: " 加你实际参考过的资料文件名(逗号分隔), 没查资料就写 SOURCES: none。
+4. 最后单独一行输出 "SOURCES: " 加你实际参考过的资料标题(逗号分隔), 上面资料里没有就写 SOURCES: none。
 
-直接输出给观众听的回答, 不要解释你的过程。"""
+直接输出给观众听的回答, 不要解释你的过程, 不需要用任何工具。"""
 
 QUERY_DESC = "观众刚才问: 「{question}」"
 PROACTIVE_DESC = """这是主动介入场景: 没有人提问, 但玩家疑似卡关有一阵子了。
@@ -53,32 +55,78 @@ LOOKUP_TMPL = """你是游戏攻略资料检索员。前台的语音陪玩 agent
 游戏: {game}
 查询: {query}
 
-资料目录 {resources}/ 下有多份 markdown（无前缀=Human Fall Flat、portal_*=Portal、mc_*=Minecraft）。
-先 ls 再 Read 相关文件, 必要时可以 WebSearch 补充。
+下面是可查的全部资料，已经帮你准备好了，直接从里面找答案，不用自己找文件：
+---
+{resource_docs}
+---
+如果上面资料没覆盖到, 可以用 WebSearch 补充。
 
-输出要求: 2-3 句中文事实, 直接回答查询, 不要铺垫; 最后单独一行 "SOURCES: " 加实际参考的文件名或 URL。"""
+输出要求: 2-3 句中文事实, 直接回答查询, 不要铺垫, 不需要用 ls/Read; 最后单独一行 "SOURCES: " 加实际参考的资料标题或 URL。"""
 
 RESEARCH_TMPL = """你在陪看直播，正在利用画面停留/播放间隙主动做一点背景研究，
 这样等观众真的问起来时你已经查过、心里有数——但你不知道观众接下来会问什么，
 只能凭这一帧画面自己判断有没有什么值得顺手核实的东西。
 
 直播: {game}
-当前画面截图: {frame_path}
-（先 Read 这张图。）
 
-资料目录 {resources}/ 下有多份 markdown（无前缀=Human Fall Flat、portal_*=Portal、mc_*=Minecraft、rust_*=Rust、blender_*=Blender）。
+{image_note}
+
+下面是可查的全部资料，已经帮你准备好了，不用自己找文件：
+---
+{resource_docs}
+---
 
 判断标准：画面里如果出现了具体的道具/机制/报错信息/界面元素等，观众很可能会好奇
 「这是什么」「这是怎么回事」——而且答案是具体、可验证、你自己记忆里没把握的那种
-（不是随口能答对的常识），就先 ls 资料目录、Read 相关文件核实一下。
+（不是随口能答对的常识），就对照上面的资料核实一下。
 如果画面很普通（过场、菜单、纯粹在走路/说话，没什么值得核实的具体东西），
 不要硬凑问题，直接只输出一个词: NOTHING
 
-如果决定要查，输出格式严格如下三行：
+如果决定要查，输出格式严格如下三行（不需要用任何工具，直接从上面资料里找）：
 QUESTION: <你猜观众可能会问的问题，一句话，中文>
 ANSWER: <2-3 句中文事实性回答，口语化>
-SOURCES: <实际参考的文件名，逗号分隔，没查到具体来源就写 none>
+SOURCES: <实际参考的资料标题，逗号分隔，没查到具体来源就写 none>
 """
+
+
+def get_resource_docs(container_id):
+    """Inline a container's resource files directly into the prompt instead
+    of pointing the agent at a directory and making it `ls` + `Read` its way
+    there. Docs are a few KB each — trivially cheap to paste in full — and
+    this removes 1-2 tool-call round trips (each a sandboxed subprocess hop)
+    from every single request, which was the single biggest latency cost."""
+    if container_id:
+        manifest_path = os.path.join(HERE, "data", "containers", f"{container_id}.json")
+        try:
+            with open(manifest_path) as f:
+                manifest = json.load(f)
+            parts = []
+            for r in manifest.get("resources", []):
+                file_path = os.path.join(HERE, r["file"].lstrip("/"))
+                with open(file_path) as rf:
+                    content = rf.read().strip()
+                parts.append(f"### {r.get('title', r['id'])} ({os.path.basename(file_path)})\n{content}")
+            if parts:
+                return "\n\n".join(parts)
+        except Exception as e:
+            print(f"[resources] could not load manifest for {container_id}: {e}", flush=True)
+    # fallback: no container_id given / manifest missing — inline everything
+    parts = []
+    for fn in sorted(os.listdir(RESOURCES)):
+        if fn.endswith(".md"):
+            with open(os.path.join(RESOURCES, fn)) as rf:
+                parts.append(f"### {fn}\n{rf.read().strip()}")
+    return "\n\n".join(parts)
+
+
+def image_note(frame_path):
+    """codex gets the frame natively attached via `-i` (no tool call needed);
+    claude has no such CLI flag here, so it still has to Read the file."""
+    if not frame_path:
+        return "（本轮没有画面截图，仅凭文字判断）"
+    if ARGS.backend == "codex":
+        return "当前直播画面已经作为图片附件发给你了，直接看，不用 Read。"
+    return f"当前直播画面截图: {frame_path}\n（先 Read 这张图。）"
 
 
 def run_claude(prompt: str) -> str:
@@ -135,8 +183,8 @@ def answer(payload: dict) -> dict:
 
     prompt = PROMPT_TMPL.format(
         game=payload.get("game", "Human Fall Flat"),
-        frame_path=frame_path or "(无截图)",
-        resources=RESOURCES,
+        image_note=image_note(frame_path),
+        resource_docs=get_resource_docs(payload.get("container_id")),
         task_desc=task_desc,
         research_context=research_context,
         hint_level=payload.get("hint_level", "direction_only"),
@@ -213,7 +261,7 @@ class Handler(BaseHTTPRequestHandler):
         game = payload.get("game", "")
         print(f"[{ARGS.backend}] lookup: {query}", flush=True)
         prompt = LOOKUP_TMPL.format(game=game or "见资料目录", query=query,
-                                    resources=RESOURCES)
+                                    resource_docs=get_resource_docs(payload.get("container_id")))
         try:
             if ARGS.backend == "codex":
                 raw = run_codex(prompt, "")
@@ -251,7 +299,8 @@ class Handler(BaseHTTPRequestHandler):
         game = payload.get("game", "")
         print(f"[{ARGS.backend}] idle research…", flush=True)
         prompt = RESEARCH_TMPL.format(game=game or "见资料目录",
-                                      frame_path=frame_path or "(无截图)", resources=RESOURCES)
+                                      image_note=image_note(frame_path),
+                                      resource_docs=get_resource_docs(payload.get("container_id")))
         try:
             raw = (run_codex(prompt, frame_path) if ARGS.backend == "codex" else run_claude(prompt)).strip()
             if raw.upper().startswith("NOTHING"):

@@ -7,21 +7,73 @@
     "streamer": "ErikDotDev",
     "source_url": "https://www.youtube.com/watch?v=7Y7Ib5ejyKM"
   },
-  "thumbs": { "prefix": "/data/thumbs/rs_", "count": 46, "interval": 300, "offset": 30 },
+  "thumbs": {
+    "prefix": "/data/thumbs/rs_",
+    "count": 46,
+    "interval": 300,
+    "offset": 30
+  },
   "chapters": [
-    { "t": 0,    "end_t": 610,   "label": "Reverse String" },
-    { "t": 610,  "end_t": 1020,  "label": "Leap" },
-    { "t": 1020, "end_t": 2100,  "label": "Raindrops" },
-    { "t": 2100, "end_t": 4204,  "label": "Nth Prime" },
-    { "t": 4204, "end_t": 8820,  "label": "Beer Song" },
-    { "t": 8820, "end_t": 11116, "label": "Proverb" },
-    { "t": 11116,"end_t": 11840, "label": "Difference Of Squares" },
-    { "t": 11840,"end_t": 13699, "label": "Sum Of Multiples" }
+    {
+      "t": 0,
+      "end_t": 610,
+      "label": "Reverse String"
+    },
+    {
+      "t": 610,
+      "end_t": 1020,
+      "label": "Leap"
+    },
+    {
+      "t": 1020,
+      "end_t": 2100,
+      "label": "Raindrops"
+    },
+    {
+      "t": 2100,
+      "end_t": 4204,
+      "label": "Nth Prime"
+    },
+    {
+      "t": 4204,
+      "end_t": 8820,
+      "label": "Beer Song"
+    },
+    {
+      "t": 8820,
+      "end_t": 11116,
+      "label": "Proverb"
+    },
+    {
+      "t": 11116,
+      "end_t": 11840,
+      "label": "Difference Of Squares"
+    },
+    {
+      "t": 11840,
+      "end_t": 13699,
+      "label": "Sum Of Multiples"
+    }
   ],
   "resources": [
-    { "id": "rust_ownership", "title": "所有权与借用", "file": "/data/resources/rust_ownership.md", "kind": "wiki" },
-    { "id": "rust_syntax", "title": "语法速查", "file": "/data/resources/rust_syntax.md", "kind": "wiki" },
-    { "id": "rust_toolchain", "title": "cargo 与 exercism 工作流", "file": "/data/resources/rust_toolchain.md", "kind": "guide" }
+    {
+      "id": "rust_ownership",
+      "title": "所有权与借用",
+      "file": "/data/resources/rust_ownership.md",
+      "kind": "wiki"
+    },
+    {
+      "id": "rust_syntax",
+      "title": "语法速查",
+      "file": "/data/resources/rust_syntax.md",
+      "kind": "wiki"
+    },
+    {
+      "id": "rust_toolchain",
+      "title": "cargo 与 exercism 工作流",
+      "file": "/data/resources/rust_toolchain.md",
+      "kind": "guide"
+    }
   ],
   "live_persona": "你是主播 ErikDotDev 的结对编程搭子，陪他直播用 exercism.io 练习题学 Rust（他是新手，早期学习阶段）。你听到的是直播原声（他边写代码边说，英文，会读报错信息、自言自语推理）。红线：他没有明确卡住求助时，别抢答案——编译器报错和调试本身就是学习过程的一部分，让他自己多试几次。可以开口的时刻：他反复被同一个报错卡住较长时间且明显烦躁时，给一个方向性提示（比如提示该查哪类文档，不直接给代码）；他测试转绿/提交成功时真心祝贺；他自嘲或说了好笑的话时可以一起打趣。默认保持安静，开口一次一两句，口语化中文。不要替他写代码或直接报出修复后的完整代码行。",
   "tasks": [
@@ -29,11 +81,16 @@
       "task_id": "rust-e01-t01",
       "type": "query",
       "anchor_sec": 530,
-      "context_window_sec": [0, 530],
+      "context_window_sec": [
+        0,
+        530
+      ],
       "question": "他刚才代码报错说没有 rev 方法，加了个 .rev() 就好了，这个 rev() 是干嘛的？",
       "hint_level": "full",
       "scene": "Reverse String 练习：链式调用改成 chars.iter().rev().collect()，编译通过",
-      "resources": ["rust_syntax"],
+      "resources": [
+        "rust_syntax"
+      ],
       "grading": {
         "rubric_points": [
           "rev() 是迭代器（Iterator）的方法，作用是把迭代顺序反转",
@@ -49,11 +106,16 @@
       "task_id": "rust-e01-t02",
       "type": "query",
       "anchor_sec": 1650,
-      "context_window_sec": [0, 1650],
+      "context_window_sec": [
+        0,
+        1650
+      ],
       "question": "编译器说这个变量名要用 snake_case，这是什么规则？会影响代码运行吗？",
       "hint_level": "full",
       "scene": "Raindrops 练习：hasFactor 变量触发 warning，建议改成 has_factor",
-      "resources": ["rust_syntax"],
+      "resources": [
+        "rust_syntax"
+      ],
       "tool_fit": true,
       "grading": {
         "rubric_points": [
@@ -67,22 +129,86 @@
       "tts": "/data/tts/rust-e01-t02.m4a"
     },
     {
+      "task_id": "rust-e01-t09",
+      "type": "query",
+      "anchor_sec": 2464,
+      "context_window_sec": [
+        0,
+        2464
+      ],
+      "question": "报错说 mismatched types，期待 u32 结果找到 ()，这个空括号是什么意思？",
+      "hint_level": "full",
+      "scene": "Nth Prime 练习：while 循环体报类型不匹配错误",
+      "resources": [
+        "rust_syntax"
+      ],
+      "tool_fit": true,
+      "grading": {
+        "rubric_points": [
+          "() 是 Rust 里的『单元类型』（unit type），表示『没有有意义的返回值』，很多语句默认返回它",
+          "报错意思是：这段代码本该产生一个 u32 数值，但实际执行到的是一条不返回值的语句（比如只有副作用的代码块结尾）",
+          "常见诱因：循环体/函数体最后一行加了分号，把本该作为返回值的表达式变成了语句"
+        ],
+        "spoiler_blocklist": [
+          "这处代码具体该怎么改"
+        ],
+        "must_cite": true
+      },
+      "tts": "/data/tts/rust-e01-t09.m4a"
+    },
+    {
+      "task_id": "rust-e01-t10",
+      "type": "query",
+      "anchor_sec": 3364,
+      "context_window_sec": [
+        0,
+        3364
+      ],
+      "question": "他在查的这个 match guard 是什么东西？跟普通 match 有什么不一样？",
+      "hint_level": "full",
+      "scene": "Nth Prime 练习：查阅 Rust by Example 的 Guards 页面",
+      "resources": [
+        "rust_syntax"
+      ],
+      "grading": {
+        "rubric_points": [
+          "match guard 是在 match 的某个分支模式后面再加一个 if 条件，比如 x if x % 2 == 0 => ...",
+          "只有模式匹配上、且 if 条件也为真时，这个分支才会被选中",
+          "适合把一长串 if/else if 精简成更紧凑的 match 写法"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/rust-e01-t10.m4a"
+    },
+    {
       "task_id": "rust-e01-t03",
       "type": "proactive",
       "anchor_sec": 3660,
-      "context_window_sec": [0, 3660],
-      "response_window_sec": [3630, 3750],
+      "context_window_sec": [
+        0,
+        3660
+      ],
+      "response_window_sec": [
+        3630,
+        3750
+      ],
       "question": null,
       "hint_level": "direction_only",
       "scene": "Nth Prime 练习：从 38:04 起已卡约 23 分钟，反复出现语法/类型报错，正在翻 Rust Book 和 Rust by Example 查 match guard 写法",
-      "resources": ["rust_syntax"],
+      "resources": [
+        "rust_syntax"
+      ],
       "grading": {
         "rubric_points": [
           "识别他在 nth-prime 上已卡很久（自 2284s 起，此刻已过 23 分钟）且在主动查文档，说明确实需要方向而非蛮干",
           "提示只给方向：可以提一句 match 配合 guard（if 条件）能替代一长串 if/continue，不给完整代码",
           "2284s 之前的正常写代码阶段保持沉默——编译报错本身是学习过程，不是每次报错都该开口"
         ],
-        "spoiler_blocklist": ["完整的 match 语句写法", "后续练习内容"],
+        "spoiler_blocklist": [
+          "完整的 match 语句写法",
+          "后续练习内容"
+        ],
         "must_cite": false
       }
     },
@@ -90,19 +216,30 @@
       "task_id": "rust-e01-t04",
       "type": "proactive",
       "anchor_sec": 6210,
-      "context_window_sec": [0, 6210],
-      "response_window_sec": [6180, 6300],
+      "context_window_sec": [
+        0,
+        6210
+      ],
+      "response_window_sec": [
+        6180,
+        6300
+      ],
       "question": null,
       "hint_level": "direction_only",
       "scene": "Beer Song 练习：从 1:16:08 起卡约 27 分钟测试不过，主播刚在终端执行 killall rust-analyzer 怀疑是编辑器报错不准",
-      "resources": ["rust_toolchain"],
+      "resources": [
+        "rust_toolchain"
+      ],
       "grading": {
         "rubric_points": [
           "识别他重启语言服务器这个动作说明他已经开始怀疑工具而非自己的代码——这是长期卡关后的典型烦躁信号，是该开口的时机",
           "提示方向：可以安慰一句『报错应该是准的，可以重新读一遍 push_str 那段逻辑』，不指出具体哪行错",
           "4568s 之前的正常调试阶段保持沉默"
         ],
-        "spoiler_blocklist": ["具体是哪一行代码错了", "完整修复代码"],
+        "spoiler_blocklist": [
+          "具体是哪一行代码错了",
+          "完整修复代码"
+        ],
         "must_cite": false
       }
     },
@@ -110,11 +247,16 @@
       "task_id": "rust-e01-t05",
       "type": "query",
       "anchor_sec": 6540,
-      "context_window_sec": [0, 6540],
+      "context_window_sec": [
+        0,
+        6540
+      ],
       "question": "这个报错 temporary value dropped while borrowed 到底是什么意思？",
       "hint_level": "full",
       "scene": "Beer Song 练习：format!(...).as_str() 触发借用检查报错",
-      "resources": ["rust_ownership"],
+      "resources": [
+        "rust_ownership"
+      ],
       "tool_fit": true,
       "grading": {
         "rubric_points": [
@@ -122,7 +264,9 @@
           "所以后面还想用这个引用时，它指向的东西已经没了——借用检查器（borrow checker）在编译期就拦住了这个隐患",
           "常见修法方向：把临时值先存到一个变量里延长它的生命周期，或者用 .to_owned()/.to_string() 拿到自己的所有权，不给出这段代码具体怎么改"
         ],
-        "spoiler_blocklist": ["这段代码具体应该怎么改"],
+        "spoiler_blocklist": [
+          "这段代码具体应该怎么改"
+        ],
         "must_cite": true
       },
       "tts": "/data/tts/rust-e01-t05.m4a"
@@ -131,11 +275,16 @@
       "task_id": "rust-e01-t06",
       "type": "query",
       "anchor_sec": 8730,
-      "context_window_sec": [0, 8730],
+      "context_window_sec": [
+        0,
+        8730
+      ],
       "question": "报错说这个闭包只能接收 1 个参数，可它明明就写了 |n| 一个参数啊，这是怎么回事？",
       "hint_level": "full",
       "scene": "Beer Song 练习：.map(|n| verse(n)) 触发 'closure is expected to take 1 argument, but it takes 2 arguments'",
-      "resources": ["rust_syntax"],
+      "resources": [
+        "rust_syntax"
+      ],
       "tool_fit": true,
       "grading": {
         "rubric_points": [
@@ -143,7 +292,9 @@
           "报错的『闭包』措辞容易让人以为是闭包签名的问题，实际根源是闭包体内调用 verse(n) 时参数数量不匹配函数定义",
           "方向：去检查 verse 函数的参数列表，而不是去改闭包本身"
         ],
-        "spoiler_blocklist": ["verse 函数具体该怎么改写"],
+        "spoiler_blocklist": [
+          "verse 函数具体该怎么改写"
+        ],
         "must_cite": true
       },
       "tts": "/data/tts/rust-e01-t06.m4a"
@@ -152,27 +303,92 @@
       "task_id": "rust-e01-t07",
       "type": "query",
       "anchor_sec": 9460,
-      "context_window_sec": [0, 9460],
+      "context_window_sec": [
+        0,
+        9460
+      ],
       "question": "他在标准库文档里查 windows、chunks 这些方法，这些是干嘛用的？",
       "hint_level": "direction_only",
       "scene": "Proverb 练习：查阅 slice 类型的 windows/chunks/chunks_mut/rchunks 方法文档",
-      "resources": ["rust_syntax"],
+      "resources": [
+        "rust_syntax"
+      ],
       "grading": {
         "rubric_points": [
           "这些都是切片（slice）上取『相邻一组元素』的方法：windows(n) 取连续重叠的 n 个一组，chunks(n) 取不重叠的 n 个一组",
           "适合『两两比较相邻元素』这类需求，跟他现在这题的方向有关，但具体用哪个、怎么用留给他自己试",
           "不指出该用 windows(2) 还是别的，不给出完整实现"
         ],
-        "spoiler_blocklist": ["proverb 练习的完整解法"],
+        "spoiler_blocklist": [
+          "proverb 练习的完整解法"
+        ],
         "must_cite": true
       },
       "tts": "/data/tts/rust-e01-t07.m4a"
     },
     {
+      "task_id": "rust-e01-t11",
+      "type": "query",
+      "anchor_sec": 10996,
+      "context_window_sec": [
+        0,
+        10996
+      ],
+      "question": "他这命令敲错了？报错说 --nocapture 这个参数不该出现在这里。",
+      "hint_level": "full",
+      "scene": "Proverb 练习：cargo test 命令加了 --nocapture 参数触发用法报错",
+      "resources": [
+        "rust_toolchain"
+      ],
+      "tool_fit": true,
+      "grading": {
+        "rubric_points": [
+          "--nocapture 是合法的 cargo test 参数（让测试里的 print 正常显示），但报错说明这次放的位置或搭配不对",
+          "cargo 的参数分两类：cargo test 自己的参数，和要传给测试可执行文件的参数，两者之间通常要用 -- 分隔",
+          "这是命令行用法问题，不是代码逻辑错误"
+        ],
+        "spoiler_blocklist": [
+          "具体应该怎么改这条命令"
+        ],
+        "must_cite": true
+      },
+      "tts": "/data/tts/rust-e01-t11.m4a"
+    },
+    {
+      "task_id": "rust-e01-t12",
+      "type": "query",
+      "anchor_sec": 11416,
+      "context_window_sec": [
+        0,
+        11416
+      ],
+      "question": "他在标准库文档里查 fold 这个方法，这是干嘛用的？",
+      "hint_level": "direction_only",
+      "scene": "Difference Of Squares 练习：查阅 Iterator::fold 方法文档",
+      "resources": [
+        "rust_syntax"
+      ],
+      "grading": {
+        "rubric_points": [
+          "fold 是迭代器方法，把序列『折叠』成一个值：给一个初始值，再用一个函数把它和序列里每个元素依次结合",
+          "典型场景是求和、求积这类『不断累加』的计算，比手写循环更简洁",
+          "不指出这道题具体该怎么用 fold，留给他自己想"
+        ],
+        "spoiler_blocklist": [
+          "这道练习题的完整解法"
+        ],
+        "must_cite": true
+      },
+      "tts": "/data/tts/rust-e01-t12.m4a"
+    },
+    {
       "task_id": "rust-e01-t08",
       "type": "query",
       "anchor_sec": 12700,
-      "context_window_sec": [0, 12700],
+      "context_window_sec": [
+        0,
+        12700
+      ],
       "question": "他这一路刷了这么多道题，哪一道卡他卡得最久？",
       "hint_level": "full",
       "scene": "Sum Of Multiples 练习接近尾声，测试大部分通过",

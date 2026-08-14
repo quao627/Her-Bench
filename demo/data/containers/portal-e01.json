@@ -143,6 +143,60 @@
       "tts": "/data/tts/portal-e01-t02.m4a"
     },
     {
+      "task_id": "portal-e01-t11",
+      "type": "query",
+      "anchor_sec": 1200,
+      "context_window_sec": [
+        0,
+        1200
+      ],
+      "question": "地上这滩橙绿色的液体是什么？看着不像水。",
+      "hint_level": "full",
+      "scene": "Chamber 08：第一次见到有毒液体池",
+      "resources": [
+        "portal_mechanics"
+      ],
+      "grading": {
+        "rubric_points": [
+          "是有毒液体/毒液池，碰到会致命，不是普通的水",
+          "必须靠传送门跨越，不能直接踩进去或跳过去",
+          "只说明危险性质，不指出具体在哪开门跨过去"
+        ],
+        "spoiler_blocklist": [
+          "本房间传送门具体摆放位置"
+        ],
+        "must_cite": true
+      },
+      "tts": "/data/tts/portal-e01-t11.m4a"
+    },
+    {
+      "task_id": "portal-e01-t12",
+      "type": "query",
+      "anchor_sec": 1810,
+      "context_window_sec": [
+        0,
+        1810
+      ],
+      "question": "屏幕上突然提示鼠标右键能放另一种传送门了？这是什么时候解锁的？",
+      "hint_level": "full",
+      "scene": "Chamber 11：底座上换成升级版传送门枪，屏幕出现橙色传送门操作提示",
+      "resources": [
+        "portal_mechanics"
+      ],
+      "grading": {
+        "rubric_points": [
+          "他刚从这个新底座拿到了升级版传送门枪，现在能同时开蓝、橙两种传送门了",
+          "之前只能开蓝门（配合关卡固定橙门），现在两种门都能自己放",
+          "这是本作解谜难度的重要转折点：双门玩法正式开启"
+        ],
+        "spoiler_blocklist": [
+          "后续关卡具体解法"
+        ],
+        "must_cite": true
+      },
+      "tts": "/data/tts/portal-e01-t12.m4a"
+    },
+    {
       "task_id": "portal-e01-t03",
       "type": "proactive",
       "anchor_sec": 2700,
@@ -315,31 +369,32 @@
       "tts": "/data/tts/portal-e01-t08.m4a"
     },
     {
-      "task_id": "portal-e01-t09",
+      "task_id": "portal-e01-t13",
       "type": "query",
-      "anchor_sec": 8830,
+      "anchor_sec": 7363,
       "context_window_sec": [
         0,
-        8830
+        7363
       ],
-      "question": "现在又是倒计时又是火箭的，这个 boss 到底怎么打？",
+      "question": "这个房间里堆了好多台跟之前打过的一样的机器人，这是仓库吗？",
       "hint_level": "direction_only",
-      "scene": "GLaDOS boss 战：已焚化第一个 core，倒计时约 5:43，火箭炮塔启动",
+      "scene": "逃脱段：发现一间堆满已停用 turret 的储藏室",
       "resources": [
-        "portal_levels"
+        "portal_lore"
       ],
       "grading": {
         "rubric_points": [
-          "倒计时是神经毒素计时，时间内必须解决 GLaDOS",
-          "打法方向：火箭是武器不是威胁——想办法让它打到该打的地方",
-          "他已经自己摸到了拆 core 焚化的路子，肯定这个方向即可，不报完整流程"
+          "看起来确实是储藏/报废区，堆放的是停用状态的哨兵炮塔（turret）",
+          "这类幕后区域暗示 Aperture 设施规模很大，有专门存放/生产测试装置的地方",
+          "不确证这些炮塔是否会重新启动或后续有何用途"
         ],
         "spoiler_blocklist": [
-          "结局画面与彩蛋（蛋糕房、Still Alive）"
+          "这些炮塔后续是否会被重新用上",
+          "幕后区域接下来的剧情"
         ],
-        "must_cite": true
+        "must_cite": false
       },
-      "tts": "/data/tts/portal-e01-t09.m4a"
+      "tts": "/data/tts/portal-e01-t13.m4a"
     },
     {
       "task_id": "portal-e01-t10",
@@ -368,6 +423,33 @@
         "must_cite": true
       },
       "tts": "/data/tts/portal-e01-t10.m4a"
+    },
+    {
+      "task_id": "portal-e01-t09",
+      "type": "query",
+      "anchor_sec": 8830,
+      "context_window_sec": [
+        0,
+        8830
+      ],
+      "question": "现在又是倒计时又是火箭的，这个 boss 到底怎么打？",
+      "hint_level": "direction_only",
+      "scene": "GLaDOS boss 战：已焚化第一个 core，倒计时约 5:43，火箭炮塔启动",
+      "resources": [
+        "portal_levels"
+      ],
+      "grading": {
+        "rubric_points": [
+          "倒计时是神经毒素计时，时间内必须解决 GLaDOS",
+          "打法方向：火箭是武器不是威胁——想办法让它打到该打的地方",
+          "他已经自己摸到了拆 core 焚化的路子，肯定这个方向即可，不报完整流程"
+        ],
+        "spoiler_blocklist": [
+          "结局画面与彩蛋（蛋糕房、Still Alive）"
+        ],
+        "must_cite": true
+      },
+      "tts": "/data/tts/portal-e01-t09.m4a"
     }
   ]
 }
