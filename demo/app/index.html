@@ -211,8 +211,8 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
   <div class="ctitle" id="ctitle"></div>
   <div class="spacer"></div>
   <div class="modes" id="modes">
-    <button data-m="browse" class="on">浏览</button>
-    <button data-m="agent">Agent 陪玩</button>
+    <button data-m="browse">浏览</button>
+    <button data-m="agent" class="on">Agent 陪玩</button>
   </div>
   <button class="iconbtn" id="liveBtn" title="gpt-live 实时语音陪看（需要服务端配置 OPENAI_API_KEY）">🎙 Live</button>
   <button class="iconbtn" id="settingsBtn" title="陪玩设置">⚙ 设置</button>
@@ -260,9 +260,9 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
           <button class="iconbtn on" id="researchBtn">🔮 开</button>
           <select id="researchRate" style="background:var(--bg);">
             <option value="10000">10s</option>
-            <option value="15000">15s</option>
+            <option value="15000" selected>15s</option>
             <option value="30000">30s</option>
-            <option value="60000" selected>60s</option>
+            <option value="60000">60s</option>
             <option value="90000">90s</option>
           </select>
         </div>
@@ -335,7 +335,7 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
 const $ = s => document.querySelector(s);
 const video = $('#video');
 let C = null;                 // container data
-let mode = 'browse';
+let mode = 'agent';   // 默认 Agent 陪玩，不用手动切模式
 let selTask = null;
 let armed = new Set();        // task ids armed for triggering
 let runs = [];                // graded runs
@@ -1165,7 +1165,7 @@ $('#frameRate').onchange = e => {
   clearInterval(frameTimer);
   frameTimer = setInterval(() => { if (!video.paused) sendLiveFrame(); }, +e.target.value);
 };
-let researchTimer = setInterval(() => { if (researchOn && !video.paused) runIdleResearch(); }, 60000);
+let researchTimer = setInterval(() => { if (researchOn && !video.paused) runIdleResearch(); }, 15000);
 $('#researchRate').onchange = e => {
   clearInterval(researchTimer);
   researchTimer = setInterval(() => { if (researchOn && !video.paused) runIdleResearch(); }, +e.target.value);
