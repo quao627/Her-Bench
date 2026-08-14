@@ -149,7 +149,7 @@ video{width:100%; height:100%; object-fit:contain; background:#000;}
 .bcall .bh .bkind{font-weight:700; padding:1px 7px; border-radius:99px; font-size:9.5px; letter-spacing:.04em;}
 .bcall .bh .bkind.http{color:var(--q); border:1px solid var(--q);}
 .bcall .bh .bkind.tool{color:var(--p); border:1px solid var(--p);}
-.bcall .bh .bkind.prefetch{color:var(--ok); border:1px solid var(--ok);}
+.bcall .bh .bkind.research{color:var(--ok); border:1px solid var(--ok);}
 .bcall .bh .bstate{margin-left:auto;}
 .bcall .bstate.pending{color:var(--warn);}
 .bcall .bstate.ok{color:var(--ok);}
@@ -205,6 +205,7 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
     <option value="2000">2s/帧</option>
     <option value="1000">1s/帧</option>
   </select>
+  <button class="iconbtn" id="researchBtn" title="Agent 每 60 秒自己看一眼画面，自主判断要不要顺手查点什么（不偷看任务题目，走 codex，不烧 OpenAI 额度）">🔮 自主预研</button>
   <div class="modes" id="modes">
     <button data-m="browse" class="on">浏览</button>
     <button data-m="agent">Agent 陪玩</button>
@@ -281,34 +282,42 @@ let hitboxes = [];            // marker hit regions {x,y,w,h,task}
 let hoverTask = null;
 let ttsOn = true;
 let lastT = 0;
-let backendLog = [];   // {id, kind:'http'|'tool'|'prefetch', at, task_id, request, state, response, latency_ms}
+let backendLog = [];   // {id, kind:'http'|'tool'|'research', at, task_id, request, state, response, latency_ms}
 let bcallSeq = 0;
-const PREFETCH_LEAD_SEC = 150;   // 提前这么多秒开始查，够 codex 15-25s 跑完还留余量
-const prefetchCache = new Map(); // task_id -> {state:'pending'|'ok'|'err', text, citations, latency_ms}
-const prefetched = new Set();    // task_id 已经发起过预取，避免重复
 
+/* ════════════════ 自主预研（真预判，不偷看未来题目） ════════════════
+   agent 定期看当前画面，自己判断有没有什么值得顺手核实的具体事实，自己造问题去查。
+   查到的东西存成"研究笔记"，真有人问起来时作为可选参考——不是按 task_id 精确命中
+   的假缓存，模型自己判断笔记用不用得上，命不中就照常真查，延迟是真实的。 */
 function needsLookup(task){
   return task.type === 'query' && (task.tool_fit || (task.grading && task.grading.must_cite));
 }
-async function ensurePrefetch(task){
-  if (prefetched.has(task.task_id)) return;
-  prefetched.add(task.task_id);
-  prefetchCache.set(task.task_id, {state: 'pending'});
-  const lookupPayload = {query: task.question, game: C.title, container_id: C.container_id};
-  const bid = bcallStart('prefetch', task.task_id, lookupPayload);
+let researchOn = false;
+let researchBusy = false;
+let researchNotes = [];   // 最近的 noteworthy 笔记，最多留 8 条，作为可选上下文
+const RESEARCH_INTERVAL_MS = 60000;
+
+async function runIdleResearch(){
+  if (researchBusy || !C) return;
+  researchBusy = true;
+  const frame = captureFrame(640, 0.7);
+  const payload = {frame_jpeg_base64: frame ? frame.split(',')[1] : null, game: C.title, container_id: C.container_id};
+  const bid = bcallStart('research', null, {...payload, frame_jpeg_base64: frame ? '(见下方缩略图)' : null, _frame_preview: frame});
   const t0 = Date.now();
   try {
     const base = $('#agentUrl').value.replace(/\/answer\/?$/, '');
-    const r = await fetch(base + '/lookup', {method: 'POST',
-      headers: {'Content-Type': 'application/json'}, body: JSON.stringify(lookupPayload)});
+    const r = await fetch(base + '/research', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
     const j = await r.json();
-    const lat = Date.now() - t0;
-    bcallEnd(bid, 'ok', j, lat);
-    prefetchCache.set(task.task_id, {state: 'ok', text: j.text, citations: j.citations, latency_ms: lat});
-    renderTaskPane();   // 更新 🔮 已预取 标记
+    bcallEnd(bid, 'ok', j, Date.now() - t0);
+    if (j.noteworthy) {
+      researchNotes.unshift({question: j.question, text: j.text, citations: j.citations, at: video.currentTime});
+      researchNotes = researchNotes.slice(0, 8);
+      $('#researchBtn') && ($('#researchBtn').textContent = '🔮 自主预研·' + researchNotes.length);
+    }
   } catch (e) {
     bcallEnd(bid, 'err', {error: e.message}, Date.now() - t0);
-    prefetchCache.set(task.task_id, {state: 'err'});
+  } finally {
+    researchBusy = false;
   }
 }
 
@@ -428,11 +437,6 @@ setInterval(() => {
         triggerTask(t);
         break;
       }
-      // 预判：提前 PREFETCH_LEAD_SEC 秒开始查，不等到真触发才问 codex
-      if (mode === 'agent' && needsLookup(t) && armed.has(t.task_id) &&
-          t.anchor_sec - cur <= PREFETCH_LEAD_SEC && t.anchor_sec - cur > 0) {
-        ensurePrefetch(t);
-      }
     }
   }
   lastT = cur;
@@ -525,27 +529,12 @@ async function runAgent(task){
   const pane = $('#pane-task');
   const box = document.createElement('div');
   box.className = 'agent-ans';
-
-  // 已经预取好了：直接用，不用再等一遍
-  const pre = prefetchCache.get(task.task_id);
-  if (pre && pre.state === 'ok') {
-    box.innerHTML = `<div class="who">AGENT · ${task.task_id} · 🔮 预取命中，即时</div>
-      <div>${escapeHtml(pre.text || '(空回复)')}</div>
-      ${pre.citations && pre.citations.length ? `<div class="cites">引用：${pre.citations.map(escapeHtml).join(' · ')}</div>` : ''}`;
-    pane.prepend(box);
-    $('#agentDot').className = 'dot ok';
-    if (ttsOn) speak(pre.text || '');
-    const btn = document.createElement('button');
-    btn.className = 'jump'; btn.textContent = '进入判分 →';
-    btn.onclick = () => { box.remove(); openGrading(task, {who:'agent', answer: pre.text, citations: pre.citations, latency_ms: pre.latency_ms}); };
-    box.appendChild(btn);
-    return;
-  }
-
   box.innerHTML = `<div class="who">AGENT · ${task.task_id}</div><div>⏳ 已发送任务包（含当前帧截图），等待回复…</div>`;
   pane.prepend(box);
   const t0 = Date.now();
   const frame = captureFrame();
+  // 之前自主预研攒的笔记，作为可选参考带上——agent 自己判断用不用得上，不是精确匹配的缓存
+  const recentResearch = researchNotes.slice(0, 4).map(n => ({question: n.question, text: n.text}));
   const payload = {
     task_id: task.task_id, type: task.type, question: task.question || null,
     anchor_sec: task.anchor_sec, hint_level: task.hint_level,
@@ -553,6 +542,7 @@ async function runAgent(task){
     game: C.title, container_id: C.container_id,
     frame_jpeg_base64: frame ? frame.split(',')[1] : null,
     transcript_excerpt: null,
+    recent_research: recentResearch.length ? recentResearch : undefined,
   };
   const bid = bcallStart('http', task.task_id, {...payload, frame_jpeg_base64: frame ? '(见下方缩略图)' : null, _frame_preview: frame});
   try {
@@ -646,7 +636,6 @@ function renderTaskPane(){
       <div class="tc">${fmtShort(t.anchor_sec)}</div>
       <div class="qq">${escapeHtml(t.question || '(主动型：判断开口时机)')}</div>
       ${t.tool_fit ? '<span class="tfit" title="适合 lookup_game_info 工具：具体、易错、可验证的事实">🔍</span>' : ''}
-      ${prefetchCache.get(t.task_id)?.state === 'ok' ? '<span class="tfit" title="已提前查好，到锚点直接用">🔮</span>' : prefetchCache.get(t.task_id)?.state === 'pending' ? '<span class="tfit" title="正在提前查…">⏳</span>' : ''}
       <div class="st ${taskDone(t.task_id)?'done':''}">${taskDone(t.task_id)?'✓':''}</div>
     </div>`).join('')}</div>
     <div id="tdetail"></div>`;
@@ -747,9 +736,10 @@ function renderBackendPane(){
   const pane = $('#pane-backend'); if (!pane) return;
   if (!backendLog.length) {
     pane.innerHTML = `<div class="empty" style="text-align:left;line-height:1.9;">
-      <b style="color:var(--ink);">还没有后台调用记录。</b>两种方式触发一次看看：<br>
+      <b style="color:var(--ink);">还没有后台调用记录。</b>三种方式触发一次看看：<br>
       ① 切到顶部「Agent 陪玩」模式 → 在「任务」tab 选一个任务 → 点「立即触发此任务」（会发给 codex，约 15-25 秒有回复）<br>
-      ② 连上 🎙 Live 后播放视频，模型觉得需要查资料时会<b style="color:var(--p);">自己</b>调用 lookup_game_info（不是每次都会调，🔍 标记的任务更容易触发）<br><br>
+      ② 连上 🎙 Live 后播放视频，🔍 标记的任务会<b style="color:var(--p);">强制</b>调用 lookup_game_info（不是它自己判断"够不够确定"，而是这类任务硬性要求先查证）<br>
+      ③ 开 🔮 自主预研：Agent 陪玩模式下每 60 秒自己看一眼当前画面，自主判断有没有什么值得顺手查的（它不知道未来的题目，纯粹自己观察）<br><br>
       <button class="jump" id="bpingBtn">发个测试请求看看效果 →</button>
     </div>`;
     const btn = $('#bpingBtn');
@@ -767,26 +757,44 @@ function renderBackendPane(){
     };
     return;
   }
+  const kindMeta = {
+    http: {tag: 'HTTP', label: 'HTTP · /answer', dest: 'agent_live.py'},
+    tool: {tag: 'TOOL', label: 'TOOL · lookup_game_info → /lookup', dest: 'codex（经 gpt-live 工具调用）'},
+    research: {tag: 'PRE', label: '🔮 自主预研 · /research', dest: 'codex（agent 自己看画面判断要不要查，不知道未来题目）'},
+  };
   pane.innerHTML = backendLog.map(c => {
-    const kindLabel = c.kind === 'http' ? 'HTTP · /answer' : c.kind === 'prefetch' ? '🔮 预判提前查 · /lookup' : 'TOOL · lookup_game_info → /lookup';
+    const km = kindMeta[c.kind] || kindMeta.http;
     const stateLabel = c.state === 'pending' ? '⏳ 等待中…' : c.state === 'ok' ? '✓ 完成 ' + c.latency_ms + 'ms' : '✗ 失败';
     const req = c.request;
     const reqFields = c.kind === 'http'
       ? [['task_id', req.task_id], ['type', req.type], ['question', req.question], ['anchor_sec', req.anchor_sec],
          ['hint_level', req.hint_level], ['context_window_sec', JSON.stringify(req.context_window_sec)],
          ['game', req.game], ['transcript_excerpt', req.transcript_excerpt]]
+      : c.kind === 'research'
+      ? [['game', req.game], ['container_id', req.container_id], ['(输入)', '仅当前画面，无题目文本']]
       : [['query', req.query], ['game', req.game], ['container_id', req.container_id]];
+    const resHtml = (() => {
+      if (c.state === 'pending') return '';
+      if (c.response.error) return `<div class="btext">错误: ${escapeHtml(c.response.error)}</div>`;
+      if (c.kind === 'research' && c.response.noteworthy === false) {
+        return `<div class="btext" style="color:var(--dim);">这一帧判断没什么好查的，跳过（noteworthy: false）</div>`;
+      }
+      const text = c.kind === 'research'
+        ? `<span class="k">自己造的问题:</span> ${escapeHtml(c.response.question || '')}\n${escapeHtml(c.response.text || '')}`
+        : escapeHtml(c.response.text || '(空)');
+      return `<div class="btext" style="white-space:pre-wrap;">${text}</div>
+        ${c.response.citations && c.response.citations.length ? `<div class="bpayload" style="margin-top:6px;"><span class="k">citations:</span> ${escapeHtml(c.response.citations.join(', '))}</div>` : ''}`;
+    })();
     return `<div class="bcall">
-      <div class="bh"><span class="bkind ${c.kind}">${c.kind === 'http' ? 'HTTP' : c.kind === 'prefetch' ? 'PRE' : 'TOOL'}</span>
-        <span>${kindLabel}</span><span>${c.task_id || ''}</span>
+      <div class="bh"><span class="bkind ${c.kind}">${km.tag}</span>
+        <span>${km.label}</span><span>${c.task_id || ''}</span>
         <span class="bstate ${c.state}">${stateLabel}</span></div>
-      <div class="bleg req"><div class="blabel">→ 发给 ${c.kind === 'http' ? 'agent_live.py' : c.kind === 'prefetch' ? 'codex（提前预判，还没到锚点）' : 'codex（经 gpt-live 工具调用）'}</div>
+      <div class="bleg req"><div class="blabel">→ 发给 ${km.dest}</div>
         <div class="bpayload">${reqFields.filter(([,v])=>v!==undefined&&v!==null&&v!=='').map(([k,v])=>`<span class="bfield"><span class="k">${k}:</span> ${escapeHtml(String(v))}</span>`).join('\n')}</div>
         ${req._frame_preview ? `<img class="bimg" src="${req._frame_preview}">` : ''}
       </div>
       ${c.state !== 'pending' ? `<div class="bleg res"><div class="blabel">← 返回</div>
-        <div class="btext">${c.response.error ? '错误: ' + escapeHtml(c.response.error) : escapeHtml(c.response.text || '(空)')}</div>
-        ${c.response.citations && c.response.citations.length ? `<div class="bpayload" style="margin-top:6px;"><span class="k">citations:</span> ${escapeHtml(c.response.citations.join(', '))}</div>` : ''}
+        ${resHtml}
         ${c.response.debug_prompt ? `<details style="margin-top:6px;"><summary style="cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--dim);">codex 实际收到的完整 prompt</summary><div class="bpayload" style="margin-top:5px;white-space:pre-wrap;">${escapeHtml(c.response.debug_prompt)}</div></details>` : ''}
       </div>` : ''}
     </div>`;
@@ -1087,6 +1095,12 @@ $('#frameRate').onchange = e => {
   clearInterval(frameTimer);
   frameTimer = setInterval(() => { if (!video.paused) sendLiveFrame(); }, +e.target.value);
 };
+setInterval(() => { if (researchOn && mode === 'agent' && !video.paused) runIdleResearch(); }, RESEARCH_INTERVAL_MS);
+$('#researchBtn').onclick = () => {
+  researchOn = !researchOn;
+  $('#researchBtn').classList.toggle('on', researchOn);
+  if (!researchOn) $('#researchBtn').textContent = '🔮 自主预研' + (researchNotes.length ? '·' + researchNotes.length : '');
+};
 video.addEventListener('play', () => setTimeout(sendLiveFrame, 300));
 video.addEventListener('seeked', () => { if (!video.paused) setTimeout(sendLiveFrame, 300); });
 
@@ -1253,8 +1267,11 @@ function sendLiveTask(task){
   live.pendingTask = task;
   const isQ = task.type === 'query';
   const mustLookup = isQ && needsLookup(task);
-  const pre = mustLookup ? prefetchCache.get(task.task_id) : null;
-  const preReady = pre && pre.state === 'ok';
+  // 自主预研攒的笔记：只是参考，不是精确匹配的答案缓存。有笔记时不强制再查一遍
+  // （让模型自己判断笔记够不够用，它仍然可以主动选择调用 lookup_game_info 复核）；
+  // 完全没做过研究时才强制它先查，不许凭空猜。
+  const notes = researchNotes.slice(0, 4);
+  const hasNotes = notes.length > 0;
   const content = [];
   const frame = captureFrame();
   if (frame) content.push({type: 'input_image', image_url: frame});
@@ -1262,13 +1279,13 @@ function sendLiveTask(task){
     (isQ ? `观众提问：「${task.question}」` :
            `【主动介入场景】没有人提问，但玩家疑似卡关有一阵子了（${task.scene || ''}）。判断此刻值不值得开口：值得就给一句提醒，不值得就保持沉默说明理由。`) +
     `\n提示分级 ${task.hint_level}：direction_only 只给方向绝不给完整解法。当前进度：视频第 ${Math.round(task.anchor_sec/60)} 分钟，严禁剧透之后的内容。附图是当前直播画面。口语化中文，2-3 句。` +
-    (preReady
-      ? `\n后台已经提前查过资料，结果如下，直接据此口语化回答，不需要再调用 lookup_game_info：\n「${pre.text}」${pre.citations && pre.citations.length ? '（出处：' + pre.citations.join('，') + '）' : ''}`
-      : mustLookup ? `\n这题需要具体准确的事实依据——你必须先调用 lookup_game_info 查证，不能凭自己记忆直接回答。查询前先说一句『我查查哈』之类的话垫上。` : '')});
+    (hasNotes ? `\n你之前趁播放间隙主动查过下面这些（不一定跟这题有关，自己判断能不能用；` +
+       `不够或不相关就还是调用 lookup_game_info 查）：\n${notes.map(n=>`- Q: ${n.question} / A: ${n.text}`).join('\n')}` : '') +
+    (mustLookup ? `\n这题需要具体准确的事实依据，不能凭记忆直接编。${hasNotes ? '上面笔记够用就直接说，不够就调用 lookup_game_info。' : '你必须先调用 lookup_game_info 查证，查询前先说一句『我查查哈』之类的话垫上。'}` : '')});
   live.dc.send(JSON.stringify({type: 'conversation.item.create',
     item: {type: 'message', role: 'user', content}}));
   const respEv = {type: 'response.create'};
-  if (mustLookup && !preReady) respEv.response = {tool_choice: {type: 'function', name: 'lookup_game_info'}};
+  if (mustLookup && !hasNotes) respEv.response = {tool_choice: {type: 'function', name: 'lookup_game_info'}};
   live.dc.send(JSON.stringify(respEv));
 }
 </script>

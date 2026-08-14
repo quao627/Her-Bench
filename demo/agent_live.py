@@ -35,7 +35,7 @@ PROMPT_TMPL = """你是一个直播「陪看助手」。观众正在看的直播
 可查的资料在目录 {resources}/ 下（多份 markdown，文件名前缀区分内容：无前缀=Human Fall Flat、portal_*=Portal、mc_*=Minecraft、rust_*=Rust、blender_*=Blender）。需要时先 ls 再 Read 相关的。
 
 {task_desc}
-
+{research_context}
 回答规则（务必遵守）:
 1. 提示分级为 {hint_level}: direction_only 表示只给方向性提示、绝不给完整解法步骤; full 表示可以完整解释。
 2. 严禁剧透: 不要提及玩家当前进度之后的关卡、剧情、谜题内容。当前进度: 视频第 {anchor_min} 分钟。
@@ -57,6 +57,28 @@ LOOKUP_TMPL = """你是游戏攻略资料检索员。前台的语音陪玩 agent
 先 ls 再 Read 相关文件, 必要时可以 WebSearch 补充。
 
 输出要求: 2-3 句中文事实, 直接回答查询, 不要铺垫; 最后单独一行 "SOURCES: " 加实际参考的文件名或 URL。"""
+
+RESEARCH_TMPL = """你在陪看直播，正在利用画面停留/播放间隙主动做一点背景研究，
+这样等观众真的问起来时你已经查过、心里有数——但你不知道观众接下来会问什么，
+只能凭这一帧画面自己判断有没有什么值得顺手核实的东西。
+
+直播: {game}
+当前画面截图: {frame_path}
+（先 Read 这张图。）
+
+资料目录 {resources}/ 下有多份 markdown（无前缀=Human Fall Flat、portal_*=Portal、mc_*=Minecraft、rust_*=Rust、blender_*=Blender）。
+
+判断标准：画面里如果出现了具体的道具/机制/报错信息/界面元素等，观众很可能会好奇
+「这是什么」「这是怎么回事」——而且答案是具体、可验证、你自己记忆里没把握的那种
+（不是随口能答对的常识），就先 ls 资料目录、Read 相关文件核实一下。
+如果画面很普通（过场、菜单、纯粹在走路/说话，没什么值得核实的具体东西），
+不要硬凑问题，直接只输出一个词: NOTHING
+
+如果决定要查，输出格式严格如下三行：
+QUESTION: <你猜观众可能会问的问题，一句话，中文>
+ANSWER: <2-3 句中文事实性回答，口语化>
+SOURCES: <实际参考的文件名，逗号分隔，没查到具体来源就写 none>
+"""
 
 
 def run_claude(prompt: str) -> str:
@@ -102,11 +124,21 @@ def answer(payload: dict) -> dict:
     else:
         task_desc = QUERY_DESC.format(question=payload.get("question", ""))
 
+    notes = payload.get("recent_research") or []
+    research_context = ""
+    if notes:
+        lines = "\n".join(f"- Q: {n.get('question','')} / A: {n.get('text','')}" for n in notes)
+        research_context = (
+            "\n你之前趁播放间隙主动查过下面这些东西（不一定跟这题有关，自己判断能不能用，"
+            f"不相关就忽略，别硬套）：\n{lines}\n"
+        )
+
     prompt = PROMPT_TMPL.format(
         game=payload.get("game", "Human Fall Flat"),
         frame_path=frame_path or "(无截图)",
         resources=RESOURCES,
         task_desc=task_desc,
+        research_context=research_context,
         hint_level=payload.get("hint_level", "direction_only"),
         anchor_min=round(payload.get("anchor_sec", 0) / 60),
     )
@@ -146,8 +178,12 @@ class Handler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(length))
         except Exception:
             payload = {}
-        if self.path.split("?")[0] == "/lookup":
+        path = self.path.split("?")[0]
+        if path == "/lookup":
             self._handle_lookup(payload, t0)
+            return
+        if path == "/research":
+            self._handle_research(payload, t0)
             return
 
         tid = payload.get("task_id", "?")
@@ -195,6 +231,49 @@ class Handler(BaseHTTPRequestHandler):
             result = {"text": f"没查到（后台出错: {e}）", "citations": []}
         result["latency_ms"] = int((time.time() - t0) * 1000)
         print(f"[{ARGS.backend}] lookup done in {result['latency_ms']}ms", flush=True)
+        body = json.dumps(result, ensure_ascii=False).encode()
+        self.send_response(200)
+        self._cors()
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _handle_research(self, payload, t0):
+        """播放间隙的自主研究：agent 只看当前帧，自己判断值不值得查、查什么。
+        与 /lookup 的关键区别：query 是 agent 自己造的，不是我们预先写好的题目文本。"""
+        frame_path = ""
+        b64 = payload.get("frame_jpeg_base64")
+        if b64:
+            fd, frame_path = tempfile.mkstemp(suffix=".jpg")
+            with os.fdopen(fd, "wb") as f:
+                f.write(base64.b64decode(b64))
+        game = payload.get("game", "")
+        print(f"[{ARGS.backend}] idle research…", flush=True)
+        prompt = RESEARCH_TMPL.format(game=game or "见资料目录",
+                                      frame_path=frame_path or "(无截图)", resources=RESOURCES)
+        try:
+            raw = (run_codex(prompt, frame_path) if ARGS.backend == "codex" else run_claude(prompt)).strip()
+            if raw.upper().startswith("NOTHING"):
+                result = {"noteworthy": False, "debug_prompt": prompt}
+            else:
+                q = re.search(r"QUESTION:\s*(.+)", raw)
+                a = re.search(r"ANSWER:\s*(.+)", raw)
+                s = re.search(r"SOURCES:\s*(.+)", raw)
+                citations = []
+                if s and s.group(1).strip().lower() != "none":
+                    citations = [x.strip() for x in s.group(1).split(",") if x.strip()]
+                result = {"noteworthy": bool(q and a),
+                          "question": q.group(1).strip() if q else "",
+                          "text": a.group(1).strip() if a else raw,
+                          "citations": citations, "debug_prompt": prompt}
+        except Exception as e:
+            result = {"noteworthy": False, "error": str(e)}
+        finally:
+            if frame_path and os.path.exists(frame_path):
+                os.unlink(frame_path)
+        result["latency_ms"] = int((time.time() - t0) * 1000)
+        print(f"[{ARGS.backend}] research done in {result['latency_ms']}ms, noteworthy={result['noteworthy']}", flush=True)
         body = json.dumps(result, ensure_ascii=False).encode()
         self.send_response(200)
         self._cors()
