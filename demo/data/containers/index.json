@@ -10,5 +10,13 @@
   {
     "id": "mc-e01",
     "title": "Minecraft No Wiki · E01（话少）"
+  },
+  {
+    "id": "rust-e01",
+    "title": "Rust 编程直播（ErikDotDev）"
+  },
+  {
+    "id": "blender-e01",
+    "title": "Blender 首次上手（DaiShimaVT）"
   }
 ]

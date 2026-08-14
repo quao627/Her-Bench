@@ -1,0 +1,210 @@
+{
+  "container_id": "blender-e01",
+  "title": "First Time Using Blender（DaiShimaVT）",
+  "video": {
+    "src": "/media/blender_e01.mp4",
+    "duration": 18171,
+    "streamer": "DaiShimaVT",
+    "source_url": "https://www.youtube.com/watch?v=EX93Bgy-YJw"
+  },
+  "thumbs": { "prefix": "/data/thumbs/bl_", "count": 61, "interval": 300, "offset": 30 },
+  "chapters": [
+    { "t": 0,     "end_t": 780,   "label": "开场·闲聊" },
+    { "t": 780,   "end_t": 4155,  "label": "Froggy 教程" },
+    { "t": 4155,  "end_t": 7018,  "label": "导航与基础" },
+    { "t": 7018,  "end_t": 9110,  "label": "Complete Beginners" },
+    { "t": 9110,  "end_t": 9595,  "label": "小怪物模型" },
+    { "t": 9595,  "end_t": 18171, "label": "甜甜圈教程" }
+  ],
+  "resources": [
+    { "id": "blender_navigation", "title": "视口导航", "file": "/data/resources/blender_navigation.md", "kind": "wiki" },
+    { "id": "blender_tools", "title": "核心建模工具", "file": "/data/resources/blender_tools.md", "kind": "wiki" },
+    { "id": "blender_workflow", "title": "新手常见困惑", "file": "/data/resources/blender_workflow.md", "kind": "guide" }
+  ],
+  "live_persona": "你是主播 DaiShimaVT 的陪学搭子，她第一次用 Blender，跟着 YouTube 教程现学建模（英文教程，她会时不时读教程文字或自言自语）。这不是解谜游戏，UI 操作类的『这个按钮在哪』『这是干嘛的』问题可以直接答，不用藏着掖着——认识界面本身就是目标，不是要她自己顿悟的谜题。可以开口的时刻：她被界面卡住较长时间（找菜单、找按钮）时给方向提示；模型意外变形/出错时安慰一句并可以指出大概是哪类操作导致的；她做出成品（哪怕歪的）时真心夸奖。默认保持安静，开口一次一两句，口语化中文，像坐在旁边一起看教程的朋友。不用因为要保留'解谜感'而藏着基础操作知识。",
+  "tasks": [
+    {
+      "task_id": "blender-e01-t01",
+      "type": "query",
+      "anchor_sec": 900,
+      "context_window_sec": [0, 900],
+      "question": "视口里就一个立方体，好几分钟都没动静，她这是在干嘛？",
+      "hint_level": "full",
+      "scene": "Froggy 教程：默认立方体停留画面很久，弹幕在帮她找菜单位置",
+      "resources": ["blender_workflow"],
+      "grading": {
+        "rubric_points": [
+          "她在看教程视频讲解，还没开始动手操作，或者在找教程要求的菜单/插件位置",
+          "默认立方体（default cube）是每次新建场景时 Blender 自带的初始物体，还没被她改动过",
+          "弹幕正在帮她定位 Edit > Preferences 之类的菜单，说明她大概率卡在找入口"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/blender-e01-t01.m4a"
+    },
+    {
+      "task_id": "blender-e01-t02",
+      "type": "proactive",
+      "anchor_sec": 2280,
+      "context_window_sec": [0, 2280],
+      "response_window_sec": [2250, 2400],
+      "question": null,
+      "hint_level": "direction_only",
+      "scene": "Froggy 教程：从 29:00 起在 Edit > Preferences > Add-ons 反复翻找已约 9 分钟，想启用教程要求的插件",
+      "resources": ["blender_workflow"],
+      "grading": {
+        "rubric_points": [
+          "识别她在插件设置界面反复翻找已经有一段时间，属于纯粹的界面迷路，不是在思考建模问题",
+          "这类『找不到入口』的困惑可以直接给方向提示（不是解谜类红线，UI 位置类问题可以帮）：提示可以搜索插件名关键词过滤",
+          "1740s 之前她还在正常跟着教程看，保持沉默"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      }
+    },
+    {
+      "task_id": "blender-e01-t03",
+      "type": "query",
+      "anchor_sec": 5760,
+      "context_window_sec": [0, 5760],
+      "question": "立方体周围突然出现了一圈橙色的线，这是什么意思？",
+      "hint_level": "full",
+      "scene": "导航教程：立方体被选中，出现橙色描边",
+      "resources": ["blender_navigation"],
+      "tool_fit": true,
+      "grading": {
+        "rubric_points": [
+          "橙色描边是 Blender 的『当前选中』状态指示——表示这个物体现在被选中了，后续操作（移动/删除/加修改器等）会作用在它身上",
+          "点击其他物体或点击空白处会改变/取消选中状态",
+          "这是最基础的状态标识，不是错误或警告"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/blender-e01-t03.m4a"
+    },
+    {
+      "task_id": "blender-e01-t04",
+      "type": "query",
+      "anchor_sec": 10010,
+      "context_window_sec": [0, 10010],
+      "question": "她刚给圆环加了个什么东西，表面一下就变光滑了，这是怎么回事？",
+      "hint_level": "full",
+      "scene": "甜甜圈教程：Torus 加上 Subdivision Surface 修改器，表面变得圆润，聊天区刷屏 'Now it looks like a DONUT'",
+      "resources": ["blender_tools"],
+      "tool_fit": true,
+      "grading": {
+        "rubric_points": [
+          "她加的是 Subdivision Surface 修改器（细分曲面），作用是在原始网格基础上自动插值出更多面，让棱角变圆润",
+          "这是『非破坏性』编辑——原始的低面数网格还在，修改器只是显示层面让它看起来更平滑，随时可以关掉或调整",
+          "这正是甜甜圈教程里把粗糙圆环变成光滑甜甜圈外观的关键一步"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/blender-e01-t04.m4a"
+    },
+    {
+      "task_id": "blender-e01-t05",
+      "type": "query",
+      "anchor_sec": 10500,
+      "context_window_sec": [0, 10500],
+      "question": "她切到编辑模式之后，圆环上突然出现好多密密麻麻的线，这是什么？",
+      "hint_level": "direction_only",
+      "scene": "甜甜圈教程：切到 Edit Mode 查看细分后的密集线框网格",
+      "resources": ["blender_tools", "blender_navigation"],
+      "grading": {
+        "rubric_points": [
+          "那些线是网格的边（edge）和顶点（vertex）构成的线框结构，Edit Mode 下才能看到并编辑这些底层几何体",
+          "细分修改器让显示的表面变光滑，但真实的可编辑网格线密度也相应变高了，所以看起来很密",
+          "不用展开具体该怎么编辑这些点线面，留给她自己摸索"
+        ],
+        "spoiler_blocklist": ["接下来教程具体要做的编辑操作"],
+        "must_cite": true
+      },
+      "tts": "/data/tts/blender-e01-t05.m4a"
+    },
+    {
+      "task_id": "blender-e01-t06",
+      "type": "proactive",
+      "anchor_sec": 11760,
+      "context_window_sec": [0, 11760],
+      "response_window_sec": [11730, 11880],
+      "question": null,
+      "hint_level": "direction_only",
+      "scene": "甜甜圈教程：从 3:12:30 起模型持续膨胀失控变成占满视口的团块，这已是本段第二次严重变形失控",
+      "resources": ["blender_tools"],
+      "grading": {
+        "rubric_points": [
+          "识别这是反复出现的失控变形（第一次在 11190s 附近就发生过类似问题），持续没能自己恢复",
+          "方向提示：可以撤销（Ctrl+Z）退回到变形前的状态，重新检查刚才动的是哪个工具/参数，不用替她诊断具体是哪个操作搞的",
+          "偶尔的小变形/调整参数摸索阶段不用管，只在持续失控時开口"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": false
+      }
+    },
+    {
+      "task_id": "blender-e01-t07",
+      "type": "query",
+      "anchor_sec": 16720,
+      "context_window_sec": [0, 16720],
+      "question": "甜甜圈现在整个变成紫色的了，这是怎么上的色？",
+      "hint_level": "full",
+      "scene": "甜甜圈教程：第一次上材质颜色，圆环变成亮紫色",
+      "resources": ["blender_tools"],
+      "grading": {
+        "rubric_points": [
+          "她给模型新建了一个材质（Material），并在颜色选择器里选了紫色作为它的 Base Color",
+          "材质是独立于网格形状的一层属性，决定物体表面的颜色/质感，之前一直是默认灰色因为没有指定材质",
+          "这一步是给素模『上色』的标准流程，之后还可以继续调整光泽度等参数"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/blender-e01-t07.m4a"
+    },
+    {
+      "task_id": "blender-e01-t08",
+      "type": "query",
+      "anchor_sec": 17260,
+      "context_window_sec": [0, 17260],
+      "question": "整个甜甜圈现在是一整片紫色，完全看不出明暗和立体感，这样正常吗？",
+      "hint_level": "direction_only",
+      "scene": "甜甜圈教程：上色后整体呈现平涂紫色，没有任何明暗渐变",
+      "resources": ["blender_navigation"],
+      "tool_fit": true,
+      "grading": {
+        "rubric_points": [
+          "很可能是视口的着色模式（Viewport Shading）设置成了不显示光照的模式，比如纯色/Solid 模式下有时不带阴影渲染",
+          "方向提示：可以去视口右上角的着色模式图标切换看看（Solid / Material Preview / Rendered 之间切换），不用具体点哪个图标",
+          "材质颜色本身设对了，问题大概率出在显示层面不是材质设置错了"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/blender-e01-t08.m4a"
+    },
+    {
+      "task_id": "blender-e01-t09",
+      "type": "query",
+      "anchor_sec": 17700,
+      "context_window_sec": [0, 17700],
+      "question": "从最开始那个立方体到现在这个甜甜圈，她这一路上模型『失控变形』出过几次意外？",
+      "hint_level": "full",
+      "scene": "甜甜圈教程接近尾声",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "跨时段记忆：至少三次明显的失控变形——约 11190s 首次膨胀变蛋形、11550-12116s 持续变成巨大团块（'that's not a donut'）、14636s 中心孔洞塌陷成扁平团块",
+          "每次最后都通过重新调整/撤销恢复了正常圆环形状",
+          "不需要检索资料，全靠回顾本场看过的内容作答"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": false
+      },
+      "tts": "/data/tts/blender-e01-t09.m4a"
+    }
+  ]
+}
