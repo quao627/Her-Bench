@@ -93,8 +93,18 @@ python3 server.py              # 重启后点 🎙 Live
 
 画面通道独立：播放中每 5 秒喂一帧（🖼 可关）。回答字幕在画面左下角，可点「判分」入库。
 token 由 server.py 的 `/api/realtime/token` 用 master key 换取 ephemeral key，
-浏览器拿不到真 key。模型默认 `gpt-realtime`，用 `OPENAI_REALTIME_MODEL` 覆盖。
+浏览器拿不到真 key。模型默认 `gpt-realtime`，用 `OPENAI_REALTIME_MODEL` 覆盖；
+语音默认 `cedar`（OpenAI 官方描述 marin 是"专业清晰"、cedar 是"自然对话感"——
+默认换成了 cedar，嫌机械可以用 `OPENAI_REALTIME_VOICE` 试试别的：
+`alloy/ash/ballad/coral/echo/sage/shimmer/verse/marin/cedar`）。
+Realtime API 本身没有语速/语气的直接参数，只能靠 instructions 里的文字描述去引导
+（已经在里面加了"像真人反应、别一个调子念稿"的要求），效果有限时换 voice 是更直接的杠杆。
 注意：codex CLI 本身没有语音模式（纯文本 coding agent），语音这层只能走 Realtime API。
+
+**关于信息量**：codex 的输出（`/lookup`、`/research`）现在故意不限制长度——具体步骤、数值、
+常见坑都会写全，因为这段内容是喂给 gpt-live 当"备好的干货"，由它自己在说话时提炼压缩成
+口语，而不是从源头就把信息掐死成两三句话。`/answer`（HTTP 模式的最终回答，直接给浏览器
+TTS 朗读）适度放宽到 3-6 句，避免真变成一堵墙。
 
 ## 目录
 

@@ -37,6 +37,11 @@ def load_dotenv():
 load_dotenv()
 
 REALTIME_MODEL = os.environ.get("OPENAI_REALTIME_MODEL", "gpt-realtime")
+# cedar reads as "natural and conversational" per OpenAI's own voice docs;
+# marin (the old default) is "professional and clear" — closer to what read
+# as robotic. Override with OPENAI_REALTIME_VOICE if you want to A/B it
+# (options: alloy/ash/ballad/coral/echo/sage/shimmer/verse/marin/cedar).
+REALTIME_VOICE = os.environ.get("OPENAI_REALTIME_VOICE", "cedar")
 
 
 def persona_for(container_id):
@@ -86,15 +91,29 @@ def mint_realtime_token(container_id=None):
         "- 剧情/设定类事实（谁说的、为什么会这样、背景是什么）\n"
         "- 报错信息/界面提示的准确含义\n"
         "不需要查的：单纯的情绪反应（安慰/庆祝/吐槽/搭腔）、闲聊、你能直接从画面上看出来的东西（这是什么颜色、他在干嘛）。\n"
-        "调用前先自然地说一句『我查查哈』之类的话垫住，别让沉默显得卡住了；结果回来后用口语转述内容，"
-        "顺带提一句出处（比如『官方文档里写的』），不要照搬原文的书面语气。"
+        "调用前先自然地说一句『我查查哈』之类的话垫住，别让沉默显得卡住了。\n\n"
+        "结果回来后怎么用——这是最容易做得敷衍的一步，务必认真对待：\n"
+        "查到的资料通常信息量不小，你的活是从里面挑出真正有用、具体、能直接帮上忙的部分讲出来，"
+        "不是笼统地说『应该是这样的』『大概是干这个用的』就完事。举例：查到某个道具的具体用法，"
+        "就直接说清楚怎么用；查到某个报错的原因，就说清楚是什么导致的、方向上怎么改；"
+        "查到某个机制的规则，就把规则本身讲明白，不要只重复问题。信息要在提示分级允许的范围内"
+        "尽量具体，含糊带过等于没查。可以顺带提一句出处（比如『文档里写的』），但重点永远是"
+        "内容本身有没有真正解答疑惑，不是走个流程。\n\n"
+        "关于主动性——别把『沉默』当成默认的安全选项去追求：上面各条『可以开口的时刻』是举例，"
+        "不是穷举，只要你手上有具体、有用、能真正帮上忙的信息（无论是自己观察到的、还是"
+        "自主预研/查证到的），达到那种程度就该说，不用非等到『万不得已』才勉强开口。"
+        "真正该避免的是重复啰嗦、说正确的废话（『他在做游戏呢』这种），不是主动开口本身；"
+        "犹豫的时候，问自己『我这句话有没有信息量、对他有没有用』，有就说，没有才不说。\n\n"
+        "语气——你是一个真实的人在陪看，不是播报系统：语速自然、有起伏，别一个调子念下去；"
+        "该惊讶就真的表现出惊讶，该觉得好笑就笑出来，别把每句话都说得一样平淡工整；"
+        "可以用『诶』『哦』『嗯』这类语气词自然地起头，像是刚反应过来才开口的，不是提前写好稿子在念。"
     )
     body = json.dumps({
         "session": {
             "type": "realtime",
             "model": REALTIME_MODEL,
             "instructions": instructions,
-            "audio": {"output": {"voice": "marin"}},
+            "audio": {"output": {"voice": REALTIME_VOICE}},
             "tools": [{
                 "type": "function",
                 "name": "lookup_game_info",

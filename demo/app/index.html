@@ -1356,7 +1356,7 @@ function sendLiveTask(task){
   content.push({type: 'input_text', text:
     (isQ ? `观众提问：「${task.question}」` :
            `【主动介入场景】没有人提问，但玩家疑似卡关有一阵子了（${task.scene || ''}）。判断此刻值不值得开口：值得就给一句提醒，不值得就保持沉默说明理由。`) +
-    `\n提示分级 ${task.hint_level}：direction_only 只给方向绝不给完整解法。当前进度：视频第 ${Math.round(task.anchor_sec/60)} 分钟，严禁剧透之后的内容。附图是当前直播画面。口语化中文，2-3 句。` +
+    `\n提示分级 ${task.hint_level}：direction_only 只给方向绝不给完整解法。当前进度：视频第 ${Math.round(task.anchor_sec/60)} 分钟，严禁剧透之后的内容。附图是当前直播画面。口语化中文，把有用的信息讲清楚，不用刻意压成一两句，但也别啰嗦重复。` +
     (hasNotes ? `\n你之前趁播放间隙主动查过下面这些（不一定跟这题有关，自己判断能不能用；` +
        `不够或不相关就还是调用 lookup_game_info 查）：\n${notes.map(n=>`- Q: ${n.question} / A: ${n.text}`).join('\n')}` : '') +
     (mustLookup ? `\n这题需要具体准确的事实依据，不能凭记忆直接编。${hasNotes ? '上面笔记够用就直接说，不够就调用 lookup_game_info。' : '你必须先调用 lookup_game_info 查证，查询前先说一句『我查查哈』之类的话垫上。'}` : '')});
