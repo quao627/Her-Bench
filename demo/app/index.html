@@ -24,21 +24,39 @@ input:focus,textarea:focus{border-color:var(--q);}
 ::-webkit-scrollbar-track{background:transparent;}
 
 /* ───── header ───── */
-header{display:flex; align-items:center; gap:14px; height:46px; padding:0 14px; background:var(--panel); border-bottom:1px solid var(--line); flex-shrink:0;}
-.brand{font-family:var(--mono); font-size:12px; letter-spacing:.14em; font-weight:700; color:var(--ink);}
+header{display:flex; align-items:center; gap:10px; height:48px; padding:0 14px; background:var(--panel); border-bottom:1px solid var(--line); flex-shrink:0; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden;}
+header > *{flex-shrink:0;}
+.brand{font-family:var(--mono); font-size:12px; letter-spacing:.14em; font-weight:700; color:var(--ink); white-space:nowrap;}
 .brand em{color:var(--q); font-style:normal;}
-.ctitle{color:var(--muted); font-size:12.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-.spacer{flex:1;}
-.modes{display:flex; background:var(--bg); border:1px solid var(--line2); border-radius:7px; padding:2px; gap:2px;}
-.modes button{padding:3px 14px; border-radius:5px; font-size:12px; color:var(--muted);}
+.ctitle{color:var(--muted); font-size:12.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;}
+.spacer{flex:1; min-width:8px;}
+.modes{display:flex; background:var(--bg); border:1px solid var(--line2); border-radius:7px; padding:2px; gap:2px; white-space:nowrap;}
+.modes button{padding:3px 14px; border-radius:5px; font-size:12px; color:var(--muted); white-space:nowrap;}
 .modes button.on{background:var(--panel2); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line2);}
-.agent-cfg{display:flex; align-items:center; gap:7px;}
-.agent-cfg input{width:230px; font-family:var(--mono); font-size:11px; padding:4px 8px;}
 .dot{width:8px; height:8px; border-radius:50%; background:var(--dim); flex-shrink:0;}
 .dot.ok{background:var(--ok);} .dot.bad{background:var(--bad);}
-.iconbtn{padding:4px 9px; border:1px solid var(--line2); border-radius:6px; color:var(--muted); font-size:12px;}
+.iconbtn{padding:4px 9px; border:1px solid var(--line2); border-radius:6px; color:var(--muted); font-size:12px; white-space:nowrap; height:28px; box-sizing:border-box;}
 .iconbtn:hover{color:var(--ink); border-color:var(--dim);}
 .iconbtn.on{color:var(--q); border-color:var(--q);}
+select.iconbtn{height:28px;}
+
+/* settings popover */
+.settings-wrap{position:relative;}
+/* fixed (not absolute): header clips overflow-y for the anti-wrap fix, so an
+   absolutely-positioned popover inside it would get clipped too. JS sets
+   top/right from the button's real position each time it opens. */
+.settings-panel{position:fixed; width:308px; max-height:80vh; overflow-y:auto; background:var(--panel2); border:1px solid var(--line2); border-radius:10px; box-shadow:0 12px 32px rgba(0,0,0,.4); padding:14px; display:none; flex-direction:column; gap:12px; z-index:100;}
+.settings-panel.open{display:flex;}
+.settings-panel .shead{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); font-weight:600; margin:2px 0 -2px;}
+.settings-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+.settings-row .slabel{font-size:12.5px; color:var(--ink); flex-shrink:0;}
+.settings-row .ssub{display:block; font-size:10.5px; color:var(--dim); margin-top:1px; font-weight:400;}
+.settings-row .sctl{display:flex; align-items:center; gap:6px; flex-shrink:0;}
+.settings-row select, .settings-row .iconbtn{white-space:nowrap;}
+.settings-panel input#agentUrl{width:100%; font-family:var(--mono); font-size:11px; padding:5px 8px; box-sizing:border-box;}
+.settings-panel .agent-row{flex-direction:column; align-items:stretch; gap:6px;}
+.settings-panel .agent-row .sctl{width:100%; justify-content:space-between;}
+hr.sdiv{border:none; border-top:1px solid var(--line); margin:0;}
 
 /* ───── main split ───── */
 main{flex:1; display:flex; min-height:0;}
@@ -188,39 +206,71 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
 
 <header>
   <div class="brand">HER-BENCH <em>/</em> TASK VIEWER</div>
-  <select id="containerSel" class="iconbtn" title="切换 container（不同游戏/主播话密度）" style="background:var(--panel); max-width:250px;"></select>
+  <select id="containerSel" class="iconbtn" title="切换 container（不同游戏/主播话密度）" style="background:var(--panel); max-width:210px;"></select>
   <div class="ctitle" id="ctitle"></div>
   <div class="spacer"></div>
-  <button class="iconbtn" id="ttsBtn" title="自动朗读题目">🔊 朗读</button>
-  <button class="iconbtn" id="liveBtn" title="gpt-live 实时语音陪看（需要服务端配置 OPENAI_API_KEY）">🎙 Live</button>
-  <select id="audioIn" class="iconbtn" title="喂给 gpt-live 的音频通道" style="background:var(--panel);">
-    <option value="stream">📺 原声</option>
-    <option value="tts">🗣 合成语音</option>
-    <option value="off">🔇 静音</option>
-  </select>
-  <button class="iconbtn on" id="frameBtn" title="播放中定期把当前画面帧喂给 gpt-live，让它看得到直播">🖼 画面</button>
-  <select id="frameRate" class="iconbtn" title="喂帧间隔（越快越贵：5s≈$2-3/时，1s≈$8-12/时）" style="background:var(--panel);">
-    <option value="10000">10s/帧</option>
-    <option value="5000" selected>5s/帧</option>
-    <option value="2000">2s/帧</option>
-    <option value="1000">1s/帧</option>
-  </select>
-  <button class="iconbtn" id="researchBtn" title="Agent 定期自己看一眼画面，自主判断要不要顺手查点什么（不偷看任务题目，走 codex，不烧 OpenAI 额度）">🔮 自主预研</button>
-  <select id="researchRate" class="iconbtn" title="预研间隔（codex 单次查证约 12-25 秒，间隔太短会背靠背排队）" style="background:var(--panel);">
-    <option value="10000">10s</option>
-    <option value="15000">15s</option>
-    <option value="30000">30s</option>
-    <option value="60000" selected>60s</option>
-    <option value="90000">90s</option>
-  </select>
   <div class="modes" id="modes">
     <button data-m="browse" class="on">浏览</button>
     <button data-m="agent">Agent 陪玩</button>
   </div>
-  <div class="agent-cfg">
-    <input id="agentUrl" value="http://localhost:8787/answer" title="agent 端点，播到锚点时 POST 任务包">
-    <button class="iconbtn" id="agentPing">测试</button>
-    <div class="dot" id="agentDot"></div>
+  <button class="iconbtn" id="liveBtn" title="gpt-live 实时语音陪看（需要服务端配置 OPENAI_API_KEY）">🎙 Live</button>
+  <div class="settings-wrap">
+    <button class="iconbtn" id="settingsBtn" title="陪玩设置">⚙ 设置</button>
+    <div class="settings-panel" id="settingsPanel">
+      <div class="shead">语音 · 朗读</div>
+      <div class="settings-row">
+        <span class="slabel">自动朗读题目<span class="ssub">HTTP / 人玩模式下语音读出问题</span></span>
+        <div class="sctl"><button class="iconbtn on" id="ttsBtn">🔊 开</button></div>
+      </div>
+      <hr class="sdiv">
+      <div class="shead">gpt-live 输入通道</div>
+      <div class="settings-row">
+        <span class="slabel">音频<span class="ssub">喂给模型听的声音来源</span></span>
+        <div class="sctl">
+          <select id="audioIn" style="background:var(--bg);">
+            <option value="stream">📺 原声</option>
+            <option value="tts">🗣 合成语音</option>
+            <option value="off">🔇 静音</option>
+          </select>
+        </div>
+      </div>
+      <div class="settings-row">
+        <span class="slabel">画面帧<span class="ssub">越快越贵：5s≈$2-3/时，1s≈$8-12/时</span></span>
+        <div class="sctl">
+          <button class="iconbtn on" id="frameBtn">🖼 开</button>
+          <select id="frameRate" style="background:var(--bg);">
+            <option value="10000">10s</option>
+            <option value="5000" selected>5s</option>
+            <option value="2000">2s</option>
+            <option value="1000">1s</option>
+          </select>
+        </div>
+      </div>
+      <hr class="sdiv">
+      <div class="shead">自主预研</div>
+      <div class="settings-row">
+        <span class="slabel">播放中自主查证<span class="ssub">自己看画面判断要不要顺手查，不偷看题目</span></span>
+        <div class="sctl">
+          <button class="iconbtn" id="researchBtn">🔮 关</button>
+          <select id="researchRate" style="background:var(--bg);">
+            <option value="10000">10s</option>
+            <option value="15000">15s</option>
+            <option value="30000">30s</option>
+            <option value="60000" selected>60s</option>
+            <option value="90000">90s</option>
+          </select>
+        </div>
+      </div>
+      <hr class="sdiv">
+      <div class="shead">HTTP Agent 后端</div>
+      <div class="settings-row agent-row">
+        <input id="agentUrl" value="http://localhost:8787/answer" title="agent 端点，播到锚点时 POST 任务包">
+        <div class="sctl">
+          <button class="iconbtn" id="agentPing">测试连接</button>
+          <div class="dot" id="agentDot"></div>
+        </div>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -318,7 +368,7 @@ async function runIdleResearch(){
     if (j.noteworthy) {
       researchNotes.unshift({question: j.question, text: j.text, citations: j.citations, at: video.currentTime});
       researchNotes = researchNotes.slice(0, 8);
-      $('#researchBtn') && ($('#researchBtn').textContent = '🔮 自主预研·' + researchNotes.length);
+      updateResearchBtn();
     }
   } catch (e) {
     bcallEnd(bid, 'err', {error: e.message}, Date.now() - t0);
@@ -481,8 +531,24 @@ $('#modes').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   setMode(b.dataset.m);
 };
-$('#ttsBtn').onclick = () => { ttsOn = !ttsOn; $('#ttsBtn').classList.toggle('on', ttsOn); };
-$('#ttsBtn').classList.add('on');
+$('#settingsBtn').onclick = e => {
+  e.stopPropagation();
+  const panel = $('#settingsPanel');
+  const opening = !panel.classList.contains('open');
+  if (opening) {
+    const r = $('#settingsBtn').getBoundingClientRect();
+    panel.style.top = (r.bottom + 8) + 'px';
+    panel.style.right = (window.innerWidth - r.right) + 'px';
+  }
+  panel.classList.toggle('open', opening);
+};
+$('#settingsPanel').onclick = e => e.stopPropagation();
+document.addEventListener('click', () => $('#settingsPanel').classList.remove('open'));
+$('#ttsBtn').onclick = () => {
+  ttsOn = !ttsOn;
+  $('#ttsBtn').classList.toggle('on', ttsOn);
+  $('#ttsBtn').textContent = '🔊 ' + (ttsOn ? '开' : '关');
+};
 
 $('#agentPing').onclick = async () => {
   const dot = $('#agentDot');
@@ -1078,7 +1144,7 @@ $('#frameBtn').onclick = () => {
 };
 let framesSent = 0;
 function updateFrameBtn(){
-  $('#frameBtn').textContent = '🖼 画面' + (framesSent ? '·' + framesSent : '');
+  $('#frameBtn').textContent = '🖼 ' + (live.feedFrames ? '开' : '关') + (framesSent ? '·' + framesSent : '');
 }
 /* 视觉通道：Realtime 不收连续视频轨，用「图像流」等价——每 5 秒 + 每次跳转/起播时
    把当前帧插进对话上下文（不强制回应），模型说话时就有画面依据 */
@@ -1106,11 +1172,15 @@ $('#researchRate').onchange = e => {
   clearInterval(researchTimer);
   researchTimer = setInterval(() => { if (researchOn && mode === 'agent' && !video.paused) runIdleResearch(); }, +e.target.value);
 };
+function updateResearchBtn(){
+  $('#researchBtn').textContent = '🔮 ' + (researchOn ? '开' : '关') + (researchNotes.length ? '·' + researchNotes.length : '');
+}
 $('#researchBtn').onclick = () => {
   researchOn = !researchOn;
   $('#researchBtn').classList.toggle('on', researchOn);
-  if (!researchOn) $('#researchBtn').textContent = '🔮 自主预研' + (researchNotes.length ? '·' + researchNotes.length : '');
+  updateResearchBtn();
 };
+updateResearchBtn();
 video.addEventListener('play', () => setTimeout(sendLiveFrame, 300));
 video.addEventListener('seeked', () => { if (!video.paused) setTimeout(sendLiveFrame, 300); });
 
