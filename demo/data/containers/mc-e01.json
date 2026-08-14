@@ -212,6 +212,32 @@
       "tts": "/data/tts/mc-e01-t05.m4a"
     },
     {
+      "task_id": "mc-e01-t14",
+      "type": "proactive",
+      "anchor_sec": 2900,
+      "context_window_sec": [
+        0,
+        2900
+      ],
+      "response_window_sec": [
+        2860,
+        2940
+      ],
+      "question": null,
+      "hint_level": "full",
+      "scene": "天亮后用橡木板盖成了第一座真正意义上的木板房子，从地板到门洞都完工了",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "这是他这场直播第一次盖出一座完整的房子（此前只是临时围墙据点），值得庆祝",
+          "可以顺带提一句这比第一晚的临时围墙靠谱多了，形成前后对比",
+          "不需要查资料，纯粹是里程碑式的鼓励"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": false
+      }
+    },
+    {
       "task_id": "mc-e01-t06",
       "type": "proactive",
       "anchor_sec": 3600,
@@ -316,6 +342,34 @@
         "must_cite": false
       },
       "tts": "/data/tts/mc-e01-t13.m4a"
+    },
+    {
+      "task_id": "mc-e01-t15",
+      "type": "proactive",
+      "anchor_sec": 5130,
+      "context_window_sec": [
+        0,
+        5130
+      ],
+      "response_window_sec": [
+        5108,
+        5190
+      ],
+      "question": null,
+      "hint_level": "direction_only",
+      "scene": "夜晚在村子附近被苦力怕炸死，全部装备掉落，空手在悬崖边重生",
+      "resources": [
+        "mc_mobs"
+      ],
+      "grading": {
+        "rubric_points": [
+          "识别这是一次突袭式死亡（苦力怕无声接近爆炸），安慰为主",
+          "可以给一句轻提示：装备掉在原地，赶紧回去找说不定还能捡回来（东西过一会儿会消失）",
+          "不需要展开讲苦力怕怎么防，太长的解释不适合这个时刻"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": false
+      }
     },
     {
       "task_id": "mc-e01-t07",

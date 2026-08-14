@@ -300,6 +300,32 @@
       "tts": "/data/tts/rust-e01-t06.m4a"
     },
     {
+      "task_id": "rust-e01-t13",
+      "type": "proactive",
+      "anchor_sec": 8810,
+      "context_window_sec": [
+        0,
+        8810
+      ],
+      "response_window_sec": [
+        8785,
+        8850
+      ],
+      "question": null,
+      "hint_level": "full",
+      "scene": "Beer Song 练习：全部测试通过，终端打印提交成功——这道题断断续续卡了超过一小时",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "识别这是本场耗时最长的一道题终于通过（从约 4204s 断续卡到 8797s，超过一小时），值得认真庆祝",
+          "可以呼应一下这题确实难产，不是随便一句『不错』能带过的",
+          "不需要查资料，纯粹是情绪反应"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": false
+      }
+    },
+    {
       "task_id": "rust-e01-t07",
       "type": "query",
       "anchor_sec": 9460,
@@ -403,6 +429,32 @@
         "must_cite": false
       },
       "tts": "/data/tts/rust-e01-t08.m4a"
+    },
+    {
+      "task_id": "rust-e01-t14",
+      "type": "proactive",
+      "anchor_sec": 13030,
+      "context_window_sec": [
+        0,
+        13030
+      ],
+      "response_window_sec": [
+        13010,
+        13070
+      ],
+      "question": null,
+      "hint_level": "full",
+      "scene": "Sum Of Multiples 练习：全部测试通过并提交，是本场目前为止最后一道完成的题",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "识别这是又一道题顺利通过提交，可以简短祝贺",
+          "语气可以比 Beer Song 那次轻松一些——这道题明显没卡那么久，别用力过猛",
+          "不需要查资料"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": false
+      }
     }
   ]
 }

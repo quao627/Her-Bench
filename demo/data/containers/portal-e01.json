@@ -369,6 +369,32 @@
       "tts": "/data/tts/portal-e01-t08.m4a"
     },
     {
+      "task_id": "portal-e01-t14",
+      "type": "proactive",
+      "anchor_sec": 7090,
+      "context_window_sec": [
+        0,
+        7090
+      ],
+      "response_window_sec": [
+        7059,
+        7140
+      ],
+      "question": null,
+      "hint_level": "direction_only",
+      "scene": "逃脱段：在漆黑的活塞机关走廊里被突如其来的能量球击中身亡",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "识别这是一次意外死亡（不是主动尝试失败），场景昏暗容易看不清威胁",
+          "安慰为主，不是解谜提示——这种场景重来一次通常就有心理准备了",
+          "不需要指出具体机关位置，重生后他自己会看到"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": false
+      }
+    },
+    {
       "task_id": "portal-e01-t13",
       "type": "query",
       "anchor_sec": 7363,
@@ -450,6 +476,37 @@
         "must_cite": true
       },
       "tts": "/data/tts/portal-e01-t09.m4a"
+    },
+    {
+      "task_id": "portal-e01-t15",
+      "type": "proactive",
+      "anchor_sec": 9080,
+      "context_window_sec": [
+        0,
+        9080
+      ],
+      "response_window_sec": [
+        9062,
+        9150
+      ],
+      "question": null,
+      "hint_level": "full",
+      "scene": "GLaDOS boss 战：最后一个 core 被焚化，GLaDOS 被摧毁，巨大白光爆炸",
+      "resources": [
+        "portal_lore"
+      ],
+      "grading": {
+        "rubric_points": [
+          "这是全程最高光的时刻——干掉了最终 boss，整场解谜马拉松的终点",
+          "庆祝要真心实意、有分量，不是随口一句『不错』",
+          "不剧透紧接着的结局画面/彩蛋内容，让他自己看到"
+        ],
+        "spoiler_blocklist": [
+          "结局画面内容",
+          "蛋糕房/彩蛋"
+        ],
+        "must_cite": false
+      }
     }
   ]
 }

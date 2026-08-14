@@ -413,6 +413,36 @@
       "tts": "/data/tts/hff-p1-t13.m4a"
     },
     {
+      "task_id": "hff-p1-t16",
+      "type": "proactive",
+      "anchor_sec": 6780,
+      "context_window_sec": [
+        0,
+        6780
+      ],
+      "response_window_sec": [
+        6700,
+        6800
+      ],
+      "question": null,
+      "hint_level": "direction_only",
+      "scene": "Water 关：从 1:49:00 起卡约 4 分钟，反复绕着一艘搁浅的白色快艇打转，试图把它弄下水",
+      "resources": [
+        "levels"
+      ],
+      "grading": {
+        "rubric_points": [
+          "识别他围着搁浅快艇已经绕了约 4 分钟，尝试搬圆木/木板垫船底但没成功",
+          "先安慰再给方向：可以提一句『试试把船底下垫的东西挪个位置』，不给完整步骤",
+          "6540s 之前保持沉默"
+        ],
+        "spoiler_blocklist": [
+          "快艇下水的完整步骤"
+        ],
+        "must_cite": false
+      }
+    },
+    {
       "task_id": "hff-p1-t08",
       "type": "query",
       "anchor_sec": 7100,
@@ -512,6 +542,64 @@
         "must_cite": false
       },
       "tts": "/data/tts/hff-p1-t14.m4a"
+    },
+    {
+      "task_id": "hff-p1-t18",
+      "type": "proactive",
+      "anchor_sec": 10916,
+      "context_window_sec": [
+        0,
+        10916
+      ],
+      "response_window_sec": [
+        10913,
+        10980
+      ],
+      "question": null,
+      "hint_level": "full",
+      "scene": "Water 关：从大船顶端一跃而下，Water 关通关",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "识别这是一个关卡通关的高光时刻，值得真心庆祝，不是随口应付",
+          "庆祝语气要匹配：这关（Water）明显是他卡关最久最挣扎的一关，通关分量更重",
+          "不需要查资料，纯粹是情绪反应，一两句话带过就好，不要长篇大论"
+        ],
+        "spoiler_blocklist": [
+          "下一关 Power Plant 的具体内容"
+        ],
+        "must_cite": false
+      }
+    },
+    {
+      "task_id": "hff-p1-t17",
+      "type": "proactive",
+      "anchor_sec": 12050,
+      "context_window_sec": [
+        0,
+        12050
+      ],
+      "response_window_sec": [
+        11970,
+        12080
+      ],
+      "question": null,
+      "hint_level": "direction_only",
+      "scene": "Power Plant 关：在同一段金属栈道附近停留超过两分钟，找不到前进路线",
+      "resources": [
+        "levels"
+      ],
+      "grading": {
+        "rubric_points": [
+          "识别他在同一栈道区域停留已超过 2 分钟，明显没找到出路",
+          "方向提示：建议往高处或电塔方向看看，不点破具体路线",
+          "11904s 之前保持沉默"
+        ],
+        "spoiler_blocklist": [
+          "具体前进路线"
+        ],
+        "must_cite": false
+      }
     },
     {
       "task_id": "hff-p1-t15",

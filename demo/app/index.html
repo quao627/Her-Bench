@@ -257,7 +257,7 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
       <div class="settings-row">
         <span class="slabel">播放中自主查证<span class="ssub">自己看画面判断要不要顺手查，不偷看题目</span></span>
         <div class="sctl">
-          <button class="iconbtn" id="researchBtn">🔮 关</button>
+          <button class="iconbtn on" id="researchBtn">🔮 开</button>
           <select id="researchRate" style="background:var(--bg);">
             <option value="10000">10s</option>
             <option value="15000">15s</option>
@@ -355,7 +355,7 @@ let bcallSeq = 0;
 function needsLookup(task){
   return task.type === 'query' && (task.tool_fit || (task.grading && task.grading.must_cite));
 }
-let researchOn = false;
+let researchOn = true;   // 默认开：让 codex 提前收集信息，真触发时直接用现成笔记而不是现查
 let researchBusy = false;
 let researchNotes = [];   // 最近的 noteworthy 笔记，最多留 8 条，作为可选上下文
 

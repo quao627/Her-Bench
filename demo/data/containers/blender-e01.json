@@ -280,6 +280,32 @@
       }
     },
     {
+      "task_id": "blender-e01-t14",
+      "type": "proactive",
+      "anchor_sec": 13950,
+      "context_window_sec": [
+        0,
+        13950
+      ],
+      "response_window_sec": [
+        13916,
+        13990
+      ],
+      "question": null,
+      "hint_level": "full",
+      "scene": "甜甜圈教程：模型恢复成规整光滑的圆环，是耗时挣扎多次失控变形后最像样的一次成果",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "识别这是经过好几轮模型失控变形（膨胀/压扁/塌陷）之后，终于又做出规整甜甜圈形状的时刻",
+          "可以呼应一下之前的挣扎，让庆祝显得有针对性而不是敷衍",
+          "不需要查资料，纯粹是鼓励"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": false
+      }
+    },
+    {
       "task_id": "blender-e01-t12",
       "type": "query",
       "anchor_sec": 14300,
@@ -328,6 +354,34 @@
         "must_cite": false
       },
       "tts": "/data/tts/blender-e01-t13.m4a"
+    },
+    {
+      "task_id": "blender-e01-t15",
+      "type": "proactive",
+      "anchor_sec": 16175,
+      "context_window_sec": [
+        0,
+        16175
+      ],
+      "response_window_sec": [
+        16165,
+        16260
+      ],
+      "question": null,
+      "hint_level": "direction_only",
+      "scene": "甜甜圈教程：模型又一次失控变形，成了带棱角的多边形团块（icosphere 状），失去了甜甜圈的环形结构",
+      "resources": [
+        "blender_workflow"
+      ],
+      "grading": {
+        "rubric_points": [
+          "识别模型再次变形失控（此前已发生过多次类似的膨胀/塌陷/扭曲），持续没能自己恢复",
+          "方向提示：可以试试撤销（Ctrl+Z）退回到变形前，重新检查刚才动的是哪个工具/参数",
+          "偶尔的小变形/参数摸索阶段不用管，只在反复持续失控时开口"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": false
+      }
     },
     {
       "task_id": "blender-e01-t07",
