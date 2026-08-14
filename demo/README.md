@@ -1,24 +1,47 @@
 # Her-Bench Task Viewer (Demo)
 
-单个 container 的可视化查看器：像视频剪辑软件一样展示一条游戏实况时间轴、
-上面挂的任务锚点、每个任务的判分配置，以及三种运行模式（浏览 / 人玩 / Agent）。
+多 container 的可视化查看器：像视频剪辑软件一样展示一条实况/直播时间轴、
+上面挂的任务锚点、每个任务的判分配置，两种运行模式（浏览 / Agent 陪玩），
+以及一个「后台」面板把 agent 收到什么、返回什么全部摊开看。
+
+当前有 5 个 container（左上角下拉切换）：Human Fall Flat、Portal、
+Minecraft No Wiki 三个游戏盲玩，Rust 直播编程、Blender 首次上手两个工作场景。
 
 ## 快速开始
 
 ```bash
 cd demo
-python3 server.py            # → http://localhost:8080
-python3 agent_stub.py        # 可选：agent 模式的演示端点（另开一个终端）
+python3 server.py                       # → http://localhost:8080
+python3 agent_live.py --backend codex   # 真 agent 后端（另开一个终端，需先 codex login）
 ```
 
-打开 http://localhost:8080（推荐 Chrome，语音输入依赖 Web Speech API）。
+打开 http://localhost:8080（推荐 Chrome）。
 
-## 三种模式
+## 两种模式
 
 | 模式 | 行为 |
 |---|---|
 | 浏览 | 自由播放，点时间轴上的 ◆/◇ 标记查看任务与判分配置，agent 不说话 |
 | Agent 陪玩 | 严格跟随视频时间轴：连着 gpt-live 时视频不暂停，陪玩边看边说（听得到直播原声）；否则经过锚点暂停，把任务包 POST 给 HTTP 后端（codex/claude）。往回拖进度条，锚点会重新武装再次触发 |
+
+## 后台面板 + 预判查询
+
+右侧「后台」tab 记录每一次发给 codex 的请求和它的原始返回（含它实际收到的完整
+prompt，可展开查看），以及 codex 是被谁触发的：
+
+- **HTTP** — Agent 陪玩模式下经过锚点直接调用 `/answer`
+- **TOOL** — gpt-live 自己判断需要查资料，调用 `lookup_game_info` 走 `/lookup`
+- **🔮 PRE（预判）** — 播放到任务锚点前 150 秒，查看器就已经把问题发给 codex
+  在后台查了；真到锚点时不管是 HTTP 模式还是 gpt-live，都直接用现成结果
+  （实测：后台查询耗时 ~22s，触发那一刻只要 ~4ms，因为查完的活儿早干完了）
+
+`grading.must_cite: true` 或 `tool_fit: true` 的 query 型任务，gpt-live 会被
+**强制**调用 lookup_game_info（用 Realtime API 的 per-response `tool_choice`
+覆盖，不是靠它自己判断「够不够确定」——现场对话式模型几乎不会主动承认不确定，
+所以这条规则是硬性的，不是建议）。如果那道题已经被预判命中，则跳过强制调用，
+直接把查到的事实作为上下文塞给它，让它口语化转述。
+
+面板为空时会给一个「发个测试请求看看效果」按钮，不用真触发任务也能验证链路通。
 
 ## 接入后台 agent
 
@@ -68,13 +91,16 @@ token 由 server.py 的 `/api/realtime/token` 用 master key 换取 ephemeral ke
 
 ```
 demo/
-  server.py          静态服务器（带 HTTP Range，视频拖进度条必需）
-  agent_stub.py      agent 端点示例
-  app/index.html     整个查看器（单文件，无依赖）
-  data/container.json  container 定义：视频、章节、任务、判分、资源索引
-  data/resources/    资料快照（wiki/攻略 markdown，评测时 search() 只命中这里）
-  data/thumbs/       时间轴缩略图（每 5 分钟一张）
-  media/             浏览器兼容版视频（AAC 音轨 remux）
+  server.py                    静态服务器（HTTP Range + /api/realtime/token）
+  agent_stub.py                罐头回答端点示例
+  agent_live.py                真 agent 后端（codex/claude），/answer + /lookup
+  app/index.html               整个查看器（单文件，无依赖）
+  data/containers/index.json   container 列表
+  data/containers/*.json       每个 container：视频、章节、任务、判分、资源索引
+  data/resources/              资料快照（wiki/攻略 markdown，agent 的 search() 只命中这里）
+  data/thumbs/                 时间轴缩略图（每 5 分钟一张）
+  data/tts/                    合成语音条件用的提问音频（OpenAI gpt-4o-mini-tts）
+  media/                       浏览器兼容版视频（720p，H.264+AAC remux）
 ```
 
 ## 已知简化（demo ≠ 正式 harness）

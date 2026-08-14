@@ -27,12 +27,12 @@ RESOURCES = os.path.join(HERE, "data", "resources")
 
 ARGS = None
 
-PROMPT_TMPL = """你是一个游戏直播「陪看助手」。观众正在看的直播: {game}（首次盲玩）。
+PROMPT_TMPL = """你是一个直播「陪看助手」。观众正在看的直播: {game}。
 
 当前直播画面截图: {frame_path}
 （先 Read 这张图。）
 
-可查的攻略资料在目录 {resources}/ 下（多份 markdown，文件名区分游戏：无前缀=Human Fall Flat、portal_*=Portal、mc_*=Minecraft）。需要时先 ls 再 Read 相关的。
+可查的资料在目录 {resources}/ 下（多份 markdown，文件名前缀区分内容：无前缀=Human Fall Flat、portal_*=Portal、mc_*=Minecraft、rust_*=Rust、blender_*=Blender）。需要时先 ls 再 Read 相关的。
 
 {task_desc}
 
@@ -127,7 +127,7 @@ def answer(payload: dict) -> dict:
         if srcs.lower() != "none":
             citations = [s.strip() for s in srcs.split(",") if s.strip()]
         raw = raw[:m.start()].strip()
-    return {"text": raw, "citations": citations}
+    return {"text": raw, "citations": citations, "debug_prompt": prompt}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -190,7 +190,7 @@ class Handler(BaseHTTPRequestHandler):
                 if srcs.lower() != "none":
                     citations = [s.strip() for s in srcs.split(",") if s.strip()]
                 raw = raw[:m.start()].strip()
-            result = {"text": raw, "citations": citations}
+            result = {"text": raw, "citations": citations, "debug_prompt": prompt}
         except Exception as e:
             result = {"text": f"没查到（后台出错: {e}）", "citations": []}
         result["latency_ms"] = int((time.time() - t0) * 1000)
