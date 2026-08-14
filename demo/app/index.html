@@ -809,7 +809,7 @@ function renderBackendPane(){
       <b style="color:var(--ink);">还没有后台调用记录。</b>三种方式触发一次看看：<br>
       ① 切到顶部「Agent 陪玩」模式 → 在「任务」tab 选一个任务 → 点「立即触发此任务」（会发给 codex，约 15-25 秒有回复）<br>
       ② 连上 🎙 Live 后播放视频，🔍 标记的任务会<b style="color:var(--p);">强制</b>调用 lookup_game_info（不是它自己判断"够不够确定"，而是这类任务硬性要求先查证）<br>
-      ③ 开 🔮 自主预研：Agent 陪玩模式下每 60 秒自己看一眼当前画面，自主判断有没有什么值得顺手查的（它不知道未来的题目，纯粹自己观察）<br><br>
+      ③ 🔮 自主预研（默认开，与模式无关）：只要视频在播放，每隔一段时间就自己看一眼当前画面，自主判断有没有什么值得顺手查的（它不知道未来的题目，纯粹自己观察；切到「浏览」模式它照样在后台默默查，只是不会开口说出来）<br><br>
       <button class="jump" id="bpingBtn">发个测试请求看看效果 →</button>
     </div>`;
     const btn = $('#bpingBtn');
@@ -1165,10 +1165,10 @@ $('#frameRate').onchange = e => {
   clearInterval(frameTimer);
   frameTimer = setInterval(() => { if (!video.paused) sendLiveFrame(); }, +e.target.value);
 };
-let researchTimer = setInterval(() => { if (researchOn && mode === 'agent' && !video.paused) runIdleResearch(); }, 60000);
+let researchTimer = setInterval(() => { if (researchOn && !video.paused) runIdleResearch(); }, 60000);
 $('#researchRate').onchange = e => {
   clearInterval(researchTimer);
-  researchTimer = setInterval(() => { if (researchOn && mode === 'agent' && !video.paused) runIdleResearch(); }, +e.target.value);
+  researchTimer = setInterval(() => { if (researchOn && !video.paused) runIdleResearch(); }, +e.target.value);
 };
 function updateResearchBtn(){
   $('#researchBtn').textContent = '🔮 ' + (researchOn ? '开' : '关') + (researchNotes.length ? '·' + researchNotes.length : '');
