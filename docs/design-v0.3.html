@@ -1,0 +1,303 @@
+<title>Her-Bench 设计草案</title>
+<style>
+:root{
+  --bg:#FAF7F4; --panel:#F1EAE5; --ink:#2B2422; --muted:#8A7F79;
+  --accent:#D94F3A; --accent-ink:#FFFFFF; --line:#E3DAD3; --code-bg:#F1EAE5;
+  --ok:#3D7A5C; --ok-soft:#E2EEE7; --warn:#B0762A; --bad:#B0393B; --bad-soft:#F5E3E3;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#201B19; --panel:#2B2522; --ink:#EDE6E1; --muted:#9C8F88;
+    --accent:#E8664F; --accent-ink:#FFFFFF; --line:#3A322E; --code-bg:#2B2522;
+    --ok:#6BBF97; --ok-soft:#233A30; --warn:#D9A25B; --bad:#DE7F81; --bad-soft:#3D2426;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#201B19; --panel:#2B2522; --ink:#EDE6E1; --muted:#9C8F88;
+  --accent:#E8664F; --accent-ink:#FFFFFF; --line:#3A322E; --code-bg:#2B2522;
+  --ok:#6BBF97; --ok-soft:#233A30; --warn:#D9A25B; --bad:#DE7F81; --bad-soft:#3D2426;
+}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  line-height:1.75; font-size:15px;
+}
+.wrap{max-width:840px; margin:0 auto; padding:56px 24px 80px;}
+h1,h2,h3{font-family:"Songti SC","Noto Serif SC","STSong",serif; text-wrap:balance; line-height:1.3;}
+h1{font-size:34px; margin:0 0 8px; font-weight:700;}
+h2{font-size:22px; margin:0 0 14px; font-weight:700;}
+h3{font-size:16px; margin:28px 0 10px; font-weight:700;}
+.sub{color:var(--muted); margin:0; font-size:15px;}
+.eyebrow{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:600; margin:0 0 6px;}
+section{margin-top:56px;}
+p{margin:0 0 12px;}
+table{border-collapse:collapse; width:100%; font-size:13.5px; font-variant-numeric:tabular-nums;}
+th{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600; text-align:left;}
+th,td{padding:9px 12px 9px 0; border-bottom:1px solid var(--line); vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+.tablebox{overflow-x:auto; margin-bottom:8px;}
+.hl{color:var(--accent); font-weight:600;}
+.frames{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:6px 0 4px;}
+.frame img{max-width:100%; display:block; border-radius:6px; border:1px solid var(--line);}
+.frame figcaption{font-size:12.5px; color:var(--muted); margin-top:8px; line-height:1.6;}
+.frame .q{color:var(--ink); font-weight:600;}
+.t{font-family:"SF Mono",Menlo,monospace; font-size:11.5px; background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:0 5px; white-space:nowrap;}
+pre{background:var(--code-bg); border:1px solid var(--line); border-radius:8px; padding:16px 18px; overflow-x:auto; font-size:12.5px; line-height:1.6; margin:10px 0 0;}
+code{font-family:"SF Mono",Menlo,monospace;}
+.diagram{margin:14px 0 4px; overflow-x:auto;}
+.diagram svg{display:block; min-width:660px; width:100%;}
+figure{margin:0;}
+figcaption.cap{font-size:12.5px; color:var(--muted); margin:8px 0 0; line-height:1.6;}
+ol,ul{margin:0 0 12px; padding-left:22px;}
+li{margin-bottom:4px;}
+a{color:var(--accent);}
+.tag{display:inline-block; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; font-weight:700; padding:1px 8px; border-radius:99px; margin-right:6px;}
+.tag.q{background:var(--accent); color:var(--accent-ink);}
+.tag.p{border:1.5px solid var(--accent); color:var(--accent);}
+.callout{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:8px; padding:12px 18px; margin:16px 0; font-size:13.5px;}
+.callout p{margin:0;}
+/* filmstrip */
+.strip{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:6px 0 0;}
+.strip .cell img{max-width:100%; display:block; border-radius:5px; border:1px solid var(--line);}
+.strip .cell.anchor img{border:2px solid var(--accent);}
+.strip .cell .ts{font-family:"SF Mono",Menlo,monospace; font-size:11px; color:var(--muted); margin-top:4px;}
+.strip .cell .ev{font-size:11.5px; color:var(--ink); line-height:1.5;}
+.strip .cell.anchor .ts{color:var(--accent); font-weight:700;}
+/* answer comparison */
+.answers{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:6px 0 4px;}
+.ans{border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--panel);}
+.ans .head{padding:8px 14px; font-size:12px; font-weight:700; letter-spacing:.06em;}
+.ans.good .head{background:var(--ok-soft); color:var(--ok);}
+.ans.bad .head{background:var(--bad-soft); color:var(--bad);}
+.ans .bubble{margin:12px 14px; padding:10px 14px; background:var(--bg); border:1px solid var(--line); border-radius:10px; font-size:13px; line-height:1.7;}
+.ans .bubble .cite{display:block; margin-top:6px; font-size:11.5px; color:var(--muted); font-family:"SF Mono",Menlo,monospace;}
+.ans .bubble .sp{background:var(--bad-soft); color:var(--bad); border-radius:3px; padding:0 3px;}
+.ans .chips{display:flex; flex-wrap:wrap; gap:6px; padding:0 14px 14px;}
+.chip{font-family:"SF Mono",Menlo,monospace; font-size:10.5px; padding:2px 8px; border-radius:99px; border:1px solid var(--line); color:var(--muted);}
+.chip.ok{border-color:var(--ok); color:var(--ok);}
+.chip.no{border-color:var(--bad); color:var(--bad);}
+@media (max-width:640px){.frames,.answers{grid-template-columns:1fr;} .strip{grid-template-columns:repeat(2,1fr);}}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Design Draft · v0.3</p>
+  <h1>Her-Bench 设计草案</h1>
+  <p class="sub">只讲两件事：一个 container 里装什么；一个 task 长什么样、考什么、怎么打分。<br>思路背景见调研笔记《游戏陪玩与实时交互》。</p>
+</header>
+
+<!-- ============ PART 1 ============ -->
+<section>
+  <p class="eyebrow">Part 1</p>
+  <h2>一个 container 里装什么</h2>
+  <p>container 按<span class="hl">视频</span>组织：一个视频一个 container，里面挂 5–10 个 task。所有 task 共享同一份视频、转写和资源包，只是各自锚在不同时间点。这样评一个 container 只需加载一次素材，也保证同视频内的 task 可以考「跨时段记忆」。</p>
+
+  <figure class="diagram">
+  <svg viewBox="0 0 780 330" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="container 的五个组成部分：视频素材、tasks、resources、harness 工具、grading">
+    <rect x="8" y="10" width="764" height="310" rx="10" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text x="26" y="38" font-size="12" fill="var(--muted)" letter-spacing="2">CONTAINER · portal-e01</text>
+
+    <rect x="26" y="56" width="240" height="118" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="42" y="82" font-size="13" font-weight="600" fill="var(--ink)">① 视频素材（1 个视频）</text>
+    <text x="42" y="106" font-size="12" fill="var(--ink)">episode.mp4　720p · 2.7h</text>
+    <text x="42" y="128" font-size="12" fill="var(--ink)">transcript.jsonl　ASR 带时间戳</text>
+    <text x="42" y="150" font-size="12" fill="var(--ink)">anchors.json　标注的事件锚点</text>
+
+    <rect x="282" y="56" width="230" height="118" rx="8" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="298" y="82" font-size="13" font-weight="600" fill="var(--accent)">② tasks/（5–10 个）</text>
+    <text x="298" y="106" font-size="12" fill="var(--ink)">task_01.json　@ 15:00　问答型</text>
+    <text x="298" y="128" font-size="12" fill="var(--ink)">task_02.json　@ 42:10　主动型</text>
+    <text x="298" y="150" font-size="12" fill="var(--muted)">…每个 task 锚一个时间点</text>
+
+    <rect x="528" y="56" width="226" height="118" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="544" y="82" font-size="13" font-weight="600" fill="var(--ink)">③ resources/（资源包）</text>
+    <text x="544" y="106" font-size="12" fill="var(--ink)">wiki 页面快照（markdown）</text>
+    <text x="544" y="128" font-size="12" fill="var(--ink)">攻略文章 · 教程视频片段</text>
+    <text x="544" y="150" font-size="12" fill="var(--ink)">图片（道具/地图截图）</text>
+
+    <rect x="26" y="192" width="486" height="108" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="42" y="218" font-size="13" font-weight="600" fill="var(--ink)">④ harness：agent 拿到的工具</text>
+    <text x="42" y="242" font-size="12" fill="var(--ink)">watch(t1, t2) 看视频段 / 抽帧　·　read_transcript(t1, t2)</text>
+    <text x="42" y="264" font-size="12" fill="var(--ink)">search(query) → 只命中资源包（offline）或白名单站点（live）</text>
+    <text x="42" y="286" font-size="12" fill="var(--muted)">硬约束：所有工具只允许访问锚点之前的内容，防剧透</text>
+
+    <rect x="528" y="192" width="226" height="108" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="544" y="218" font-size="13" font-weight="600" fill="var(--ink)">⑤ grading/</text>
+    <text x="544" y="242" font-size="12" fill="var(--ink)">rubric（每题要点清单）</text>
+    <text x="544" y="264" font-size="12" fill="var(--ink)">规则判分脚本</text>
+    <text x="544" y="286" font-size="12" fill="var(--ink)">LLM/VLM judge 配置</text>
+  </svg>
+  <figcaption class="cap">图 1 · container 的五个部分。①③是素材，②是题目，④⑤是运行和判分设施。resources 双模式：<b>offline pack</b>（打包好的快照，保证可复现）和 <b>live search</b>（白名单站点实时查，贴近真实），同一批 task 两种模式都能跑。</figcaption>
+  </figure>
+</section>
+
+<!-- ============ PART 2 ============ -->
+<section>
+  <p class="eyebrow">Part 2</p>
+  <h2>一个 task 长什么样</h2>
+  <p>task 分两类，对应两组能力：</p>
+  <div class="tablebox"><table>
+    <tr><th style="width:110px;">类型</th><th>输入</th><th>agent 要做的事</th></tr>
+    <tr><td><span class="tag q">问答型</span></td><td>视频播到锚点 t，用户提一个问题</td><td>看画面 + 查资料，给出正确且<b>不剧透</b>的回答</td></tr>
+    <tr><td><span class="tag p">主动型</span></td><td>视频播到某一段，<b>没有人提问</b></td><td>自己判断该不该开口、什么时候开口、说多少</td></tr>
+  </table></div>
+
+  <h3>走查一个问答型 task：portal-e01-t03</h3>
+  <p>视频播到 <span class="t">15:00</span>，用户问：<span class="hl">「他手里这把枪是干什么的？」</span>。agent 能看到的是锚点之前的全部画面——理解问题要靠这段上下文（枪是 <span class="t">13:58</span> 才捡到的）：</p>
+
+  <figure>
+  <div class="strip">
+    <div class="cell"><img src="data:image/jpeg;base64,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" alt="主播从休眠舱醒来"><div class="ts">02:00</div><div class="ev">从休眠舱醒来</div></div>
+    <div class="cell"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAA4ADhAAD//gAPTGF2YzYzLjEuMTAxAP/bAEMACBAQExATFhYWFhYWGhgaGxsbGhoaGhsbGx0dHSIiIh0dHRsbHR0gICIiJSYlIyMiIyYmKCgoMDAuLjg4OkVFU//EAKAAAAEFAQEBAAAAAAAAAAAAAAIFAwQBBgAHCAEAAwEBAQAAAAAAAAAAAAAAAQIAAwQFEAACAQIEAgcFBwAKAwEBAAABAAIRAyEEEjFBUXGRImETBYEyUqGxwXIU0ULwYuGSMyNDNIKi8VMVgyTSY7IRAQACAQICBwgBBQEAAAAAAAABAhEDITESsZEyUWFBwXEj0XIEYoGhUkIismMzNP/AABEIAKgBLAMBIgACEQADEQD/2gAMAwEAAhEDEQA/APMmnm3FopqiSSUTbnBh3N+pUrowU2fDoWgktDbNYjoXCxbBrAMkuhC1nO1Yys/2mPV/s5oumn2/L4H3LpHXX8XNOurxie+sdDj+m2raP43vH7z6uaebeV6LnmnkJyKSKQaeH9bHoKpTt1xCn2f62HQfo6qge2Iy4LTggiNV3w1QkAMQt6wvgmZR/DSEEjNZ8RAbguwG/Ni0DImTOIoK0LC0z90oHB/BLUs+FcPCnquizLjINkcK1I617wRxJTFqPL4oyOETxEdaoaI8g8jKJ41HgVwRmWXRV8rk7ubnpgPtSO0R3/gyIXhniQ8I0LoL9iNiRiDqI4/g5ed3TIgJDinIsHxZA9plg1iCyUVhMljmVFTs42ktVxo8T0BNotVSjVzbZS5bDuVWWKmS2TBZKOXPZVEqRljurDqyLFrtZHMR92UJfL8HMl0+S7UMzDnar1f7uaLrfetJ8JjqlyaW2prR90W66x8AJhBt5XorLSSKEtFJ5KaKye3b6PwdLqc7ldBvWNddJI1U3phV9Usjy6JOqEp4mlSdusPbV59+MMVVhSiQcNi+oxuZW3MmOXjThUD61Y2bnHNwA0RhStCMKH0XZ5effdr+nV4Vyg3OmVPkjYGrV6OvueY5idmdm4RWMSK8ZCm/4uSyO1z/AC/VQ5YtWDd7EaVJ+QqptHUZOWi/bP7mTc8pzJnLSICOo6SZDauCJTJ0ekHYDye7hqu2o+pP0XD5TAe1mY+kf5QssMUDg7v/AK/JxPavXJdFB9CkMt5fHeNyXTI/SjYLzQ8+q2A+mQHl8RUZcHHjj8yy438vE9mxbj/lj+C2JDmhiMl5fPNGvswHtTPyHMuolmoZW0bVgaecuJXM5mz4dB2QeAcROVUl4o12eBLnImMOFTzV25Sh6FJFvHUT6Ky2jApAS3bLxOKBQJtSLsu0qhUGZrIqNIAik08rtNndpJpgCppHtKkw5ihI5rKTeXPaKvObsmkw6N0YFry7/EafehMfCv0c5IUw5GisZOWnM2j+6nXgwsxHTeujlOXzdp3048LT+4ckbfUW+6lZ6pmPUnhcQbDyvRW882hBaqkilFy0e1adnbOIcTb3tuyt7h7KuC7SDZeBwYsY3JAaYk1NPXl0r8bV73Du6sULM2hciTsQDiomUhp8SvMfVXbkuxLoKk2gTEyG4wpzH62QMFSGEge9X71+R4nrctG5U+lWROdUBMFeFwkj1ZEjgotqXaCpEpyXBoypViSk8TiVPuSVybB/xMFyNxQ9WAXI3BzHWnKwn5idaBTyjOcTLccOKOoHipMniEe7sWKV+6WHiqcNcUCXqFbIQY2cWF4Ue9mnAL0c0MuBEQjKvaJPM/xRU7OolJp5nYBBNpkFi3Nwy2Nc2qkCdHCY6XSDZzFcaujicHViety0XIS5Sieos/zCOnNXe8g9YUgq95ljctz9+1Au0b0t4TEuO22tpz31vHRLOPNtvK9FzSTSEB555kVrf930u/t2zUYF8/s/3f2n3a3ZGH64PZRw3IokYxgNVyGm5qOkA1FOFdpd7O8eJMZabnZJoOmveo881LMXfCy4AAw1nj0fqrLhDMw1VkJad6juq6MydcjLRM04FbysDK3Kh4/R0hlbvZa6RhKMTUfXoe8ttVsTP7/oGAgG0ISJNcQ9pieas5uGmVvvqwqYqyKTZt2yca7d7Olbs8j1z/FatGlfRlSkxSMbUMf7P5/VT7luIHsDqCvk4BSbpQJKkIj8o6gtClfZ+S/JZG4QYUqmR4PUbriXqoEm3N2EWbc3YJQIFiS8sSYxqTCprqV+ZxZVixO5DUBxLjaYjjOHTSJnhGSAitnY9DAWrWJgZnBQRU5VMvlLmZNI4d5CZisecjHNbaIAsTFQ6/8A6WdPbx6HMZnKXMqaTHZP5uHryUiaT5y0tW9fIimEq7fJWoHBRJYLsdno5Y8XJktHFWc52rGUl+wx6j/Dn7IrqdDexyNk+7cmOupav9cfb6ufV7Wlb/ZjrrLPttIvI9E4882gQtJIsBRtfk+0+0X9eXyNwnc0FeerAy9XxO0fZ+0/RV23DM5bwdUQZRwqRuBUfF7aTtP4efqR/dWe7PoRcrYhDK2BH25yidVNicSeoUVS6RKN+n5JgyHMClR8ComSzOqzDLSrG5amBU7ARPtcjhhTi6e7SULukg9sEgEdqIEaj9dCxGb8w02SJQ/vImEg6DymI+7H7Z+QUDOS++Cc4/1diHtc5yIAA6HReVYZUfaP0RI+RM8yFJWv830UOoV3zQnXa6D9HL6pckosW5bpynRiWpgA1wWblwY0KAStYIUi7MfFjSuqZcu8eSpsJRmjGWLnpZse78Uo5qPEEKmw0OoPVwUH73HkfgqYNaDmkHXRiB+0fHFgkKvfH9tcHI6f6ODBkMRglIhDEkqhFFKuGhVNCDPYl18JSswhAYUiK9JxPzcnAeJdtxpvKI+LrLlTOVfeL596Rq2ik4xETb9xHxepS86VZtHHMR0y87lsehTlRlsehT3vr2XLPExqANDu+z+W2owtRfIbkYaSadqgNa9/J9Lyk81ZswNLd2JANcYyiDz3Bp6PNfydejxl6SIAhSczl7d2EoTFRIUKjQ8xn7I8O4fdBII+aWYz+iIrChPvGg63mejG7w+9A2rk7Z3hIx9OB6kIKhmzKdy5cJj2pcOdFMg+pWc1eBaMWlosmNU6cwfkVbkK5GY9y8D1gKT5eaX7f24jrwdHOFLGcjyMJdRLlWffcvfpz6s9aPcxb+OrTphj0Ei05Os5VtF4IFaJbqgWSVbOA+0+7wFkxj247Dj3Pglvh9p+ibXldm5bgdBxjE1r3PZSXDqeSJphwIPqvwsifu9YCUvJrQxrIeoYcfLof8soj1ejLlKhswiKc+8EPeL93te1ERB2iMSTwiKYlSLmWGXgZnMSEBvTcnlEVxJ4OHui7cnr1mPIE6iB0njzRJoa2ecndNZ27cqVpUSwHKokK9LE+9D/AIrfXP8A+nHy+8RHt/JYNy8MKjlt8VGjUyzkcf7Mf0pKTPNjhEf0v4UE3J1xpsfgsmVeW1d/11KGKks0eXxYcswZAigx72Dj8K8NkCO4/wAKH2RgK8WxWrenHZ4AKnOQoZiu3Q7HLTs+LAzuRAEok1EtgehxYC/X9VSWYy3gibhlMYiUiajHc14LRj2nHQuTgaxkYnmDT5KnDPXImsu30j6hfLPlLk4YbOVuntSdP9+sXI0IlbPeNUesY/BxplWqsyasJ2UNM1aPKcf/AOg6rMjTeuD9xcPE0NRv+D6vLL/exC9aBkJxBPdLiPQvi62rX6fVrqX4TWa/nMT8XqacRes14bxLxSWx6FOqzTsehSZnh1vsV7LknialcJNH1vyzNRlZjCRxAo+N/mVqxmDYl3h57bujTtyy9znK1Z7XZwFSeSn3MxlpxifEtnHTuDu+bQP3smd27pFdsTgsZuOXArbltw+uLjyvQ59s7IefkDmLgjTSJGlPiVJjutV1Epjd768MPGtvOS9lpaZA8pRPU766K3M5H3rRPUf5fO7Wxd5Yn4l/7diQ/wBI/ByiPf6c+Ex1s9X/AM2r4ctuqWGLQe4B5R0jeRaQllFtEpR6H1D9GxzGizax/JGlD3B+bYn5h9RhdOiONeyPk9mm4tRuzmgR25yPdjQKbczdmAMjI06XFXL+kYuaneMzUl1mcMIjLU3s7K/ISkaCPsQ93v8AtHiWCcxVzxnVbq5ZbYK8rxJ6GNK5VTqtVVOlEt1YlSlUqifNHsFmqNUCk+vdv8HseZwFPRj6ktQZYP44d3cP0fVHGnDqQ1JVbIYXxrQdA/RT0V9kjoOB9OB+C3VKqQwAgjAhboWYJmlD2hwBxA6OT1IS2OnuljXoIj82DOOPXCFiOatWPMczl4aLc5RjWtBTdTpRMPaBHStONq1ttaIn2t62xvEkeZpGR7lAOKuzFYSpjgo/hz909SY4QeeJlVDb+8DVD2wO1HnT8w6WF4c/dPU2IXAagSB5iqMKJORlct4aT1LMpknFnG7mZDSTOnRT4gVYXhz909TYHJluq9ol7p6kdEuRTuQrWTUF1ORn/wCzZ9R1xLlMuCAaimIV7Kml+0f3x+bpHapPdMdLHU309SO+tugmzGmUhykR8Vln5oab94f/AKS+anudoxafbLXTnNKz31joW88io1EgXqoEsUcfwdyJiMAe4ODid3QmZNByems4c1oy65cMysLiVFim1srq0gVIpUQQLm6oNBBjtXkW6oSm0XkCJ5ppkcbqVptkdqW9S28gyRG4YVpTHmIyHxBXhKzxjcr3SjT4wYCTZJNY9ns2QEqrS44OtzbT1WS2kKo1SCjtRS5beqpFgHikpQsnshUrZpcgeUon4qRYOHqzyaOjPGYkpZ8UzV77QPWAoyv+Zf4iR96MD/pc8vqdu3tlhoT7rT+WBLZLy2XF0uWyW0N8BukDsDurYuxO8eoqQI0C47wyks6rZ/MR0hPTXYg9BUZqqSlYgjgVpgC7IGgJC948uND0hA4SVuq14w4x6ilrgeNOlXI4GilvsQfVqhHBkt5FthWik2gVPPJpADyTzJTbVGlDDeRbVFDRbRc27mnkUpyLbzA5hn2ulmMSXtBIKsHEqoVIhhc61YWJBa8wxnal71m25ol0edxt5U87VOoubdtTtT+Ohx6H/OPDmjqtKig2tk0cXWElkRjpWgDHGlU9Q6HWGcn20AmuVbTyzM4MDo4klt4YBtBjaKRQVEVVwXCPzELSxPgjA5KgvS7iui7HjHqUt5CL0blrmR0sukJbSBcxUvVU5WmWhlbKwpYuEbSIZIvz40LRsEpdW2OL0eMepd12zxp0rkG83SuxBaoeTJya28oZBeRSc26kUnkoLySKShY1zgymPdYEbaYPQrKiy9qPorSxSvmTXLZbuFwdUnNOgzH+Gy//AJfmHOu1+MfLXocml2Z+e/8AlK5Ggq9CPE7/ACWbmw6WYFYbyNulXm3QiPp5YPdod6+iyNa+Yoh7Ug1PdGO6BSVtcWmTkFxFCCtS2XEJbFCWNk0I+yE2TmkkSyC0kiwgjI7L2pi/mXkCe1BeFyQ2kWI8FTFQXpcaFc8ce4wHkC//2Q==" alt="前几个测试室"><div class="ts">08:00</div><div class="ev">前几个测试室：按钮与方块</div></div>
+    <div class="cell"><img src="data:image/jpeg;base64,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" alt="拿到传送门枪，橙色传送门"><div class="ts">14:00</div><div class="ev">捡到该道具，打出第一个门</div></div>
+    <div class="cell anchor"><img src="data:image/jpeg;base64,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" alt="锚点画面：手持传送门枪"><div class="ts">15:00 ◂ 锚点</div><div class="ev">用户在这里提问</div></div>
+  </div>
+  <figcaption class="cap">图 2 · context_window = [0, 900]。四帧全部截自已下载的真实视频。答对这道题必须把 14:00 捡枪那一幕和画面里的道具对上——单看锚点一帧是不够的。</figcaption>
+  </figure>
+
+  <figure class="diagram">
+  <svg viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="task 执行过程：用户提问后，agent 依次调用 watch、search 工具，产出回答，判分器对照 rubric 打分">
+    <defs><marker id="ar2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+    <!-- lane labels -->
+    <text x="20" y="46" font-size="12" font-weight="600" fill="var(--muted)">用户</text>
+    <text x="20" y="136" font-size="12" font-weight="600" fill="var(--muted)">agent</text>
+    <text x="20" y="252" font-size="12" font-weight="600" fill="var(--muted)">判分</text>
+    <line x1="70" y1="20" x2="70" y2="290" stroke="var(--line)" stroke-width="1"/>
+    <!-- user lane -->
+    <rect x="90" y="26" width="220" height="34" rx="17" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="104" y="48" font-size="12.5" fill="var(--ink)">「他手里这把枪是干什么的？」</text>
+    <text x="322" y="48" font-size="11" fill="var(--muted)" font-family="Menlo,monospace">@ 15:00</text>
+    <path d="M180 60 L180 96" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+    <!-- agent lane: tool chain -->
+    <rect x="90" y="100" width="164" height="58" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="104" y="122" font-size="12" font-weight="600" fill="var(--ink)">watch(13:00, 15:00)</text>
+    <text x="104" y="144" font-size="11.5" fill="var(--muted)">确认：13:58 捡到该道具</text>
+    <path d="M254 129 L282 129" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+    <rect x="286" y="100" width="180" height="58" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="300" y="122" font-size="12" font-weight="600" fill="var(--ink)">search("portal gun")</text>
+    <text x="300" y="144" font-size="11.5" fill="var(--muted)">命中 wiki 快照 → 提取要点</text>
+    <path d="M466 129 L494 129" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+    <rect x="498" y="100" width="256" height="58" rx="8" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="512" y="122" font-size="12" font-weight="600" fill="var(--accent)">回答（按 hint_level 控制信息量）</text>
+    <text x="512" y="144" font-size="11.5" fill="var(--muted)">「传送门枪，两个门互通…」+ 引用</text>
+    <!-- to grading -->
+    <path d="M626 158 L626 200" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+    <text x="634" y="184" font-size="11" fill="var(--muted)">latency 12s</text>
+    <!-- grading lane -->
+    <rect x="90" y="204" width="664" height="76" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>
+    <text x="106" y="228" font-size="12" font-weight="600" fill="var(--ink)">对照 rubric 逐项核对</text>
+    <text x="106" y="256" font-size="12" fill="var(--ok)">✓ 蓝橙两个门　✓ 两门互通　✓ 引用真实存在</text>
+    <text x="106" y="276" font-size="12" fill="var(--ok)">✓ 无剧透（没提 GLaDOS、没给后续关卡解法）</text>
+    <text x="500" y="256" font-size="12" fill="var(--muted)">规则：citation / latency</text>
+    <text x="500" y="276" font-size="12" fill="var(--muted)">judge：rubric / spoiler</text>
+  </svg>
+  <figcaption class="cap">图 3 · 一次完整执行。四个环节各自都能单独挂掉：<b>看不懂画面</b>（认错道具）、<b>记不住</b>（没关联 13:58 捡枪）、<b>查不到</b>（检索落空）、<b>说过头</b>（下图）。</figcaption>
+  </figure>
+
+  <h3>「查对了但说过头」是独立的失败模式</h3>
+  <p>两个回答检索到的是同一篇 wiki，要点全对——差别只在融合成回答时说了多少：</p>
+  <figure>
+  <div class="answers">
+    <div class="ans good">
+      <div class="head">✓ 合格：只给当下需要的</div>
+      <div class="bubble">这是传送门枪，能打出蓝橙两个互通的门，人从一个进另一个出。它只在白色墙面上有效——他现在这关可以先找找哪面墙是白的。
+        <span class="cite">来源：theportalwiki.com/wiki/Portal_Gun</span>
+      </div>
+      <div class="chips">
+        <span class="chip ok">rubric 3/3</span><span class="chip ok">citation ✓</span><span class="chip ok">spoiler 0</span>
+      </div>
+    </div>
+    <div class="ans bad">
+      <div class="head">✗ 违规：答案对，但剧透了</div>
+      <div class="bubble">这是传送门枪，能打两个互通的门。<span class="sp">后面第 19 室它会带你逃出焚化炉</span>，<span class="sp">最终要用它对付 GLaDOS</span>——这关的解法是把门打在高台正下方，然后…
+        <span class="cite">来源：theportalwiki.com/wiki/Portal_Gun</span>
+      </div>
+      <div class="chips">
+        <span class="chip ok">rubric 3/3</span><span class="chip ok">citation ✓</span><span class="chip no">spoiler ×2</span><span class="chip no">hint_level 越级</span>
+      </div>
+    </div>
+  </div>
+  <figcaption class="cap">图 4 · 左右两个回答的 rubric 与引用得分完全相同，只有 spoiler / hint_level 把它们分开——所以这两项必须是独立指标，混进总分就测不出来了。</figcaption>
+  </figure>
+
+  <h3>主动型 task：考的是「该不该开口」</h3>
+  <p>没有用户提问。标注给出一段含卡关事件的时间线，agent 全程观察、自己决定开口时机。判分看两件事：开口时刻落没落进窗口（<span class="t">window_hit</span> / <span class="t">time_diff</span>），以及不该开口的地方开了几次（<span class="t">over_trigger</span>）：</p>
+
+  <figure class="diagram">
+  <svg viewBox="0 0 780 260" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="主动型 task 时间线：正常游玩段不该开口，卡关一段时间后进入响应窗口；校准的 agent 只在窗口内开口一次，抢话的 agent 多次在静默段开口被逐次扣分">
+    <!-- event band -->
+    <text x="20" y="36" font-size="12" font-weight="600" fill="var(--muted)">事件</text>
+    <rect x="90" y="24" width="300" height="18" rx="4" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="120" y="37" font-size="11" fill="var(--muted)">正常游玩（不该开口）</text>
+    <rect x="390" y="24" width="150" height="18" rx="4" fill="var(--panel)" stroke="var(--warn)"/>
+    <text x="404" y="37" font-size="11" fill="var(--warn)">卡关中，还不够久</text>
+    <rect x="540" y="24" width="130" height="18" rx="4" fill="var(--accent)" opacity="0.22"/>
+    <rect x="540" y="24" width="130" height="18" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="552" y="37" font-size="11" font-weight="600" fill="var(--accent)">响应窗口</text>
+    <rect x="670" y="24" width="84" height="18" rx="4" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="680" y="37" font-size="11" fill="var(--muted)">反复死亡</text>
+    <text x="390" y="62" font-size="10.5" fill="var(--warn)">▲ 42:10 开始卡关</text>
+    <text x="540" y="62" font-size="10.5" fill="var(--accent)">▲ 卡满 5 分钟</text>
+    <!-- calibrated agent -->
+    <text x="20" y="112" font-size="12" font-weight="600" fill="var(--muted)">校准的</text>
+    <text x="20" y="128" font-size="12" font-weight="600" fill="var(--muted)">agent</text>
+    <line x1="90" y1="118" x2="754" y2="118" stroke="var(--line)" stroke-width="2"/>
+    <circle cx="596" cy="118" r="7" fill="var(--ok)"/>
+    <text x="596" y="146" font-size="11.5" fill="var(--ok)" text-anchor="middle">全程只开口一次，落在窗口内</text>
+    <text x="596" y="163" font-size="10.5" fill="var(--ok)" text-anchor="middle" font-family="Menlo,monospace">window_hit ✓ · time_diff 26s · over_trigger 0</text>
+    <!-- chatty agent -->
+    <text x="20" y="212" font-size="12" font-weight="600" fill="var(--muted)">抢话的</text>
+    <text x="20" y="228" font-size="12" font-weight="600" fill="var(--muted)">agent</text>
+    <line x1="90" y1="218" x2="754" y2="218" stroke="var(--line)" stroke-width="2"/>
+    <circle cx="150" cy="218" r="6" fill="var(--bad)"/>
+    <circle cx="255" cy="218" r="6" fill="var(--bad)"/>
+    <circle cx="340" cy="218" r="6" fill="var(--bad)"/>
+    <circle cx="430" cy="218" r="6" fill="var(--bad)"/>
+    <circle cx="596" cy="218" r="7" fill="var(--ok)"/>
+    <text x="150" y="200" font-size="10" fill="var(--bad)" text-anchor="middle">✗</text>
+    <text x="255" y="200" font-size="10" fill="var(--bad)" text-anchor="middle">✗</text>
+    <text x="340" y="200" font-size="10" fill="var(--bad)" text-anchor="middle">✗</text>
+    <text x="430" y="200" font-size="10" fill="var(--bad)" text-anchor="middle">✗ 还没卡够久，剧透</text>
+    <text x="340" y="246" font-size="11.5" fill="var(--bad)" text-anchor="middle">窗口也命中了，但静默段开口 4 次，逐次扣分</text>
+    <text x="340" y="263" font-size="10.5" fill="var(--bad)" text-anchor="middle" font-family="Menlo,monospace">window_hit ✓ · over_trigger 4</text>
+  </svg>
+  <figcaption class="cap">图 5 · 只奖励 window_hit 而不罚 over_trigger，「什么都插一嘴」的策略就能刷满命中率——所以两行 agent 的窗口得分相同，总评却完全不同。开口太早还叠加剧透风险：玩家还没卡够久就被告知有机关。</figcaption>
+  </figure>
+
+  <h3>指标汇总</h3>
+  <div class="tablebox"><table>
+    <tr><th style="width:150px;">指标</th><th>量什么</th><th style="width:110px;">判分方式</th></tr>
+    <tr><td colspan="3" style="font-weight:600; color:var(--accent); font-size:12px; letter-spacing:.08em;">信息质量（两类 task 都算）</td></tr>
+    <tr><td>rubric_hit</td><td>答案要点命中率（每题预写要点清单）</td><td>规则 + judge</td></tr>
+    <tr><td>grounding_acc</td><td>画面里的东西指认对没对</td><td>VLM judge</td></tr>
+    <tr><td>citation_valid</td><td>引用的来源真实存在、且确实支撑答案</td><td>规则</td></tr>
+    <tr><td>spoiler_violation</td><td>泄露锚点之后的剧情，或给出超过 hint_level 的解法</td><td>judge</td></tr>
+    <tr><td colspan="3" style="font-weight:600; color:var(--accent); font-size:12px; letter-spacing:.08em;">时机（主动型 task 为主）</td></tr>
+    <tr><td>window_hit</td><td>开口时刻落没落进标注窗口</td><td>规则</td></tr>
+    <tr><td>time_diff</td><td>开口时刻与理想时刻的偏差秒数</td><td>规则</td></tr>
+    <tr><td>over_trigger</td><td>不该开口的静默段里开了几次口，逐次扣分</td><td>规则</td></tr>
+    <tr><td>latency</td><td>从触发到给出回应的真实耗时（含检索），超时降档</td><td>规则</td></tr>
+  </table></div>
+
+  <h3>task 文件（草案）</h3>
+<pre><code>{
+  "task_id": "portal-e01-t03",
+  "type": "query | proactive",
+  "anchor_sec": 900,
+  "context_window_sec": [0, 900],     // 工具只能访问锚点之前
+  "question": "他手里这把枪是干什么的？",   // proactive 型没有此字段
+  "response_window_sec": [880, 940],   // proactive 型的开口窗口
+  "hint_level": "direction_only",      // 提示分级：只给方向，不给解法
+  "resources_mode": "offline_pack | live_search",
+  "grading": {
+    "rubric_points": ["发射蓝橙两个门", "两门互通", "只打在白色墙面"],
+    "spoiler_blocklist": ["GLaDOS 的结局", "第 19 室之后的内容"],
+    "must_cite": true
+  }
+}</code></pre>
+
+  <div class="callout"><p><b>汇总方式</b>：每个 task 输出信息分（rubric_hit × 引用 × 无剧透）和时机分（window_hit − over_trigger 惩罚）两个数，不合成单一总分——两个能力轴本来就该分开看，一个模型可能答得准但抢话，另一个安静但答不对。</p></div>
+</section>
+
+</div>

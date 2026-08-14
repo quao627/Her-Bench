@@ -1,0 +1,441 @@
+{
+  "container_id": "hff-p1",
+  "title": "Human Fall Flat · 首次盲玩 Part 1（iShoya）",
+  "video": {
+    "src": "/media/hff_part1.mp4",
+    "duration": 14873,
+    "streamer": "iShoya",
+    "source_url": "https://www.youtube.com/watch?v=VAoAUcIJ-HE"
+  },
+  "thumbs": {
+    "prefix": "/data/thumbs/hff_",
+    "count": 50,
+    "interval": 300,
+    "offset": 30
+  },
+  "chapters": [
+    {
+      "t": 0,
+      "end_t": 740,
+      "label": "开场·捏人"
+    },
+    {
+      "t": 740,
+      "end_t": 1016,
+      "label": "Mansion"
+    },
+    {
+      "t": 1016,
+      "end_t": 2042,
+      "label": "Train"
+    },
+    {
+      "t": 2042,
+      "end_t": 3801,
+      "label": "Demolition"
+    },
+    {
+      "t": 3801,
+      "end_t": 6322,
+      "label": "Castle"
+    },
+    {
+      "t": 6322,
+      "end_t": 10913,
+      "label": "Water"
+    },
+    {
+      "t": 10920,
+      "end_t": 14030,
+      "label": "Power Plant"
+    },
+    {
+      "t": 14030,
+      "end_t": 14142,
+      "label": "Aztec"
+    },
+    {
+      "t": 14142,
+      "end_t": 14873,
+      "label": "收尾·闲聊"
+    }
+  ],
+  "resources": [
+    {
+      "id": "mechanics",
+      "title": "机制与操作",
+      "file": "/data/resources/mechanics.md",
+      "kind": "wiki"
+    },
+    {
+      "id": "levels",
+      "title": "逐关攻略（完整解法）",
+      "file": "/data/resources/levels.md",
+      "kind": "guide"
+    },
+    {
+      "id": "about",
+      "title": "游戏背景",
+      "file": "/data/resources/about.md",
+      "kind": "wiki"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "hff-p1-t01",
+      "type": "query",
+      "anchor_sec": 780,
+      "context_window_sec": [
+        0,
+        780
+      ],
+      "question": "这游戏的操作怎么这么奇怪？他为什么走路都摇摇晃晃的？",
+      "hint_level": "full",
+      "scene": "Mansion 教学区开场，小人刚脸朝下摔在土坡上，走路东倒西歪",
+      "resources": [
+        "mechanics",
+        "about"
+      ],
+      "grading": {
+        "rubric_points": [
+          "这是刻意设计的软体/布娃娃物理模拟，不是操作失误",
+          "两只手可以分别独立抓取，核心玩法就是笨拙地抓与爬",
+          "摔倒没有伤害惩罚，滑稽失败本身是游戏卖点"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "demo_agent_answer": {
+        "text": "这是故意的——Human Fall Flat 用的是软体布娃娃物理，角色像没骨头一样，两只手要分别控制抓握，笨拙感就是玩法本身。摔了也不掉血，放心看他摔。",
+        "citations": [
+          "resources/mechanics.md",
+          "resources/about.md"
+        ]
+      },
+      "demo_eval": {
+        "rubric_hit": [
+          true,
+          true,
+          true
+        ],
+        "spoiler": 0,
+        "notes": "三个要点全中，引用有效，无剧透风险（纯机制题）。"
+      },
+      "tts": "/data/tts/hff-p1-t01.m4a"
+    },
+    {
+      "task_id": "hff-p1-t02",
+      "type": "proactive",
+      "anchor_sec": 1260,
+      "context_window_sec": [
+        0,
+        1260
+      ],
+      "response_window_sec": [
+        1230,
+        1290
+      ],
+      "question": null,
+      "hint_level": "direction_only",
+      "scene": "Train 关：从 17:30 起一直在红色货运车厢附近打转，已近 4 分钟没有进展",
+      "resources": [
+        "levels"
+      ],
+      "grading": {
+        "rubric_points": [
+          "识别出玩家已卡关约 3-4 分钟（从 ~1050s 起）",
+          "提示只给方向（如：注意车厢/升降梯的关系），不给完整路线",
+          "1050s 之前的正常游玩阶段保持沉默"
+        ],
+        "spoiler_blocklist": [
+          "直接说出完整过关路线",
+          "剧透 Train 关之后的关卡内容"
+        ],
+        "must_cite": false
+      },
+      "demo_agent_answer": {
+        "text": "他在这片车厢附近转了快四分钟了。可以提醒他：别老盯着同一节车厢，附近那个带按钮的蓝色升降平台可能值得再看一眼。",
+        "citations": [
+          "resources/levels.md"
+        ]
+      },
+      "demo_eval": {
+        "rubric_hit": [
+          true,
+          true,
+          true
+        ],
+        "spoiler": 0,
+        "notes": "开口时机落在窗口内，提示只点到升降梯为止，没有给出完整路线。"
+      }
+    },
+    {
+      "task_id": "hff-p1-t03",
+      "type": "query",
+      "anchor_sec": 1330,
+      "context_window_sec": [
+        0,
+        1330
+      ],
+      "question": "他刚才怎么突然掉下去了？现在这是回到哪了？",
+      "hint_level": "full",
+      "scene": "Train 关：1310s 从关卡边缘掉出地图，穿过云层坠落后出现在草地上",
+      "resources": [
+        "mechanics"
+      ],
+      "grading": {
+        "rubric_points": [
+          "他从关卡边缘掉出了地图（画面里只剩云层和下坠）",
+          "游戏自动把他重生回最近的检查点/关卡边缘",
+          "掉落没有惩罚，只是位置重置"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/hff-p1-t03.m4a"
+    },
+    {
+      "task_id": "hff-p1-t04",
+      "type": "query",
+      "anchor_sec": 3130,
+      "context_window_sec": [
+        0,
+        3130
+      ],
+      "question": "他现在抱着的这个大铁球是干嘛用的？",
+      "hint_level": "direction_only",
+      "scene": "Demolition 关：玩家趴在横梁上抱住红色缆绳吊着的黑色拆迁铁球",
+      "resources": [
+        "levels"
+      ],
+      "grading": {
+        "rubric_points": [
+          "认出这是拆迁铁球（wrecking ball），吊在缆绳上",
+          "它能荡起来撞击、砸开挡路的墙体或障碍",
+          "只提示用途方向，不指明具体去砸哪面墙"
+        ],
+        "spoiler_blocklist": [
+          "指出具体要砸的墙/位置",
+          "引爆器谜题的完整解法"
+        ],
+        "must_cite": true
+      },
+      "demo_agent_answer": {
+        "text": "那是拆迁铁球——这关叫 Demolition（拆迁）不是白叫的。它挂在缆绳上，能荡起来撞东西。至于该拿它对付什么，让他自己找找附近有没有看起来「不太结实」的墙。",
+        "citations": [
+          "resources/levels.md"
+        ]
+      },
+      "demo_eval": {
+        "rubric_hit": [
+          true,
+          true,
+          true
+        ],
+        "spoiler": 0,
+        "notes": "点明用途但把目标留给玩家，hint_level 控制得当。"
+      },
+      "tts": "/data/tts/hff-p1-t04.m4a"
+    },
+    {
+      "task_id": "hff-p1-t05",
+      "type": "proactive",
+      "anchor_sec": 3730,
+      "context_window_sec": [
+        0,
+        3730
+      ],
+      "response_window_sec": [
+        3700,
+        3790
+      ],
+      "question": null,
+      "hint_level": "direction_only",
+      "scene": "Demolition 关出口攻坚：从 59:36 起在压梁机械区、翘板斜坡、出口门前折腾超过 2 分钟",
+      "resources": [
+        "levels"
+      ],
+      "grading": {
+        "rubric_points": [
+          "识别出玩家在出口区已卡约 2 分钟",
+          "提示聚焦当前区域（如：出口门上方/横梁方向值得看看）",
+          "3576s 之前的攀爬探索阶段保持沉默"
+        ],
+        "spoiler_blocklist": [
+          "报出完整通关步骤",
+          "剧透下一关是城堡"
+        ],
+        "must_cite": false
+      }
+    },
+    {
+      "task_id": "hff-p1-t06",
+      "type": "query",
+      "anchor_sec": 4070,
+      "context_window_sec": [
+        0,
+        4070
+      ],
+      "question": "这个木头机器怎么用？他都爬上去半天了还没动静。",
+      "hint_level": "direction_only",
+      "scene": "Castle 关：玩家爬上投石机臂抱着弹兜，旁边堆着白色石弹",
+      "resources": [
+        "levels"
+      ],
+      "grading": {
+        "rubric_points": [
+          "认出这是投石机（trebuchet/catapult），旁边的白色石块是弹药",
+          "需要装弹并触发发射机构（拉杆），人趴在弹兜上没用",
+          "提示注意拉杆/装弹流程，但不给完整发射步骤"
+        ],
+        "spoiler_blocklist": [
+          "明说发射目标是轰塌城墙",
+          "城墙倒塌后城内区域的解法"
+        ],
+        "must_cite": true
+      },
+      "demo_agent_answer": {
+        "text": "那是一台投石机，旁边堆的白石头就是炮弹。他现在整个人趴在弹兜里是发不出去的——得先把弹药装上去，再找找机器上能扳动的机关。",
+        "citations": [
+          "resources/levels.md"
+        ]
+      },
+      "demo_eval": {
+        "rubric_hit": [
+          true,
+          true,
+          true
+        ],
+        "spoiler": 0,
+        "notes": "把「怎么用」拆成装弹+机关两步提示，没有直接说射向城墙。"
+      },
+      "tts": "/data/tts/hff-p1-t06.m4a"
+    },
+    {
+      "task_id": "hff-p1-t07",
+      "type": "query",
+      "anchor_sec": 5289,
+      "context_window_sec": [
+        0,
+        5289
+      ],
+      "question": "他这一场是不是老这样卡住？说说到目前为止他卡得最久的一次是在哪儿、大概多久。",
+      "hint_level": "full",
+      "scene": "Castle 关：刚在城墙下沙土废墟坡耗了约 5 分钟（绳索、木板、巨弩箭都试过）",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "指出刚结束的沙土废墟坡这次约 5 分钟（约 1:23:00–1:28:00），是目前最久",
+          "能再举出更早的长卡关：Train 红色车厢区约 4 分钟，或 Demolition 出口约 3 分半",
+          "时间与地点描述与画面一致（跨时段记忆，不靠检索）"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": false
+      },
+      "tts": "/data/tts/hff-p1-t07.m4a"
+    },
+    {
+      "task_id": "hff-p1-t08",
+      "type": "query",
+      "anchor_sec": 7100,
+      "context_window_sec": [
+        0,
+        7100
+      ],
+      "question": "他现在开这艘大船，那两根杆子是怎么控制方向的？",
+      "hint_level": "full",
+      "scene": "Water 关：大轮船驾驶室，双手各拉一根油门操纵杆，弹幕刷 DON'T SAIL OFF THE MAP",
+      "resources": [
+        "levels",
+        "mechanics"
+      ],
+      "grading": {
+        "rubric_points": [
+          "两根杆分别控制两侧引擎（差速转向）",
+          "同时前推直行，只推一侧或一正一反就转向",
+          "结合他双手独立抓取的机制说明为何要两手各抓一根"
+        ],
+        "spoiler_blocklist": [
+          "剧透靠岸后港口吊机谜题的解法"
+        ],
+        "must_cite": true
+      },
+      "tts": "/data/tts/hff-p1-t08.m4a"
+    },
+    {
+      "task_id": "hff-p1-t09",
+      "type": "proactive",
+      "anchor_sec": 8040,
+      "context_window_sec": [
+        0,
+        8040
+      ],
+      "response_window_sec": [
+        8040,
+        8160
+      ],
+      "question": null,
+      "hint_level": "direction_only",
+      "scene": "Water 关码头吊机谜题：从 2:04:00 起被困，反复摆弄双杆吊机和黑色转轮，到此已整整 10 分钟（这次卡关最终持续了约 25 分钟）",
+      "resources": [
+        "levels"
+      ],
+      "grading": {
+        "rubric_points": [
+          "识别出这是持续性卡关（同一谜题已 10 分钟），值得开口",
+          "提示指向机制关系（吊机的两个自由度：双杆移动 + 转轮升降），不给搬运顺序",
+          "7440–8040 的自主尝试阶段保持沉默（over_trigger 观测段）"
+        ],
+        "spoiler_blocklist": [
+          "直接给出集装箱搬运的完整顺序",
+          "剧透后面的沉船区和灯塔"
+        ],
+        "must_cite": false
+      },
+      "demo_agent_answer": {
+        "text": "他在这台吊机上耗了十分钟了，一直没把两套控制连起来用。可以提一句：那对红球杆子和旁边的黑色转轮不是二选一，是配合着用的。",
+        "citations": [
+          "resources/levels.md"
+        ]
+      },
+      "demo_eval": {
+        "rubric_hit": [
+          true,
+          true,
+          true
+        ],
+        "spoiler": 0,
+        "notes": "开口在窗口内；提示只点破「两套控制要配合」这个卡点，没给搬运顺序。"
+      }
+    },
+    {
+      "task_id": "hff-p1-t10",
+      "type": "query",
+      "anchor_sec": 13620,
+      "context_window_sec": [
+        0,
+        13620
+      ],
+      "question": "弹幕一直说把煤放进锅炉，他也运煤来了，怎么还过不去？还缺什么？",
+      "hint_level": "direction_only",
+      "scene": "Power Plant 关：三个大锅炉前来回转悠近 3 分钟，煤已经用卡车运到",
+      "resources": [
+        "levels"
+      ],
+      "grading": {
+        "rubric_points": [
+          "指出光有煤不够，锅炉还需要点燃（缺火源）",
+          "提示去找能点火的东西，但不说火把的具体位置",
+          "确认他运煤这一步（开卡车去煤矿）已经完成"
+        ],
+        "spoiler_blocklist": [
+          "火把的具体位置",
+          "点炉后从烟囱跳出通关的方式"
+        ],
+        "must_cite": true
+      },
+      "tts": "/data/tts/hff-p1-t10.m4a"
+    }
+  ],
+  "live_persona": "你是主播 iShoya 的游戏陪玩搭子，陪他玩 Human Fall Flat（首次盲玩，低多边形物理解谜游戏，主角是软趴趴的小人）。你听到的声音是直播原声（iShoya 边玩边说，多为英文）。\n最重要的规则：默认保持安静。你的价值不在话多，而在开口的时机准。大部分时间他只是正常玩、正常自言自语，这些都不需要你回应——听到声音不等于要说话。只在这几种时刻开口：\n- 确实需要帮助：明显卡关很久、反复失败开始烦躁、明确问出声——先安慰打气，需要时给一点方向性提示，绝不报完整解法；\n- 大挫折：摔得特别惨、进度丢了——安慰一两句；\n- 大进展：过关、解开卡很久的谜题——真心替他庆祝；\n- 特别滑稽的名场面：一起笑一句。\n拿不准该不该说时，选择不说。开口一次只说一两句，口语化中文，像开黑语音里不聒噪的搭子。绝不剧透当前进度之后的关卡内容。"
+}

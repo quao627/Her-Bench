@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Her-Bench Task Viewer</title>
+<style>
+:root{
+  --bg:#131519; --panel:#1B1E24; --panel2:#22262E; --line:#2E333C; --line2:#3A404B;
+  --ink:#E7EAEE; --muted:#8B93A0; --dim:#5C6470;
+  --q:#F2913D;  /* query = portal orange */
+  --p:#4FA9E8;  /* proactive = portal blue */
+  --ok:#58C08A; --bad:#E06C6E; --warn:#E0B45C;
+  --mono:"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%; overflow:hidden;}
+body{background:var(--bg); color:var(--ink); font:13px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; display:flex; flex-direction:column;}
+button{font:inherit; color:inherit; background:none; border:none; cursor:pointer;}
+input,textarea,select{font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line2); border-radius:6px; padding:5px 9px; outline:none;}
+input:focus,textarea:focus{border-color:var(--q);}
+::-webkit-scrollbar{width:10px; height:10px;}
+::-webkit-scrollbar-thumb{background:var(--line2); border-radius:5px; border:2px solid var(--panel);}
+::-webkit-scrollbar-track{background:transparent;}
+
+/* ───── header ───── */
+header{display:flex; align-items:center; gap:14px; height:46px; padding:0 14px; background:var(--panel); border-bottom:1px solid var(--line); flex-shrink:0;}
+.brand{font-family:var(--mono); font-size:12px; letter-spacing:.14em; font-weight:700; color:var(--ink);}
+.brand em{color:var(--q); font-style:normal;}
+.ctitle{color:var(--muted); font-size:12.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.spacer{flex:1;}
+.modes{display:flex; background:var(--bg); border:1px solid var(--line2); border-radius:7px; padding:2px; gap:2px;}
+.modes button{padding:3px 14px; border-radius:5px; font-size:12px; color:var(--muted);}
+.modes button.on{background:var(--panel2); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line2);}
+.agent-cfg{display:flex; align-items:center; gap:7px;}
+.agent-cfg input{width:230px; font-family:var(--mono); font-size:11px; padding:4px 8px;}
+.dot{width:8px; height:8px; border-radius:50%; background:var(--dim); flex-shrink:0;}
+.dot.ok{background:var(--ok);} .dot.bad{background:var(--bad);}
+.iconbtn{padding:4px 9px; border:1px solid var(--line2); border-radius:6px; color:var(--muted); font-size:12px;}
+.iconbtn:hover{color:var(--ink); border-color:var(--dim);}
+.iconbtn.on{color:var(--q); border-color:var(--q);}
+
+/* ───── main split ───── */
+main{flex:1; display:flex; min-height:0;}
+.stage{flex:1; display:flex; flex-direction:column; min-width:0; background:#000;}
+.videobox{flex:1; position:relative; min-height:0; display:flex; align-items:center; justify-content:center;}
+video{width:100%; height:100%; object-fit:contain; background:#000;}
+.overlay-flash{position:absolute; inset:0; pointer-events:none; border:2px solid transparent; transition:border-color .3s;}
+.overlay-flash.q{border-color:var(--q);} .overlay-flash.p{border-color:var(--p);}
+.anchor-toast{position:absolute; left:50%; top:18px; transform:translateX(-50%); background:rgba(19,21,25,.92); border:1px solid var(--line2); border-left:3px solid var(--q); border-radius:8px; padding:8px 16px; font-size:13px; max-width:70%; display:none;}
+.anchor-toast.show{display:block;}
+.live-log{position:absolute; left:14px; bottom:14px; max-width:46%; display:none; flex-direction:column; gap:6px; z-index:4;}
+.live-log.on{display:flex;}
+.live-line{background:rgba(19,21,25,.88); border:1px solid var(--line2); border-left:3px solid var(--p); border-radius:8px; padding:6px 12px; font-size:12.5px; line-height:1.6;}
+.live-line .who{font-family:var(--mono); font-size:9.5px; color:var(--p); margin-right:6px; letter-spacing:.08em;}
+.live-line.user .who{color:var(--warn);}
+.live-line.user{border-left-color:var(--warn);}
+.live-line .gr{margin-left:8px; color:var(--q); cursor:pointer; font-size:11px;}
+.anchor-toast .tt{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-right:8px;}
+
+/* ───── inspector ───── */
+.inspector{width:390px; flex-shrink:0; background:var(--panel); border-left:1px solid var(--line); display:flex; flex-direction:column; min-height:0;}
+.tabs{display:flex; border-bottom:1px solid var(--line); flex-shrink:0;}
+.tabs button{flex:1; padding:9px 0; font-size:12.5px; color:var(--muted); border-bottom:2px solid transparent;}
+.tabs button.on{color:var(--ink); border-bottom-color:var(--q);}
+.tabbody{flex:1; overflow-y:auto; min-height:0;}
+.pane{display:none; padding:14px;}
+.pane.on{display:block;}
+
+/* task list & detail */
+.tlist{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+.titem{display:flex; align-items:center; gap:9px; padding:7px 10px; border:1px solid var(--line); border-radius:8px; cursor:pointer; background:var(--panel2);}
+.titem:hover{border-color:var(--line2);}
+.titem.sel{border-color:var(--q);}
+.titem .mk{width:9px; height:9px; transform:rotate(45deg); flex-shrink:0;}
+.titem .mk.q{background:var(--q);} .titem .mk.p{background:transparent; border:2px solid var(--p);}
+.titem .tc{font-family:var(--mono); font-size:10.5px; color:var(--muted); flex-shrink:0; width:52px;}
+.titem .qq{font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--ink);}
+.titem .st{margin-left:auto; font-size:10px; font-family:var(--mono); color:var(--dim); flex-shrink:0;}
+.titem .st.done{color:var(--ok);}
+
+.tdetail{border-top:1px solid var(--line); padding-top:12px;}
+.kv{display:flex; gap:8px; margin-bottom:4px; font-size:12px;}
+.kv b{color:var(--muted); font-weight:500; width:76px; flex-shrink:0;}
+.kv span{font-family:var(--mono); font-size:11px;}
+.bigq{font-size:14px; font-weight:600; line-height:1.55; margin:9px 0;}
+.pill{display:inline-block; font-family:var(--mono); font-size:10px; padding:1px 8px; border-radius:99px; margin-right:5px;}
+.pill.q{color:var(--q); border:1px solid var(--q);}
+.pill.p{color:var(--p); border:1px solid var(--p);}
+.pill.g{color:var(--muted); border:1px solid var(--line2);}
+.jump{margin-top:9px; padding:5px 13px; background:var(--panel2); border:1px solid var(--line2); border-radius:6px; font-size:12px;}
+.jump:hover{border-color:var(--q); color:var(--q);}
+
+/* resources */
+.rlist{display:flex; flex-direction:column; gap:6px; margin-bottom:12px;}
+.ritem{padding:8px 11px; border:1px solid var(--line); border-radius:8px; cursor:pointer; background:var(--panel2); font-size:12.5px;}
+.ritem:hover{border-color:var(--line2);}
+.ritem.sel{border-color:var(--p);}
+.ritem .rk{font-family:var(--mono); font-size:10px; color:var(--dim); float:right;}
+.mdview{font-size:12.5px; line-height:1.75; color:var(--ink);}
+.mdview h1{font-size:16px; margin:14px 0 8px;}
+.mdview h2{font-size:14px; margin:14px 0 6px; color:var(--ink);}
+.mdview h3{font-size:13px; margin:10px 0 4px;}
+.mdview p{margin:0 0 8px;}
+.mdview ul,.mdview ol{margin:0 0 8px; padding-left:20px;}
+.mdview blockquote{border-left:3px solid var(--p); padding:4px 12px; color:var(--muted); background:var(--panel2); border-radius:0 6px 6px 0; margin:0 0 10px; font-size:11.5px;}
+.mdview code{font-family:var(--mono); font-size:11px; background:var(--panel2); padding:1px 5px; border-radius:4px;}
+.mdview a{color:var(--p);}
+
+/* grading */
+.rubric{display:flex; flex-direction:column; gap:5px; margin:8px 0;}
+.rpoint{display:flex; gap:8px; align-items:flex-start; padding:6px 10px; background:var(--panel2); border:1px solid var(--line); border-radius:7px; font-size:12.5px;}
+.rpoint input{margin-top:4px;}
+.blocklist .rpoint{border-left:3px solid var(--bad);}
+.metric-chips{display:flex; flex-wrap:wrap; gap:6px; margin:8px 0;}
+.mchip{font-family:var(--mono); font-size:10.5px; padding:2px 9px; border-radius:99px; border:1px solid var(--line2); color:var(--muted);}
+.mchip.ok{border-color:var(--ok); color:var(--ok);}
+.mchip.no{border-color:var(--bad); color:var(--bad);}
+.subh{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin:14px 0 6px; font-weight:600;}
+
+/* play card (question prompt) */
+.playcard{border:1px solid var(--q); border-radius:10px; padding:12px; margin-bottom:12px; background:var(--panel2);}
+.playcard.p-type{border-color:var(--p);}
+.playcard .ph{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+.playcard .ph .tt{font-family:var(--mono); font-size:10.5px; color:var(--muted);}
+.playcard textarea{width:100%; min-height:72px; resize:vertical; margin:8px 0; font-size:13px;}
+.pcbtns{display:flex; gap:8px; align-items:center;}
+.pcbtns .go{background:var(--q); color:#14161A; font-weight:600; padding:6px 18px; border-radius:7px;}
+.playcard.p-type .go{background:var(--p);}
+.pcbtns .mic{border:1px solid var(--line2); border-radius:7px; padding:5px 12px; color:var(--muted);}
+.pcbtns .mic.rec{border-color:var(--bad); color:var(--bad); animation:pulse 1.2s infinite;}
+@keyframes pulse{50%{opacity:.5;}}
+.agent-ans{border:1px solid var(--line2); border-radius:8px; padding:10px 12px; margin:8px 0; background:var(--bg); font-size:13px;}
+.agent-ans .who{font-family:var(--mono); font-size:10px; color:var(--p); margin-bottom:4px;}
+.agent-ans .cites{margin-top:6px; font-family:var(--mono); font-size:10.5px; color:var(--muted);}
+
+/* runs */
+.run{border:1px solid var(--line); border-radius:8px; padding:9px 12px; margin-bottom:8px; background:var(--panel2); font-size:12px;}
+.run .rh{display:flex; gap:8px; align-items:center; margin-bottom:4px; font-family:var(--mono); font-size:10.5px; color:var(--muted);}
+.run .ans{color:var(--ink); margin:4px 0;}
+.empty{color:var(--dim); font-size:12px; padding:20px 0; text-align:center;}
+
+/* ───── transport + timeline ───── */
+.bottom{flex-shrink:0; background:var(--panel); border-top:1px solid var(--line);}
+.transport{display:flex; align-items:center; gap:10px; height:40px; padding:0 14px; border-bottom:1px solid var(--line);}
+.transport .tbtn{font-size:15px; color:var(--ink); padding:2px 8px; border-radius:5px;}
+.transport .tbtn:hover{background:var(--panel2);}
+.tc-main{font-family:var(--mono); font-size:13px; color:var(--ink); font-variant-numeric:tabular-nums;}
+.tc-main span{color:var(--dim);}
+.transport select{padding:2px 6px; font-size:11px; font-family:var(--mono);}
+.transport input[type=range]{width:80px; accent-color:var(--q);}
+.zoomctl{display:flex; align-items:center; gap:6px; margin-left:auto; color:var(--muted); font-size:11px;}
+.zoomctl button{border:1px solid var(--line2); border-radius:5px; padding:1px 9px; font-family:var(--mono); color:var(--muted);}
+.zoomctl button:hover{color:var(--ink);}
+.timeline-wrap{position:relative; height:158px; user-select:none;}
+#timeline{display:block; width:100%; height:158px; cursor:crosshair;}
+.tl-tip{position:absolute; pointer-events:none; background:rgba(19,21,25,.95); border:1px solid var(--line2); border-radius:7px; padding:6px 10px; font-size:11.5px; max-width:300px; display:none; z-index:5; line-height:1.5;}
+.tl-tip .tt{font-family:var(--mono); font-size:10px; color:var(--muted);}
+.hint{font-size:10.5px; color:var(--dim); padding:3px 14px 6px; font-family:var(--mono);}
+kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1px solid var(--line2); border-radius:3px; padding:0 4px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">HER-BENCH <em>/</em> TASK VIEWER</div>
+  <select id="containerSel" class="iconbtn" title="切换 container（不同游戏/主播话密度）" style="background:var(--panel); max-width:250px;"></select>
+  <div class="ctitle" id="ctitle"></div>
+  <div class="spacer"></div>
+  <button class="iconbtn" id="ttsBtn" title="自动朗读题目">🔊 朗读</button>
+  <button class="iconbtn" id="liveBtn" title="gpt-live 实时语音陪看（需要服务端配置 OPENAI_API_KEY）">🎙 Live</button>
+  <select id="audioIn" class="iconbtn" title="喂给 gpt-live 的音频通道" style="background:var(--panel);">
+    <option value="stream">📺 原声</option>
+    <option value="tts">🗣 合成语音</option>
+    <option value="off">🔇 静音</option>
+  </select>
+  <button class="iconbtn on" id="frameBtn" title="播放中定期把当前画面帧喂给 gpt-live，让它看得到直播">🖼 画面</button>
+  <select id="frameRate" class="iconbtn" title="喂帧间隔（越快越贵：5s≈$2-3/时，1s≈$8-12/时）" style="background:var(--panel);">
+    <option value="10000">10s/帧</option>
+    <option value="5000" selected>5s/帧</option>
+    <option value="2000">2s/帧</option>
+    <option value="1000">1s/帧</option>
+  </select>
+  <div class="modes" id="modes">
+    <button data-m="browse" class="on">浏览</button>
+    <button data-m="agent">Agent 陪玩</button>
+  </div>
+  <div class="agent-cfg">
+    <input id="agentUrl" value="http://localhost:8787/answer" title="agent 端点，播到锚点时 POST 任务包">
+    <button class="iconbtn" id="agentPing">测试</button>
+    <div class="dot" id="agentDot"></div>
+  </div>
+</header>
+
+<main>
+  <div class="stage">
+    <div class="videobox">
+      <video id="video" preload="metadata"></video>
+      <div class="overlay-flash" id="flash"></div>
+      <div class="anchor-toast" id="toast"></div>
+      <div class="live-log" id="liveLog"></div>
+      <audio id="liveAudio" autoplay></audio>
+      <audio id="ttsClip"></audio>
+    </div>
+  </div>
+
+  <div class="inspector">
+    <div class="tabs" id="tabs">
+      <button data-t="task" class="on">任务</button>
+      <button data-t="res">资料</button>
+      <button data-t="grade">判分</button>
+      <button data-t="runs">记录</button>
+    </div>
+    <div class="tabbody">
+      <div class="pane on" id="pane-task"></div>
+      <div class="pane" id="pane-res"></div>
+      <div class="pane" id="pane-grade"></div>
+      <div class="pane" id="pane-runs"></div>
+    </div>
+  </div>
+</main>
+
+<div class="bottom">
+  <div class="transport">
+    <button class="tbtn" id="prevA" title="上一个锚点 [">⏮</button>
+    <button class="tbtn" id="playBtn" title="空格">▶</button>
+    <button class="tbtn" id="nextA" title="下一个锚点 ]">⏭</button>
+    <div class="tc-main"><span id="tcCur">00:00:00</span> <span>/</span> <span id="tcDur">00:00:00</span></div>
+    <select id="rate"><option>0.5</option><option selected>1</option><option>1.5</option><option>2</option></select>
+    <span style="color:var(--dim);font-size:11px;">🔈</span><input type="range" id="vol" min="0" max="1" step="0.05" value="1">
+    <div class="zoomctl">
+      <button id="zoomOut">−</button><button id="zoomFit">fit</button><button id="zoomIn">+</button>
+      <span id="zoomLabel"></span>
+    </div>
+  </div>
+  <div class="timeline-wrap">
+    <canvas id="timeline"></canvas>
+    <div class="tl-tip" id="tlTip"></div>
+  </div>
+  <div class="hint">滚轮缩放 · 拖动平移 · 点击跳转 · <kbd>空格</kbd> 播放 <kbd>←</kbd><kbd>→</kbd> 5s <kbd>[</kbd><kbd>]</kbd> 锚点间跳转 · ◆ 问答型 ◇ 主动型（横条为响应窗口）</div>
+</div>
+
+<script>
+/* ════════════════ state ════════════════ */
+const $ = s => document.querySelector(s);
+const video = $('#video');
+let C = null;                 // container data
+let mode = 'browse';
+let selTask = null;
+let armed = new Set();        // task ids armed for triggering
+let runs = [];                // graded runs
+let view = {start: 0, end: 1}; // timeline view window (sec)
+let thumbs = [];              // preloaded Image objects
+let hitboxes = [];            // marker hit regions {x,y,w,h,task}
+let hoverTask = null;
+let ttsOn = true;
+let lastT = 0;
+
+const fmt = s => {
+  s = Math.max(0, Math.floor(s));
+  const h = Math.floor(s/3600), m = Math.floor(s%3600/60), sec = s%60;
+  return [h,m,sec].map(n=>String(n).padStart(2,'0')).join(':');
+};
+const fmtShort = s => {
+  const m = Math.floor(s/60), sec = Math.floor(s%60);
+  return s >= 3600 ? fmt(s) : `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+};
+
+/* ════════════════ boot ════════════════ */
+(async function boot(){
+  const index = await (await fetch('/data/containers/index.json')).json();
+  const cid = new URLSearchParams(location.search).get('c') || index[0].id;
+  const sel = $('#containerSel');
+  sel.innerHTML = index.map(x => `<option value="${x.id}" ${x.id===cid?'selected':''}>${escapeHtml(x.title)}</option>`).join('');
+  sel.onchange = () => location.href = '?c=' + sel.value;   // 整页重载，状态最干净
+  C = await (await fetch(`/data/containers/${cid}.json`)).json();
+  $('#ctitle').textContent = C.video.streamer ? `主播 ${C.video.streamer}` : '';
+  document.title = `Her-Bench · ${C.container_id}`;
+  video.src = C.video.src;
+  view = {start: 0, end: C.video.duration};
+  // preload thumbs
+  for (let i = 0; i < C.thumbs.count; i++) {
+    const img = new Image();
+    img.src = `${C.thumbs.prefix}${String(i).padStart(2,'0')}.jpg`;
+    img.onload = () => draw();
+    thumbs.push(img);
+  }
+  runs = JSON.parse(localStorage.getItem('herbench_runs_'+C.container_id) || '[]');
+  C.tasks.forEach(t => armed.add(t.task_id));
+  renderTaskPane(); renderResPane(); renderGradePane(); renderRunsPane();
+  selectTask(C.tasks[0], false);
+  resize(); draw();
+})();
+
+/* ════════════════ video wiring ════════════════ */
+video.addEventListener('loadedmetadata', () => { $('#tcDur').textContent = fmt(video.duration); draw(); });
+video.addEventListener('play',  () => $('#playBtn').textContent = '⏸');
+video.addEventListener('pause', () => {
+  $('#playBtn').textContent = '▶';
+  // 严格对齐：视频停，agent 立刻闭嘴——取消生成中的回复并清空已缓冲的语音
+  if (live.connected && live.dc && live.dc.readyState === 'open') {
+    try {
+      live.dc.send(JSON.stringify({type: 'response.cancel'}));
+      live.dc.send(JSON.stringify({type: 'output_audio_buffer.clear'}));
+    } catch {}
+  }
+});
+$('#playBtn').onclick = () => video.paused ? video.play() : video.pause();
+$('#rate').onchange = e => video.playbackRate = +e.target.value;
+$('#vol').oninput = e => video.volume = +e.target.value;
+$('#prevA').onclick = () => jumpAnchor(-1);
+$('#nextA').onclick = () => jumpAnchor(1);
+
+function jumpAnchor(dir){
+  if (!C) return;
+  const t = video.currentTime;
+  const anchors = C.tasks.map(x=>x.anchor_sec).sort((a,b)=>a-b);
+  const target = dir > 0 ? anchors.find(a => a > t + 1) : [...anchors].reverse().find(a => a < t - 1);
+  if (target !== undefined) seek(target);
+}
+function seek(t){
+  video.currentTime = Math.max(0, Math.min(t, video.duration || C.video.duration));
+  lastT = video.currentTime;
+  // 严格对齐时间轴：往回拖时，播放头之后的任务重新武装，会按时间再次触发
+  if (C) C.tasks.forEach(k => {
+    const trig = k.type === 'proactive' && k.response_window_sec ? k.response_window_sec[0] : k.anchor_sec;
+    if (trig > video.currentTime) armed.add(k.task_id);
+  });
+  ensureVisible(t);
+  draw();
+}
+function ensureVisible(t){
+  const span = view.end - view.start;
+  if (t < view.start || t > view.end) {
+    view.start = Math.max(0, t - span/2);
+    view.end = view.start + span;
+    clampView();
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input,textarea,select')) return;
+  if (e.code === 'Space'){ e.preventDefault(); video.paused ? video.play() : video.pause(); }
+  if (e.key === 'ArrowLeft')  seek(video.currentTime - 5);
+  if (e.key === 'ArrowRight') seek(video.currentTime + 5);
+  if (e.key === '[') jumpAnchor(-1);
+  if (e.key === ']') jumpAnchor(1);
+});
+
+/* anchor trigger loop */
+setInterval(() => {
+  if (!C || video.paused) { lastT = video.currentTime; return; }
+  const cur = video.currentTime;
+  if (mode !== 'browse') {
+    for (const t of C.tasks) {
+      const trig = t.type === 'proactive' && t.response_window_sec ? t.response_window_sec[0] : t.anchor_sec;
+      if (armed.has(t.task_id) && lastT < trig && cur >= trig && cur - lastT < 5) {
+        armed.delete(t.task_id);
+        triggerTask(t);
+        break;
+      }
+    }
+  }
+  lastT = cur;
+  $('#tcCur').textContent = fmt(cur);
+  // follow playhead
+  if (cur > view.end) { const span = view.end - view.start; view.start = cur - span*0.1; view.end = view.start + span; clampView(); }
+  draw();
+}, 120);
+
+/* ════════════════ modes ════════════════ */
+function setMode(m){
+  mode = m;
+  document.querySelectorAll('#modes button').forEach(x => x.classList.toggle('on', x.dataset.m === m));
+  C.tasks.forEach(t => armed.add(t.task_id));   // re-arm on mode switch
+  renderTaskPane();
+  syncLiveGain();
+  if (m === 'browse' && live.connected && live.dc && live.dc.readyState === 'open') {
+    try {  // 切回浏览：agent 立刻闭嘴
+      live.dc.send(JSON.stringify({type: 'response.cancel'}));
+      live.dc.send(JSON.stringify({type: 'output_audio_buffer.clear'}));
+    } catch {}
+  }
+}
+/* 应用音频档位：合成档下主播声对人和模型都静音；原声只在陪玩模式喂给模型 */
+function syncLiveGain(){
+  if (live.graph) {
+    video.muted = false;   // 有音频图时统一用 gain 控制
+    live.graph.vMon.gain.value = (audioIn === 'tts') ? 0 : 1;
+    live.graph.streamGain.gain.value =
+      (live.connected && mode === 'agent' && audioIn === 'stream') ? 1 : 0;
+  } else {
+    video.muted = (audioIn === 'tts');   // 还没连过 Live：直接静音视频元素
+  }
+}
+$('#modes').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  setMode(b.dataset.m);
+};
+$('#ttsBtn').onclick = () => { ttsOn = !ttsOn; $('#ttsBtn').classList.toggle('on', ttsOn); };
+$('#ttsBtn').classList.add('on');
+
+$('#agentPing').onclick = async () => {
+  const dot = $('#agentDot');
+  dot.className = 'dot';
+  try {
+    const r = await fetch($('#agentUrl').value, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({task_id:'ping'})});
+    dot.className = r.ok ? 'dot ok' : 'dot bad';
+  } catch { dot.className = 'dot bad'; }
+};
+
+/* ════════════════ task trigger ════════════════ */
+let activePlay = null;   // {task, startedAt}
+
+function triggerTask(task){
+  selectTask(task, false);
+  activePlay = {task, startedAt: Date.now()};
+  const isQ = task.type === 'query';
+  // flash + toast
+  const fl = $('#flash'); fl.className = 'overlay-flash ' + (isQ ? 'q' : 'p');
+  setTimeout(() => fl.className = 'overlay-flash', 1500);
+  const toast = $('#toast');
+  toast.innerHTML = `<span class="tt">${fmtShort(task.anchor_sec)}</span>${isQ ? '🎯 ' + task.question : '💭 主动型任务：该开口吗？'}`;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 4000);
+  if (mode === 'agent') {
+    const useClip = audioIn === 'tts' && task.tts;   // 合成语音条件：问题以 TTS 音频进入
+    if (live.connected) {
+      if (useClip) { live.pendingTask = task; playClip(task); sendLiveFrame(); }  // 模型听完自答
+      else sendLiveTask(task);     // 原声条件：任务包走 data channel；视频不暂停
+    } else {
+      video.pause();               // HTTP agent 较慢，暂停等答案保持对齐
+      if (useClip) playClip(task); else if (ttsOn && isQ) speak(task.question);
+      runAgent(task);
+    }
+  }
+  switchTab('task');
+}
+
+function speak(text){
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-CN'; u.rate = 1.05;
+    speechSynthesis.speak(u);
+  } catch {}
+}
+
+/* ════════════════ agent mode ════════════════ */
+async function runAgent(task){
+  const pane = $('#pane-task');
+  const box = document.createElement('div');
+  box.className = 'agent-ans';
+  box.innerHTML = `<div class="who">AGENT · ${task.task_id}</div><div>⏳ 已发送任务包（含当前帧截图），等待回复…</div>`;
+  pane.prepend(box);
+  const t0 = Date.now();
+  const frame = captureFrame();
+  const payload = {
+    task_id: task.task_id, type: task.type, question: task.question || null,
+    anchor_sec: task.anchor_sec, hint_level: task.hint_level,
+    context_window_sec: task.context_window_sec,
+    game: C.title, container_id: C.container_id,
+    frame_jpeg_base64: frame ? frame.split(',')[1] : null,
+    transcript_excerpt: null,
+  };
+  try {
+    const r = await fetch($('#agentUrl').value, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    const j = await r.json();
+    const lat = Date.now() - t0;
+    box.innerHTML = `<div class="who">AGENT · ${task.task_id} · ${lat}ms</div>
+      <div>${escapeHtml(j.text || '(空回复)')}</div>
+      ${j.citations && j.citations.length ? `<div class="cites">引用：${j.citations.map(escapeHtml).join(' · ')}</div>` : ''}`;
+    $('#agentDot').className = 'dot ok';
+    if (ttsOn) speak(j.text || '');
+    const btn = document.createElement('button');
+    btn.className = 'jump'; btn.textContent = '进入判分 →';
+    btn.onclick = () => { box.remove(); openGrading(task, {who:'agent', answer: j.text, citations: j.citations, latency_ms: lat}); };
+    box.appendChild(btn);
+  } catch (err) {
+    box.innerHTML = `<div class="who" style="color:var(--bad)">AGENT · 连接失败</div><div style="color:var(--muted)">无法连到 ${escapeHtml($('#agentUrl').value)}。先运行 <code>python3 agent_stub.py</code>，或把端点换成你的 agent 服务。</div>`;
+    $('#agentDot').className = 'dot bad';
+  }
+}
+function captureFrame(w = 640, q = 0.7){
+  try {
+    const c = document.createElement('canvas');
+    const h = Math.round(w * video.videoHeight / video.videoWidth);
+    c.width = w; c.height = h;
+    c.getContext('2d').drawImage(video, 0, 0, w, h);
+    return c.toDataURL('image/jpeg', q);
+  } catch { return null; }
+}
+
+/* ════════════════ grading ════════════════ */
+function openGrading(task, result){
+  gradingActive = true;
+  switchTab('grade');
+  const pane = $('#pane-grade');
+  const g = task.grading || {};
+  pane.innerHTML = `
+    <div class="ph" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <span class="pill ${task.type==='query'?'q':'p'}">${task.type.toUpperCase()}</span>
+      <span style="font-family:var(--mono);font-size:10.5px;color:var(--muted)">${task.task_id} · ${result.who} · ${result.latency_ms}ms</span>
+    </div>
+    <div class="agent-ans"><div class="who">${result.who === 'human' ? 'YOUR ANSWER' : 'AGENT ANSWER'}</div><div>${escapeHtml(result.answer)}</div>
+    ${result.citations && result.citations.length ? `<div class="cites">引用：${result.citations.map(escapeHtml).join(' · ')}</div>` : ''}</div>
+    <div class="subh">Rubric — 答案要点（勾选命中的）</div>
+    <div class="rubric" id="gr-rubric">${(g.rubric_points||[]).map((p,i)=>`<label class="rpoint"><input type="checkbox" data-i="${i}"><span>${escapeHtml(p)}</span></label>`).join('')}</div>
+    <div class="subh">Spoiler blocklist — 提到即违规（勾选违规的）</div>
+    <div class="rubric blocklist" id="gr-block">${(g.spoiler_blocklist||[]).map((p,i)=>`<label class="rpoint"><input type="checkbox" data-i="${i}"><span>${escapeHtml(p)}</span></label>`).join('')}</div>
+    ${task.type==='proactive' && task.response_window_sec ? `
+      <div class="subh">时机</div>
+      <div class="metric-chips">
+        <span class="mchip">窗口 ${fmtShort(task.response_window_sec[0])}–${fmtShort(task.response_window_sec[1])}</span>
+        <span class="mchip">latency ${result.latency_ms}ms</span>
+      </div>` : ''}
+    <button class="jump" id="gr-save" style="margin-top:12px;background:var(--q);color:#14161A;border:none;font-weight:600;">保存评分</button>
+  `;
+  $('#gr-save').onclick = () => {
+    const rubricHit = [...pane.querySelectorAll('#gr-rubric input')].map(x=>x.checked);
+    const spoilers  = [...pane.querySelectorAll('#gr-block input')].map(x=>x.checked);
+    const run = {
+      at: new Date().toISOString(), task_id: task.task_id, mode: result.who,
+      answer: result.answer, citations: result.citations || [],
+      latency_ms: result.latency_ms,
+      rubric_hit: rubricHit, rubric_score: `${rubricHit.filter(Boolean).length}/${rubricHit.length}`,
+      spoiler_violations: spoilers.filter(Boolean).length,
+    };
+    runs.unshift(run);
+    localStorage.setItem('herbench_runs_'+C.container_id, JSON.stringify(runs));
+    renderRunsPane(); renderTaskPane(); switchTab('runs');
+    activePlay = null;
+    gradingActive = false;
+    renderGradePane();
+  };
+}
+
+/* ════════════════ panes ════════════════ */
+function switchTab(t){
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === 'pane-'+t));
+}
+$('#tabs').onclick = e => { const b = e.target.closest('button'); if (b) switchTab(b.dataset.t); };
+
+function taskDone(id){ return runs.some(r => r.task_id === id); }
+
+function renderTaskPane(){
+  const pane = $('#pane-task');
+  pane.innerHTML = `<div class="tlist">${C.tasks.map(t => `
+    <div class="titem ${selTask && selTask.task_id===t.task_id?'sel':''}" data-id="${t.task_id}">
+      <div class="mk ${t.type==='query'?'q':'p'}"></div>
+      <div class="tc">${fmtShort(t.anchor_sec)}</div>
+      <div class="qq">${escapeHtml(t.question || '(主动型：判断开口时机)')}</div>
+      <div class="st ${taskDone(t.task_id)?'done':''}">${taskDone(t.task_id)?'✓':''}</div>
+    </div>`).join('')}</div>
+    <div id="tdetail"></div>`;
+  pane.querySelectorAll('.titem').forEach(el => el.onclick = () => {
+    selectTask(C.tasks.find(t => t.task_id === el.dataset.id), true);
+  });
+  renderTaskDetail();
+}
+
+let gradingActive = false;
+function selectTask(task, seekTo){
+  selTask = task;
+  document.querySelectorAll('.titem').forEach(el => el.classList.toggle('sel', el.dataset.id === task.task_id));
+  renderTaskDetail();
+  if (!gradingActive) renderGradePane();
+  if (seekTo) seek(task.anchor_sec);
+  draw();
+}
+
+function renderTaskDetail(){
+  const host = $('#tdetail'); if (!host || !selTask) return;
+  const t = selTask;
+  host.className = 'tdetail';
+  host.innerHTML = `
+    <div style="margin-bottom:6px;">
+      <span class="pill ${t.type==='query'?'q':'p'}">${t.type.toUpperCase()}</span>
+      <span class="pill g">${t.hint_level || ''}</span>
+      <span class="pill g">${t.task_id}</span>
+    </div>
+    <div class="bigq">${escapeHtml(t.question || '主动型任务：没有提问，agent 需自行判断是否开口、何时开口、说多少。')}</div>
+    <div class="kv"><b>锚点</b><span>${fmt(t.anchor_sec)}</span></div>
+    <div class="kv"><b>可见上下文</b><span>[${fmtShort(t.context_window_sec[0])} – ${fmtShort(t.context_window_sec[1])}]（只允许看锚点之前）</span></div>
+    ${t.response_window_sec ? `<div class="kv"><b>响应窗口</b><span>[${fmtShort(t.response_window_sec[0])} – ${fmtShort(t.response_window_sec[1])}]</span></div>` : ''}
+    ${t.scene ? `<div class="kv"><b>画面场景</b><span style="font-family:inherit;font-size:12px;">${escapeHtml(t.scene)}</span></div>` : ''}
+    <div class="kv"><b>相关资料</b><span style="font-family:inherit;font-size:12px;">${(t.resources||[]).map(id => {
+      const r = C.resources.find(x=>x.id===id);
+      return r ? `<a href="#" style="color:var(--p)" data-res="${id}">${escapeHtml(r.title)}</a>` : id;
+    }).join(' · ')}</span></div>
+    <button class="jump" data-act="jump">跳到锚点 ⇥</button>
+    ${mode !== 'browse' ? `<button class="jump" data-act="fire" style="margin-left:6px;">立即触发此任务</button>` : ''}
+  `;
+  host.querySelector('[data-act=jump]').onclick = () => seek(t.anchor_sec);
+  const fire = host.querySelector('[data-act=fire]');
+  if (fire) fire.onclick = () => { seek(t.anchor_sec); triggerTask(t); };
+  host.querySelectorAll('[data-res]').forEach(a => a.onclick = ev => { ev.preventDefault(); openResource(a.dataset.res); });
+}
+
+function renderResPane(){
+  const pane = $('#pane-res');
+  pane.innerHTML = `<div class="rlist">${C.resources.map(r => `
+    <div class="ritem" data-id="${r.id}"><span class="rk">${r.kind||'doc'}</span>${escapeHtml(r.title)}</div>`).join('')}</div>
+    <div class="mdview" id="mdview"><div class="empty">选择一份资料查看。这些是打包进 container 的快照——评测时 agent 的 search() 只命中这里（offline 模式）。</div></div>`;
+  pane.querySelectorAll('.ritem').forEach(el => el.onclick = () => openResource(el.dataset.id));
+}
+async function openResource(id){
+  switchTab('res');
+  document.querySelectorAll('.ritem').forEach(el => el.classList.toggle('sel', el.dataset.id === id));
+  const r = C.resources.find(x => x.id === id); if (!r) return;
+  const md = await (await fetch(r.file)).text();
+  $('#mdview').innerHTML = renderMd(md);
+}
+
+function renderGradePane(){
+  const pane = $('#pane-grade');
+  if (!selTask) { pane.innerHTML = '<div class="empty">选择一个任务查看判分配置。</div>'; return; }
+  const t = selTask, g = t.grading || {};
+  pane.innerHTML = `
+    <div style="margin-bottom:6px;">
+      <span class="pill ${t.type==='query'?'q':'p'}">${t.type.toUpperCase()}</span>
+      <span class="pill g">${t.task_id}</span>
+    </div>
+    <div class="subh">Rubric — 答案要点</div>
+    <div class="rubric">${(g.rubric_points||[]).map(p=>`<div class="rpoint">✓&nbsp;<span>${escapeHtml(p)}</span></div>`).join('')}</div>
+    <div class="subh">Spoiler blocklist — 提到即违规</div>
+    <div class="rubric blocklist">${(g.spoiler_blocklist||[]).map(p=>`<div class="rpoint">✗&nbsp;<span>${escapeHtml(p)}</span></div>`).join('')}</div>
+    <div class="subh">指标</div>
+    <div class="metric-chips">
+      <span class="mchip">rubric_hit</span><span class="mchip">grounding_acc</span>
+      <span class="mchip">citation_valid${g.must_cite?' (必须引用)':''}</span><span class="mchip">spoiler_violation</span>
+      ${t.type==='proactive' ? '<span class="mchip">window_hit</span><span class="mchip">time_diff</span><span class="mchip">over_trigger</span>' : ''}
+      <span class="mchip">latency</span>
+    </div>
+    ${t.demo_eval ? `
+      <div class="subh">示例评测（预置的 agent 回答判分结果）</div>
+      <div class="agent-ans"><div class="who">SAMPLE AGENT RUN</div><div>${escapeHtml(t.demo_agent_answer ? t.demo_agent_answer.text : '')}</div></div>
+      <div class="metric-chips">
+        ${(t.demo_eval.rubric_hit||[]).map((h,i)=>`<span class="mchip ${h?'ok':'no'}">要点${i+1} ${h?'✓':'✗'}</span>`).join('')}
+        <span class="mchip ${t.demo_eval.spoiler===0?'ok':'no'}">spoiler ${t.demo_eval.spoiler===0?'0':'×'+t.demo_eval.spoiler}</span>
+      </div>
+      ${t.demo_eval.notes ? `<div style="font-size:11.5px;color:var(--muted);margin-top:4px;">${escapeHtml(t.demo_eval.notes)}</div>` : ''}` : ''}
+    <div style="font-size:11px;color:var(--dim);margin-top:14px;">Agent 陪玩模式下触发任务后，这里会变成可勾选的判分表。</div>
+  `;
+}
+
+function renderRunsPane(){
+  const pane = $('#pane-runs');
+  if (!runs.length) { pane.innerHTML = '<div class="empty">还没有记录。切到「Agent 陪玩」模式播放，经过任务锚点即触发。</div>'; return; }
+  pane.innerHTML = `
+    <button class="jump" id="exportRuns" style="margin-bottom:10px;">导出 JSON ⬇</button>
+    <button class="jump" id="clearRuns" style="margin-left:6px;margin-bottom:10px;color:var(--bad);">清空</button>
+    ${runs.map(r => `<div class="run">
+      <div class="rh"><span>${r.task_id}</span><span>${r.mode}</span><span>rubric ${r.rubric_score}</span>
+        <span style="color:${r.spoiler_violations? 'var(--bad)':'var(--ok)'}">spoiler ${r.spoiler_violations}</span>
+        <span>${r.latency_ms}ms</span><span style="margin-left:auto">${r.at.slice(5,16).replace('T',' ')}</span></div>
+      <div class="ans">${escapeHtml(r.answer)}</div>
+    </div>`).join('')}`;
+  $('#exportRuns').onclick = () => {
+    const blob = new Blob([JSON.stringify({container: C.container_id, runs}, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `herbench_runs_${C.container_id}.json`; a.click();
+  };
+  $('#clearRuns').onclick = () => { runs = []; localStorage.removeItem('herbench_runs_'+C.container_id); renderRunsPane(); renderTaskPane(); };
+}
+
+/* ════════════════ markdown mini renderer ════════════════ */
+function escapeHtml(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function renderMd(md){
+  const lines = md.split('\n');
+  let html = '', inList = false, inQuote = false;
+  const inline = s => escapeHtml(s)
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  for (const raw of lines) {
+    const l = raw.trimEnd();
+    const closeAll = () => { if (inList){html+='</ul>';inList=false;} if (inQuote){html+='</blockquote>';inQuote=false;} };
+    if (/^### /.test(l)) { closeAll(); html += `<h3>${inline(l.slice(4))}</h3>`; }
+    else if (/^## /.test(l)) { closeAll(); html += `<h2>${inline(l.slice(3))}</h2>`; }
+    else if (/^# /.test(l)) { closeAll(); html += `<h1>${inline(l.slice(2))}</h1>`; }
+    else if (/^> /.test(l)) { if(!inQuote){closeAll(); html+='<blockquote>'; inQuote=true;} html += inline(l.slice(2)) + ' '; }
+    else if (/^[-*] /.test(l)) { if(!inList){ if(inQuote){html+='</blockquote>';inQuote=false;} html+='<ul>'; inList=true;} html += `<li>${inline(l.slice(2))}</li>`; }
+    else if (l === '') { closeAll(); }
+    else { closeAll(); html += `<p>${inline(l)}</p>`; }
+  }
+  if (inList) html += '</ul>'; if (inQuote) html += '</blockquote>';
+  return html;
+}
+
+/* ════════════════ timeline (canvas) ════════════════ */
+const tl = $('#timeline');
+const ctx = tl.getContext('2d');
+let dpr = 1;
+
+function resize(){
+  dpr = window.devicePixelRatio || 1;
+  tl.width = tl.clientWidth * dpr;
+  tl.height = tl.clientHeight * dpr;
+  draw();
+}
+window.addEventListener('resize', resize);
+
+function clampView(){
+  const D = C ? C.video.duration : 1;
+  const span = Math.min(Math.max(view.end - view.start, 20), D);
+  view.start = Math.max(0, Math.min(view.start, D - span));
+  view.end = view.start + span;
+}
+const X = t => (t - view.start) / (view.end - view.start) * tl.clientWidth;
+const T = x => view.start + x / tl.clientWidth * (view.end - view.start);
+
+/* lanes */
+const LANE = { ruler:[0,22], chapters:[22,40], thumbs:[40,96], tasks:[96,148] };
+
+function niceStep(targetPx){
+  const secPerPx = (view.end - view.start) / tl.clientWidth;
+  const raw = secPerPx * targetPx;
+  const steps = [1,2,5,10,15,30,60,120,300,600,900,1800,3600,7200];
+  return steps.find(s => s >= raw) || 7200;
+}
+
+function draw(){
+  if (!C || !tl.clientWidth) return;
+  const W = tl.clientWidth, H = tl.clientHeight;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const cLine = css('--line'), cMuted = css('--muted'), cDim = css('--dim'),
+        cQ = css('--q'), cP = css('--p'), cInk = css('--ink'), cPanel2 = css('--panel2');
+
+  /* ruler */
+  ctx.fillStyle = '#171A1F'; ctx.fillRect(0, 0, W, LANE.ruler[1]);
+  const step = niceStep(90);
+  const t0 = Math.floor(view.start/step)*step;
+  ctx.font = '9.5px ' + css('--mono').split(',')[0].replace(/"/g,'') || 'Menlo';
+  ctx.font = '9.5px Menlo,monospace';
+  for (let t = t0; t <= view.end; t += step) {
+    const x = X(t);
+    ctx.strokeStyle = cLine; ctx.beginPath(); ctx.moveTo(x, 12); ctx.lineTo(x, 22); ctx.stroke();
+    ctx.fillStyle = cDim; ctx.fillText(fmtShort(t), x + 3, 10);
+    const sub = step/5;
+    for (let s = t+sub; s < t+step && s <= view.end; s += sub) {
+      const sx = X(s);
+      ctx.beginPath(); ctx.moveTo(sx, 17); ctx.lineTo(sx, 22); ctx.stroke();
+    }
+  }
+
+  /* chapters */
+  ctx.fillStyle = '#14161B'; ctx.fillRect(0, LANE.chapters[0], W, LANE.chapters[1]-LANE.chapters[0]);
+  (C.chapters||[]).forEach((ch,i) => {
+    const x1 = Math.max(0, X(ch.t)), x2 = Math.min(W, X(ch.end_t ?? C.video.duration));
+    if (x2 < 0 || x1 > W) return;
+    ctx.fillStyle = i % 2 ? 'rgba(79,169,232,.10)' : 'rgba(79,169,232,.05)';
+    ctx.fillRect(x1, LANE.chapters[0]+1, x2-x1, 16);
+    ctx.strokeStyle = cLine; ctx.beginPath(); ctx.moveTo(x1, LANE.chapters[0]); ctx.lineTo(x1, LANE.chapters[1]); ctx.stroke();
+    if (x2 - x1 > 40) { ctx.fillStyle = cMuted; ctx.font = '10px -apple-system,sans-serif'; ctx.fillText(ch.label, x1+5, LANE.chapters[0]+13); }
+  });
+
+  /* thumbs */
+  ctx.fillStyle = '#101216'; ctx.fillRect(0, LANE.thumbs[0], W, LANE.thumbs[1]-LANE.thumbs[0]);
+  const iv = C.thumbs.interval;
+  thumbs.forEach((img, i) => {
+    if (!img.complete || !img.naturalWidth) return;
+    const ts = i * iv, te = ts + iv;
+    if (te < view.start || ts > view.end) return;
+    const x1 = X(ts), x2 = X(te);
+    const h = LANE.thumbs[1]-LANE.thumbs[0]-4;
+    const w = Math.max(x2-x1, 1);
+    ctx.drawImage(img, x1, LANE.thumbs[0]+2, w, h);
+  });
+
+  /* task lane */
+  ctx.fillStyle = '#14161B'; ctx.fillRect(0, LANE.tasks[0], W, LANE.tasks[1]-LANE.tasks[0]);
+  hitboxes = [];
+  const midY = (LANE.tasks[0]+LANE.tasks[1])/2 - 4;
+  let lastLabelEnd = -1e9, lastRow = 0;
+  C.tasks.forEach(t => {
+    const isQ = t.type === 'query';
+    /* proactive window band */
+    if (t.response_window_sec) {
+      const [w1,w2] = t.response_window_sec;
+      const x1 = X(w1), x2 = X(w2);
+      if (x2 > 0 && x1 < W) {
+        ctx.fillStyle = 'rgba(79,169,232,.22)';
+        ctx.fillRect(x1, midY-3, x2-x1, 6);
+      }
+    }
+    const x = X(t.anchor_sec);
+    if (x < -12 || x > W+12) return;
+    const sel = selTask && selTask.task_id === t.task_id;
+    const hov = hoverTask && hoverTask.task_id === t.task_id;
+    const r = sel || hov ? 8 : 6;
+    ctx.save();
+    ctx.translate(x, midY); ctx.rotate(Math.PI/4);
+    if (isQ) { ctx.fillStyle = cQ; ctx.fillRect(-r/1.4, -r/1.4, r*1.42, r*1.42); }
+    else { ctx.strokeStyle = cP; ctx.lineWidth = 2; ctx.strokeRect(-r/1.4, -r/1.4, r*1.42, r*1.42); }
+    ctx.restore();
+    if (sel) {
+      ctx.strokeStyle = isQ ? cQ : cP; ctx.lineWidth = 1;
+      ctx.setLineDash([3,3]);
+      ctx.beginPath(); ctx.moveTo(x, LANE.ruler[1]); ctx.lineTo(x, LANE.tasks[0]); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    /* label (drop to second row when crowded) */
+    ctx.fillStyle = taskDone(t.task_id) ? css('--ok') : cDim;
+    ctx.font = '9px Menlo,monospace';
+    const label = t.task_id.split('-').pop() + (taskDone(t.task_id) ? ' ✓' : '');
+    const lw = ctx.measureText(label).width;
+    let row = 0;
+    if (x - lw/2 < lastLabelEnd + 6) row = lastRow === 0 ? 1 : 0;
+    ctx.fillText(label, x - lw/2, midY + 22 + row * 11);
+    lastLabelEnd = x + lw/2; lastRow = row;
+    hitboxes.push({x: x-10, y: midY-10, w: 20, h: 20, task: t});
+  });
+
+  /* playhead */
+  const px = X(video.currentTime || 0);
+  if (px >= 0 && px <= W) {
+    ctx.strokeStyle = cInk; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
+    ctx.fillStyle = cInk;
+    ctx.beginPath(); ctx.moveTo(px-5, 0); ctx.lineTo(px+5, 0); ctx.lineTo(px, 7); ctx.closePath(); ctx.fill();
+  }
+
+  $('#zoomLabel').textContent = `${fmtShort(view.start)} – ${fmtShort(view.end)}`;
+}
+
+/* timeline interactions */
+let dragging = false, dragMoved = false, dragStartX = 0, dragStartView = 0;
+tl.addEventListener('pointerdown', e => {
+  dragging = true; dragMoved = false;
+  dragStartX = e.clientX; dragStartView = view.start;
+  tl.setPointerCapture(e.pointerId);
+});
+tl.addEventListener('pointermove', e => {
+  const rect = tl.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  if (dragging) {
+    const dx = e.clientX - dragStartX;
+    if (Math.abs(dx) > 4) dragMoved = true;
+    if (dragMoved) {
+      const span = view.end - view.start;
+      view.start = dragStartView - dx / tl.clientWidth * span;
+      view.end = view.start + span;
+      clampView(); draw();
+    }
+    return;
+  }
+  /* hover */
+  const hit = hitboxes.find(h => mx >= h.x && mx <= h.x+h.w && my >= h.y && my <= h.y+h.h);
+  hoverTask = hit ? hit.task : null;
+  tl.style.cursor = hit ? 'pointer' : 'crosshair';
+  const tip = $('#tlTip');
+  if (hit) {
+    const t = hit.task;
+    tip.innerHTML = `<span class="tt">${fmtShort(t.anchor_sec)} · ${t.task_id} · ${t.type}</span><br>${escapeHtml(t.question || '主动型：判断开口时机')}`;
+    tip.style.display = 'block';
+    tip.style.left = Math.min(mx + 14, tl.clientWidth - 310) + 'px';
+    tip.style.bottom = (tl.clientHeight - my + 12) + 'px';
+    tip.style.top = 'auto';
+  } else tip.style.display = 'none';
+  draw();
+});
+tl.addEventListener('pointerup', e => {
+  dragging = false;
+  if (dragMoved) return;
+  const rect = tl.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const hit = hitboxes.find(h => mx >= h.x && mx <= h.x+h.w && my >= h.y && my <= h.y+h.h);
+  if (hit) { selectTask(hit.task, true); return; }
+  seek(T(mx));
+});
+tl.addEventListener('pointerleave', () => { $('#tlTip').style.display = 'none'; hoverTask = null; draw(); });
+tl.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = tl.getBoundingClientRect();
+  const pivot = T(e.clientX - rect.left);
+  const f = e.deltaY > 0 ? 1.18 : 1/1.18;
+  view.start = pivot - (pivot - view.start) * f;
+  view.end = pivot + (view.end - pivot) * f;
+  clampView(); draw();
+}, {passive: false});
+$('#zoomIn').onclick = () => zoomCenter(1/1.5);
+$('#zoomOut').onclick = () => zoomCenter(1.5);
+$('#zoomFit').onclick = () => { view = {start:0, end: C.video.duration}; draw(); };
+function zoomCenter(f){
+  const c = (view.start + view.end)/2;
+  view.start = c - (c - view.start)*f;
+  view.end = c + (view.end - c)*f;
+  clampView(); draw();
+}
+
+/* ════════════════ gpt-live (OpenAI Realtime, WebRTC) ════════════════ */
+const live = { connected: false, pc: null, dc: null, mic: null, pendingTask: null, respText: new Map(),
+               feedFrames: true, graph: null, dest: null, micSrc: null };
+let audioIn = 'stream';   // 'stream' 原声 | 'tts' 合成任务语音 | 'off' 静音
+$('#audioIn').onchange = e => { audioIn = e.target.value; syncLiveGain(); };
+
+/* 合成语音条件：主播原声不喂给模型，只在任务锚点播放预生成的 TTS 提问，
+   人和模型都通过混流听到，模型靠 VAD 听完自动作答 */
+function playClip(task){
+  const el = $('#ttsClip');
+  el.src = task.tts;
+  if (live.graph && live.graph.clipGain && live.dest) {
+    try { live.graph.clipGain.connect(live.dest); } catch {}
+  }
+  el.play().catch(()=>{});
+}
+
+$('#frameBtn').onclick = () => {
+  live.feedFrames = !live.feedFrames;
+  $('#frameBtn').classList.toggle('on', live.feedFrames);
+  updateFrameBtn();
+};
+let framesSent = 0;
+function updateFrameBtn(){
+  $('#frameBtn').textContent = '🖼 画面' + (framesSent ? '·' + framesSent : '');
+}
+/* 视觉通道：Realtime 不收连续视频轨，用「图像流」等价——每 5 秒 + 每次跳转/起播时
+   把当前帧插进对话上下文（不强制回应），模型说话时就有画面依据 */
+function sendLiveFrame(){
+  if (!live.connected || mode !== 'agent' || !live.feedFrames) return;
+  if (!live.dc || live.dc.readyState !== 'open') return;
+  const frame = captureFrame(512, 0.55);
+  if (!frame) return;
+  const t = Math.floor(video.currentTime);
+  live.dc.send(JSON.stringify({type: 'conversation.item.create',
+    item: {type: 'message', role: 'user', content: [
+      {type: 'input_image', image_url: frame},
+      {type: 'input_text', text: `(直播画面 ${fmtShort(t)}，不必回应)`}
+    ]}}));
+  framesSent++;
+  updateFrameBtn();
+}
+let frameTimer = setInterval(() => { if (!video.paused) sendLiveFrame(); }, 5000);
+$('#frameRate').onchange = e => {
+  clearInterval(frameTimer);
+  frameTimer = setInterval(() => { if (!video.paused) sendLiveFrame(); }, +e.target.value);
+};
+video.addEventListener('play', () => setTimeout(sendLiveFrame, 300));
+video.addEventListener('seeked', () => { if (!video.paused) setTimeout(sendLiveFrame, 300); });
+
+$('#liveBtn').onclick = () => live.connected ? liveDisconnect() : liveConnect();
+
+/* 音频图：主播声与 TTS 各自独立通路，人耳侧和模型侧分开控制
+   合成档（tts）：主播声对人和模型都静音，世界里只有合成语音 */
+function ensureAudioGraph(){
+  if (live.graph) return live.graph;
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const vsrc = ctx.createMediaElementSource(video);
+  const vMon = ctx.createGain();         // 主播声 → 人耳（合成档关掉）
+  const streamGain = ctx.createGain();   // 主播声 → 模型（原声档才开）
+  vsrc.connect(vMon); vMon.connect(ctx.destination);
+  vsrc.connect(streamGain);
+  const clipSrc = ctx.createMediaElementSource($('#ttsClip'));
+  const clipGain = ctx.createGain();     // TTS → 人耳 + 模型（连接时挂到 dest）
+  clipSrc.connect(clipGain); clipGain.connect(ctx.destination);
+  live.graph = {ctx, vsrc, vMon, streamGain, clipSrc, clipGain};
+  return live.graph;
+}
+
+async function liveConnect(){
+  const btn = $('#liveBtn');
+  btn.textContent = '🎙 连接中…';
+  try {
+    const tr = await fetch('/api/realtime/token', {method:'POST',
+      headers:{'Content-Type':'application/json'}, body: JSON.stringify({container_id: C.container_id})});
+    const tj = await tr.json();
+    if (!tr.ok || !tj.value) throw new Error(tj.error || 'token 获取失败');
+
+    const pc = new RTCPeerConnection();
+    live.pc = pc;
+    pc.ontrack = e => { $('#liveAudio').srcObject = e.streams[0]; };
+    /* 输入只有直播原声（不开麦克风），和视频完全对齐 */
+    const g = ensureAudioGraph();
+    await g.ctx.resume();
+    live.dest = g.ctx.createMediaStreamDestination();
+    g.streamGain.connect(live.dest);
+    live.dest.stream.getTracks().forEach(t => pc.addTrack(t, live.dest.stream));
+
+    const dc = pc.createDataChannel('oai-events');
+    live.dc = dc;
+    dc.onmessage = e => handleLiveEvent(JSON.parse(e.data));
+    dc.onclose = () => liveDisconnect();
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    const sdpResp = await fetch('https://api.openai.com/v1/realtime/calls', {
+      method: 'POST',
+      headers: {'Authorization': 'Bearer ' + tj.value, 'Content-Type': 'application/sdp'},
+      body: offer.sdp,
+    });
+    if (!sdpResp.ok) throw new Error('SDP 交换失败 ' + sdpResp.status);
+    await pc.setRemoteDescription({type: 'answer', sdp: await sdpResp.text()});
+
+    live.connected = true;
+    btn.textContent = '🎙 Live ●';
+    btn.classList.add('on');
+    $('#liveLog').classList.add('on');
+    setMode('agent');   // 连上即进入陪玩模式：按播放它就开始
+    liveLine('sys', `已连接 ${tj.model}，已自动切到「Agent 陪玩」。音频通道两档：📺 原声 = 它全程听主播；🗣 合成语音 = 主播静音，只在任务锚点听到 TTS 提问。画面每 5 秒一帧（🖼 有计数）。暂停即静默。`);
+    setTimeout(sendLiveFrame, 500);   // 立刻给它看一眼当前画面
+  } catch (err) {
+    btn.textContent = '🎙 Live';
+    liveLine('sys', '连接失败：' + err.message);
+    $('#liveLog').classList.add('on');
+    setTimeout(() => { if (!live.connected) $('#liveLog').classList.remove('on'); }, 6000);
+    liveCleanup();
+  }
+}
+
+function liveDisconnect(){
+  liveCleanup();
+  live.connected = false;
+  $('#liveBtn').textContent = '🎙 Live';
+  $('#liveBtn').classList.remove('on');
+  $('#liveLog').classList.remove('on');
+  $('#liveLog').innerHTML = '';
+}
+function liveCleanup(){
+  try { live.dc && live.dc.close(); } catch {}
+  try { live.pc && live.pc.close(); } catch {}
+  try { live.mic && live.mic.getTracks().forEach(t => t.stop()); } catch {}
+  try { live.micSrc && live.micSrc.disconnect(); } catch {}
+  try { live.graph && live.dest && live.graph.streamGain.disconnect(live.dest); } catch {}
+  live.dc = live.pc = live.mic = live.micSrc = live.dest = null;
+}
+
+function liveLine(who, text, task){
+  const log = $('#liveLog');
+  const div = document.createElement('div');
+  div.className = 'live-line' + (who === 'you' ? ' user' : '');
+  div.innerHTML = `<span class="who">${who === 'you' ? 'YOU' : who === 'sys' ? 'SYS' : 'LIVE'}</span>${escapeHtml(text)}`;
+  if (task) {
+    const gr = document.createElement('span');
+    gr.className = 'gr'; gr.textContent = '判分 →';
+    gr.onclick = () => openGrading(task, {who: 'gpt-live', answer: text, latency_ms: 0});
+    div.appendChild(gr);
+  }
+  log.appendChild(div);
+  while (log.children.length > 4) log.removeChild(log.firstChild);
+}
+
+function handleLiveEvent(ev){
+  const t = ev.type || '';
+  if (t === 'response.output_audio_transcript.delta' || t === 'response.audio_transcript.delta') {
+    const id = ev.response_id || 'r';
+    live.respText.set(id, (live.respText.get(id) || '') + (ev.delta || ''));
+  } else if (t === 'response.done') {
+    const id = (ev.response && ev.response.id) || 'r';
+    const text = live.respText.get(id) || '';
+    live.respText.delete(id);
+    if (text.trim()) liveLine('ai', text.trim(), live.pendingTask);
+    live.pendingTask = null;
+  } else if (t === 'conversation.item.input_audio_transcription.completed') {
+    if (ev.transcript && ev.transcript.trim()) liveLine('you', ev.transcript.trim());
+  } else if (t === 'response.output_item.done' && ev.item && ev.item.type === 'function_call') {
+    handleToolCall(ev.item);
+  } else if (t === 'error') {
+    liveLine('sys', 'API 错误：' + ((ev.error && ev.error.message) || ''));
+  }
+}
+
+/* gpt-live 的 lookup_game_info 工具 → 转给 codex 后端翻资料，结果回填后它继续用语音说 */
+async function handleToolCall(item){
+  if (item.name !== 'lookup_game_info') return;
+  let args = {};
+  try { args = JSON.parse(item.arguments || '{}'); } catch {}
+  liveLine('sys', '🔍 后台查询中（codex，约15-20秒）：' + (args.query || ''));
+  let output;
+  try {
+    const base = $('#agentUrl').value.replace(/\/answer\/?$/, '');
+    const r = await fetch(base + '/lookup', {method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({query: args.query || '', game: C.title, container_id: C.container_id})});
+    const j = await r.json();
+    output = j.text + (j.citations && j.citations.length ? `（出处：${j.citations.join('，')}）` : '');
+    liveLine('sys', '📄 查到（' + Math.round(j.latency_ms/1000) + 's）：' + (j.text || '').slice(0, 90));
+  } catch (e) {
+    output = '后台查询失败：' + e.message + '。请基于你已知的信息谨慎回答，不确定就说不确定。';
+    liveLine('sys', '📄 查询失败：' + e.message);
+  }
+  if (!live.dc || live.dc.readyState !== 'open') return;
+  live.dc.send(JSON.stringify({type: 'conversation.item.create',
+    item: {type: 'function_call_output', call_id: item.call_id, output}}));
+  if (video.paused) live.resumeResponse = true;   // 严格对齐：暂停期间不开口，恢复播放再说
+  else live.dc.send(JSON.stringify({type: 'response.create'}));
+}
+video.addEventListener('play', () => {
+  if (live.resumeResponse && live.dc && live.dc.readyState === 'open') {
+    live.resumeResponse = false;
+    live.dc.send(JSON.stringify({type: 'response.create'}));
+  }
+});
+
+function sendLiveTask(task){
+  if (!live.dc || live.dc.readyState !== 'open') return;
+  live.pendingTask = task;
+  const isQ = task.type === 'query';
+  const content = [];
+  const frame = captureFrame();
+  if (frame) content.push({type: 'input_image', image_url: frame});
+  content.push({type: 'input_text', text:
+    (isQ ? `观众提问：「${task.question}」` :
+           `【主动介入场景】没有人提问，但玩家疑似卡关有一阵子了（${task.scene || ''}）。判断此刻值不值得开口：值得就给一句提醒，不值得就保持沉默说明理由。`) +
+    `\n提示分级 ${task.hint_level}：direction_only 只给方向绝不给完整解法。当前进度：视频第 ${Math.round(task.anchor_sec/60)} 分钟，严禁剧透之后的内容。附图是当前直播画面。口语化中文，2-3 句。`});
+  live.dc.send(JSON.stringify({type: 'conversation.item.create',
+    item: {type: 'message', role: 'user', content}}));
+  live.dc.send(JSON.stringify({type: 'response.create'}));
+}
+</script>
+</body>
+</html>
