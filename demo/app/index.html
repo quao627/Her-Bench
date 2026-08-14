@@ -41,11 +41,12 @@ header > *{flex-shrink:0;}
 select.iconbtn{height:28px;}
 
 /* settings popover */
-.settings-wrap{position:relative;}
-/* fixed (not absolute): header clips overflow-y for the anti-wrap fix, so an
-   absolutely-positioned popover inside it would get clipped too. JS sets
-   top/right from the button's real position each time it opens. */
-.settings-panel{position:fixed; width:308px; max-height:80vh; overflow-y:auto; background:var(--panel2); border:1px solid var(--line2); border-radius:10px; box-shadow:0 12px 32px rgba(0,0,0,.4); padding:14px; display:none; flex-direction:column; gap:12px; z-index:100;}
+/* centered modal, not a corner popover: a full-viewport backdrop flex-centers
+   the panel, so it never needs horizontal scrolling or off-screen clipping
+   regardless of where the gear button sits in the header. */
+.settings-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:100;}
+.settings-backdrop.open{display:flex;}
+.settings-panel{width:340px; max-width:92vw; max-height:80vh; overflow-y:auto; background:var(--panel2); border:1px solid var(--line2); border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.5); padding:16px; display:flex; flex-direction:column; gap:12px;}
 .settings-panel.open{display:flex;}
 .settings-panel .shead{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); font-weight:600; margin:2px 0 -2px;}
 .settings-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
@@ -214,9 +215,14 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
     <button data-m="agent">Agent 陪玩</button>
   </div>
   <button class="iconbtn" id="liveBtn" title="gpt-live 实时语音陪看（需要服务端配置 OPENAI_API_KEY）">🎙 Live</button>
-  <div class="settings-wrap">
-    <button class="iconbtn" id="settingsBtn" title="陪玩设置">⚙ 设置</button>
+  <button class="iconbtn" id="settingsBtn" title="陪玩设置">⚙ 设置</button>
+  <div class="settings-backdrop" id="settingsBackdrop">
     <div class="settings-panel" id="settingsPanel">
+      <div class="settings-row" style="margin-bottom:2px;">
+        <span class="slabel" style="font-weight:700; font-size:13.5px;">陪玩设置</span>
+        <button class="iconbtn" id="settingsClose">✕</button>
+      </div>
+      <hr class="sdiv">
       <div class="shead">语音 · 朗读</div>
       <div class="settings-row">
         <span class="slabel">自动朗读题目<span class="ssub">HTTP / 人玩模式下语音读出问题</span></span>
@@ -531,19 +537,11 @@ $('#modes').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   setMode(b.dataset.m);
 };
-$('#settingsBtn').onclick = e => {
-  e.stopPropagation();
-  const panel = $('#settingsPanel');
-  const opening = !panel.classList.contains('open');
-  if (opening) {
-    const r = $('#settingsBtn').getBoundingClientRect();
-    panel.style.top = (r.bottom + 8) + 'px';
-    panel.style.right = (window.innerWidth - r.right) + 'px';
-  }
-  panel.classList.toggle('open', opening);
-};
+$('#settingsBtn').onclick = () => $('#settingsBackdrop').classList.add('open');
+$('#settingsClose').onclick = () => $('#settingsBackdrop').classList.remove('open');
 $('#settingsPanel').onclick = e => e.stopPropagation();
-document.addEventListener('click', () => $('#settingsPanel').classList.remove('open'));
+$('#settingsBackdrop').onclick = () => $('#settingsBackdrop').classList.remove('open');
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('#settingsBackdrop').classList.remove('open'); });
 $('#ttsBtn').onclick = () => {
   ttsOn = !ttsOn;
   $('#ttsBtn').classList.toggle('on', ttsOn);
