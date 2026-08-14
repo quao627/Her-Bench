@@ -205,7 +205,14 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
     <option value="2000">2s/帧</option>
     <option value="1000">1s/帧</option>
   </select>
-  <button class="iconbtn" id="researchBtn" title="Agent 每 60 秒自己看一眼画面，自主判断要不要顺手查点什么（不偷看任务题目，走 codex，不烧 OpenAI 额度）">🔮 自主预研</button>
+  <button class="iconbtn" id="researchBtn" title="Agent 定期自己看一眼画面，自主判断要不要顺手查点什么（不偷看任务题目，走 codex，不烧 OpenAI 额度）">🔮 自主预研</button>
+  <select id="researchRate" class="iconbtn" title="预研间隔（codex 单次查证约 12-25 秒，间隔太短会背靠背排队）" style="background:var(--panel);">
+    <option value="10000">10s</option>
+    <option value="15000">15s</option>
+    <option value="30000">30s</option>
+    <option value="60000" selected>60s</option>
+    <option value="90000">90s</option>
+  </select>
   <div class="modes" id="modes">
     <button data-m="browse" class="on">浏览</button>
     <button data-m="agent">Agent 陪玩</button>
@@ -295,7 +302,6 @@ function needsLookup(task){
 let researchOn = false;
 let researchBusy = false;
 let researchNotes = [];   // 最近的 noteworthy 笔记，最多留 8 条，作为可选上下文
-const RESEARCH_INTERVAL_MS = 60000;
 
 async function runIdleResearch(){
   if (researchBusy || !C) return;
@@ -1095,7 +1101,11 @@ $('#frameRate').onchange = e => {
   clearInterval(frameTimer);
   frameTimer = setInterval(() => { if (!video.paused) sendLiveFrame(); }, +e.target.value);
 };
-setInterval(() => { if (researchOn && mode === 'agent' && !video.paused) runIdleResearch(); }, RESEARCH_INTERVAL_MS);
+let researchTimer = setInterval(() => { if (researchOn && mode === 'agent' && !video.paused) runIdleResearch(); }, 60000);
+$('#researchRate').onchange = e => {
+  clearInterval(researchTimer);
+  researchTimer = setInterval(() => { if (researchOn && mode === 'agent' && !video.paused) runIdleResearch(); }, +e.target.value);
+};
 $('#researchBtn').onclick = () => {
   researchOn = !researchOn;
   $('#researchBtn').classList.toggle('on', researchOn);
