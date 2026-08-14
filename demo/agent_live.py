@@ -20,6 +20,7 @@ import re
 import subprocess
 import tempfile
 import time
+import socketserver
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -31,10 +32,12 @@ PROMPT_TMPL = """你是一个直播「陪看助手」。观众正在看的直播
 
 {image_note}
 
-下面是这场直播可查的全部资料，已经帮你准备好了，不用自己找文件，直接从里面找答案：
+下面是当前进度相关的资料，已经帮你准备好了，不用自己找文件：
 ---
 {resource_docs}
 ---
+如果上面资料对这个具体问题写得比较笼统、不够细，别将就着编——你有 WebSearch，直接去搜
+更具体的信息（官方 wiki、攻略网站、社区问答都行），这比凭resources 里的概括硬答更可靠。
 
 {task_desc}
 {research_context}
@@ -62,7 +65,8 @@ LOOKUP_TMPL = """你是游戏攻略资料检索员。前台的语音陪玩 agent
 ---
 {resource_docs}
 ---
-如果上面资料没覆盖到, 可以用 WebSearch 补充。
+上面资料如果不够具体/笼统，别硬答——直接用 WebSearch 搜更准确的信息（官方 wiki、
+攻略站、社区讨论都行），查证过的答案比翻资料摘要更可靠。
 
 输出要求: 把这件事讲透——具体原理/步骤/数值/容易搞错的地方都可以写清楚，信息尽量给够、
 不要藏着掖着。这段内容会被前台的语音 agent 再提炼转述给观众，所以你不用担心啰嗦或语气生硬，
@@ -84,7 +88,8 @@ RESEARCH_TMPL = """你在陪看直播，正在利用画面停留/播放间隙主
 
 判断标准：画面里如果出现了具体的道具/机制/报错信息/界面元素等，观众很可能会好奇
 「这是什么」「这是怎么回事」——而且答案是具体、可验证、你自己记忆里没把握的那种
-（不是随口能答对的常识），就对照上面的资料核实一下。
+（不是随口能答对的常识），就对照上面的资料核实一下；上面资料没覆盖到或写得太笼统，
+直接用 WebSearch 去查更具体的（官方 wiki、攻略站都行），别因为资料不够就将就编。
 如果画面很普通（过场、菜单、纯粹在走路/说话，没什么值得核实的具体东西），
 不要硬凑问题，直接只输出一个词: NOTHING
 
@@ -96,23 +101,56 @@ SOURCES: <实际参考的资料标题，逗号分隔，没查到具体来源就�
 """
 
 
-def get_resource_docs(container_id):
+def _read_doc(entry):
+    file_path = os.path.join(HERE, entry["file"].lstrip("/"))
+    with open(file_path) as rf:
+        content = rf.read().strip()
+    return f"### {entry.get('title', entry.get('id', os.path.basename(file_path)))} ({os.path.basename(file_path)})\n{content}"
+
+
+def get_resource_docs(container_id, current_sec=None):
     """Inline a container's resource files directly into the prompt instead
     of pointing the agent at a directory and making it `ls` + `Read` its way
     there. Docs are a few KB each — trivially cheap to paste in full — and
     this removes 1-2 tool-call round trips (each a sandboxed subprocess hop)
-    from every single request, which was the single biggest latency cost."""
+    from every single request, which was the single biggest latency cost.
+
+    For games with a fixed level/chapter structure (container manifest has
+    a "chapter_resources" list), don't just dump every level's guide into
+    every prompt — route to the level actually playing right now, plus the
+    next one (pre-fetched ahead of time, matching how a real super-fan
+    companion would already know what's coming — the anti-spoiler rule
+    still governs OUTPUT, this only affects what the model has on hand).
+    Falls back to "give it everything" when there's no chapter data or no
+    current_sec, so containers without this metadata are unaffected."""
     if container_id:
         manifest_path = os.path.join(HERE, "data", "containers", f"{container_id}.json")
         try:
             with open(manifest_path) as f:
                 manifest = json.load(f)
-            parts = []
-            for r in manifest.get("resources", []):
-                file_path = os.path.join(HERE, r["file"].lstrip("/"))
-                with open(file_path) as rf:
-                    content = rf.read().strip()
-                parts.append(f"### {r.get('title', r['id'])} ({os.path.basename(file_path)})\n{content}")
+            parts = [_read_doc(r) for r in manifest.get("resources", [])]
+
+            chapter_docs = manifest.get("chapter_resources")
+            if chapter_docs:
+                if current_sec is None:
+                    # no time context: safe fallback is still everything, not nothing
+                    parts += [_read_doc(r) for r in chapter_docs]
+                else:
+                    current_sec = float(current_sec)
+                    in_order = sorted(chapter_docs, key=lambda r: r["t"])
+                    current_idx = None
+                    for i, r in enumerate(in_order):
+                        if r["t"] <= current_sec < r.get("end_t", float("inf")):
+                            current_idx = i
+                            break
+                    if current_idx is None:
+                        # between/after known chapters — include whichever chapter just ended
+                        # (most likely still relevant) plus whatever's next
+                        past = [r for r in in_order if r["t"] <= current_sec]
+                        current_idx = len(past) - 1 if past else 0
+                    picked = in_order[max(0, current_idx):current_idx + 2]  # 当前 + 下一关，预取
+                    parts += [_read_doc(r) for r in picked]
+
             if parts:
                 return "\n\n".join(parts)
         except Exception as e:
@@ -191,7 +229,7 @@ def answer(payload: dict) -> dict:
     prompt = PROMPT_TMPL.format(
         game=payload.get("game", "Human Fall Flat"),
         image_note=image_note(frame_path),
-        resource_docs=get_resource_docs(payload.get("container_id")),
+        resource_docs=get_resource_docs(payload.get("container_id"), payload.get("anchor_sec")),
         task_desc=task_desc,
         research_context=research_context,
         hint_level=payload.get("hint_level", "direction_only"),
@@ -268,7 +306,7 @@ class Handler(BaseHTTPRequestHandler):
         game = payload.get("game", "")
         print(f"[{ARGS.backend}] lookup: {query}", flush=True)
         prompt = LOOKUP_TMPL.format(game=game or "见资料目录", query=query,
-                                    resource_docs=get_resource_docs(payload.get("container_id")))
+                                    resource_docs=get_resource_docs(payload.get("container_id"), payload.get("current_sec")))
         try:
             if ARGS.backend == "codex":
                 raw = run_codex(prompt, "")
@@ -307,7 +345,7 @@ class Handler(BaseHTTPRequestHandler):
         print(f"[{ARGS.backend}] idle research…", flush=True)
         prompt = RESEARCH_TMPL.format(game=game or "见资料目录",
                                       image_note=image_note(frame_path),
-                                      resource_docs=get_resource_docs(payload.get("container_id")))
+                                      resource_docs=get_resource_docs(payload.get("container_id"), payload.get("current_sec")))
         try:
             raw = (run_codex(prompt, frame_path) if ARGS.backend == "codex" else run_claude(prompt)).strip()
             if raw.upper().startswith("NOTHING"):
@@ -351,7 +389,11 @@ if __name__ == "__main__":
     ap.add_argument("--timeout", type=int, default=180)
     ARGS = ap.parse_args()
     print(f"live agent backend [{ARGS.backend}] on http://localhost:{ARGS.port}")
+
+    class ThreadingHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
+        daemon_threads = True
+
     try:
-        HTTPServer(("127.0.0.1", ARGS.port), Handler).serve_forever()
+        ThreadingHTTPServer(("127.0.0.1", ARGS.port), Handler).serve_forever()
     except KeyboardInterrupt:
         pass

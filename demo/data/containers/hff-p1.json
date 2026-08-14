@@ -80,6 +80,14 @@
       "kind": "wiki"
     }
   ],
+  "chapter_resources": [
+    {"id": "hff_level_mansion", "title": "Mansion 关卡深度攻略", "file": "/data/resources/hff_level_mansion.md", "t": 740, "end_t": 1016},
+    {"id": "hff_level_train", "title": "Train 关卡深度攻略", "file": "/data/resources/hff_level_train.md", "t": 1016, "end_t": 2042},
+    {"id": "hff_level_demolition", "title": "Demolition 关卡深度攻略", "file": "/data/resources/hff_level_demolition.md", "t": 2042, "end_t": 3801},
+    {"id": "hff_level_castle", "title": "Castle 关卡深度攻略", "file": "/data/resources/hff_level_castle.md", "t": 3801, "end_t": 6322},
+    {"id": "hff_level_water", "title": "Water 关卡深度攻略", "file": "/data/resources/hff_level_water.md", "t": 6322, "end_t": 10913},
+    {"id": "hff_level_powerplant", "title": "Power Plant 关卡深度攻略", "file": "/data/resources/hff_level_powerplant.md", "t": 10920, "end_t": 14030}
+  ],
   "tasks": [
     {
       "task_id": "hff-p1-t01",

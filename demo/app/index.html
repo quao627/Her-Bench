@@ -363,7 +363,7 @@ async function runIdleResearch(){
   if (researchBusy || !C) return;
   researchBusy = true;
   const frame = captureFrame(640, 0.7);
-  const payload = {frame_jpeg_base64: frame ? frame.split(',')[1] : null, game: C.title, container_id: C.container_id};
+  const payload = {frame_jpeg_base64: frame ? frame.split(',')[1] : null, game: C.title, container_id: C.container_id, current_sec: Math.floor(video.currentTime)};
   const bid = bcallStart('research', null, {...payload, frame_jpeg_base64: frame ? '(见下方缩略图)' : null, _frame_preview: frame});
   const t0 = Date.now();
   try {
@@ -1309,7 +1309,7 @@ async function handleToolCall(item){
   let args = {};
   try { args = JSON.parse(item.arguments || '{}'); } catch {}
   liveLine('sys', '🔍 后台查询中（codex，约15-20秒）：' + (args.query || ''));
-  const lookupPayload = {query: args.query || '', game: C.title, container_id: C.container_id};
+  const lookupPayload = {query: args.query || '', game: C.title, container_id: C.container_id, current_sec: Math.floor(video.currentTime)};
   const bid = bcallStart('tool', live.pendingTask ? live.pendingTask.task_id : null, lookupPayload);
   const t0 = Date.now();
   let output;
