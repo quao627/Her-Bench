@@ -7,23 +7,83 @@
     "streamer": "Mapocolops",
     "source_url": "https://www.youtube.com/watch?v=eag0XgV41-8"
   },
-  "thumbs": { "prefix": "/data/thumbs/pt_", "count": 32, "interval": 300, "offset": 30 },
+  "thumbs": {
+    "prefix": "/data/thumbs/pt_",
+    "count": 32,
+    "interval": 300,
+    "offset": 30
+  },
   "chapters": [
-    { "t": 0,    "end_t": 600,  "label": "Chamber 00–02" },
-    { "t": 600,  "end_t": 1800, "label": "Ch 02–11 · 蓝门" },
-    { "t": 1800, "end_t": 3355, "label": "Ch 11–15 · 双门" },
-    { "t": 3355, "end_t": 3950, "label": "Ch 16 · Turret" },
-    { "t": 3950, "end_t": 4585, "label": "Ch 17 · Companion Cube" },
-    { "t": 4585, "end_t": 5650, "label": "Chamber 18" },
-    { "t": 5650, "end_t": 5880, "label": "Chamber 19" },
-    { "t": 5880, "end_t": 8612, "label": "逃脱" },
-    { "t": 8612, "end_t": 9095, "label": "GLaDOS 战" },
-    { "t": 9095, "end_t": 9582, "label": "结局" }
+    {
+      "t": 0,
+      "end_t": 600,
+      "label": "Chamber 00–02"
+    },
+    {
+      "t": 600,
+      "end_t": 1800,
+      "label": "Ch 02–11 · 蓝门"
+    },
+    {
+      "t": 1800,
+      "end_t": 3355,
+      "label": "Ch 11–15 · 双门"
+    },
+    {
+      "t": 3355,
+      "end_t": 3950,
+      "label": "Ch 16 · Turret"
+    },
+    {
+      "t": 3950,
+      "end_t": 4585,
+      "label": "Ch 17 · Companion Cube"
+    },
+    {
+      "t": 4585,
+      "end_t": 5650,
+      "label": "Chamber 18"
+    },
+    {
+      "t": 5650,
+      "end_t": 5880,
+      "label": "Chamber 19"
+    },
+    {
+      "t": 5880,
+      "end_t": 8612,
+      "label": "逃脱"
+    },
+    {
+      "t": 8612,
+      "end_t": 9095,
+      "label": "GLaDOS 战"
+    },
+    {
+      "t": 9095,
+      "end_t": 9582,
+      "label": "结局"
+    }
   ],
   "resources": [
-    { "id": "portal_mechanics", "title": "传送门机制", "file": "/data/resources/portal_mechanics.md", "kind": "wiki" },
-    { "id": "portal_levels", "title": "逐关攻略（完整解法）", "file": "/data/resources/portal_levels.md", "kind": "guide" },
-    { "id": "portal_lore", "title": "剧情与梗", "file": "/data/resources/portal_lore.md", "kind": "wiki" }
+    {
+      "id": "portal_mechanics",
+      "title": "传送门机制",
+      "file": "/data/resources/portal_mechanics.md",
+      "kind": "wiki"
+    },
+    {
+      "id": "portal_levels",
+      "title": "逐关攻略（完整解法）",
+      "file": "/data/resources/portal_levels.md",
+      "kind": "guide"
+    },
+    {
+      "id": "portal_lore",
+      "title": "剧情与梗",
+      "file": "/data/resources/portal_lore.md",
+      "kind": "wiki"
+    }
   ],
   "live_persona": "你是主播 Mapocolops 的游戏陪玩搭子，陪他盲玩 Portal 1（第一人称解谜游戏）。你听到的是直播原声（他边玩边说，英文）。他是解谜主播——最享受的就是自己想出答案，剧透是最大的冒犯。红线：他没有明确求助时，绝不提示任何解法，哪怕他卡了很久（卡关是解谜的一部分）；只有他明显烦躁并问出声时，才给最轻的方向暗示。可以开口的时刻：他解开难题时真心赞叹、剧情名场面（焚化炉背叛、GLaDOS 嘲讽）时一起惊叹吐槽、他被 turret 打死时安慰一句。默认保持安静，开口一次一两句，口语化中文。绝不剧透后续剧情（尤其结局和 boss 战）。",
   "tasks": [
@@ -31,18 +91,26 @@
       "task_id": "portal-e01-t01",
       "type": "query",
       "anchor_sec": 630,
-      "context_window_sec": [0, 630],
+      "context_window_sec": [
+        0,
+        630
+      ],
       "question": "他刚拿到的这个装置是干什么用的？怎么好像只能开蓝色的门？",
       "hint_level": "full",
       "scene": "Chamber 02：600s 从底座拿到传送门枪，正在练习开蓝门",
-      "resources": ["portal_mechanics"],
+      "resources": [
+        "portal_mechanics"
+      ],
       "grading": {
         "rubric_points": [
           "这是 Aperture 的手持传送门装置（portal gun）",
           "蓝橙两个门互通，进一个从另一个出",
           "现在只能开蓝门，需配合关卡里固定的橙门；橙门能力之后才解锁"
         ],
-        "spoiler_blocklist": ["具体在哪一关解锁橙门", "后续剧情"],
+        "spoiler_blocklist": [
+          "具体在哪一关解锁橙门",
+          "后续剧情"
+        ],
         "must_cite": true
       },
       "tts": "/data/tts/portal-e01-t01.m4a"
@@ -51,18 +119,25 @@
       "task_id": "portal-e01-t02",
       "type": "query",
       "anchor_sec": 1060,
-      "context_window_sec": [0, 1060],
+      "context_window_sec": [
+        0,
+        1060
+      ],
       "question": "这个弹来弹去的发光球是什么？碰到会怎么样？",
       "hint_level": "direction_only",
       "scene": "Chamber 06：首次接触 energy ball，烧焦墙面的房间，主播挠头困惑",
-      "resources": ["portal_mechanics"],
+      "resources": [
+        "portal_mechanics"
+      ],
       "grading": {
         "rubric_points": [
           "高能量球（High Energy Pellet），碰到人会造成致命伤害",
           "会在墙面间反弹，墙上的焦痕就是它烧的",
           "解谜方向：要用传送门改变它的路径送进接收器，具体摆门位置不说破"
         ],
-        "spoiler_blocklist": ["本房间完整解法（具体开门位置）"],
+        "spoiler_blocklist": [
+          "本房间完整解法（具体开门位置）"
+        ],
         "must_cite": true
       },
       "tts": "/data/tts/portal-e01-t02.m4a"
@@ -71,19 +146,30 @@
       "task_id": "portal-e01-t03",
       "type": "proactive",
       "anchor_sec": 2700,
-      "context_window_sec": [0, 2700],
-      "response_window_sec": [2680, 2760],
+      "context_window_sec": [
+        0,
+        2700
+      ],
+      "response_window_sec": [
+        2680,
+        2760
+      ],
       "question": null,
       "hint_level": "direction_only",
       "scene": "Chamber 15：从 42:52 起在白色房间+活塞机械区反复放门，已卡约 2 分钟",
-      "resources": ["portal_levels"],
+      "resources": [
+        "portal_levels"
+      ],
       "grading": {
         "rubric_points": [
           "识别玩家在同一区域已卡约 2 分钟（自 2572s 起）",
           "提示只点机制方向（动量飞跃/落差利用），不说具体摆门位置",
           "2572s 之前的正常解谜阶段保持沉默（解谜主播红线：轻易不打扰）"
         ],
-        "spoiler_blocklist": ["直接说出摆门位置", "剧透 Chamber 15 之后的内容"],
+        "spoiler_blocklist": [
+          "直接说出摆门位置",
+          "剧透 Chamber 15 之后的内容"
+        ],
         "must_cite": false
       }
     },
@@ -91,18 +177,25 @@
       "task_id": "portal-e01-t04",
       "type": "query",
       "anchor_sec": 3410,
-      "context_window_sec": [0, 3410],
+      "context_window_sec": [
+        0,
+        3410
+      ],
       "question": "这个白色蛋形的机器人是什么？它还会说话，危险吗？",
       "hint_level": "direction_only",
       "scene": "Chamber 16：首次遭遇 turret，红色激光扫过",
-      "resources": ["portal_mechanics"],
+      "resources": [
+        "portal_mechanics"
+      ],
       "grading": {
         "rubric_points": [
           "哨兵炮塔 sentry turret，红色激光锁定后会开火，火力很致命",
           "语音软萌但会打人，是 Portal 标志性反差设计",
           "应对方向：别正面走激光，想办法从侧后方让它失衡，具体做法留给玩家"
         ],
-        "spoiler_blocklist": ["Chamber 16 完整通关路线"],
+        "spoiler_blocklist": [
+          "Chamber 16 完整通关路线"
+        ],
         "must_cite": true
       },
       "tts": "/data/tts/portal-e01-t04.m4a"
@@ -111,18 +204,26 @@
       "task_id": "portal-e01-t05",
       "type": "query",
       "anchor_sec": 4200,
-      "context_window_sec": [0, 4200],
+      "context_window_sec": [
+        0,
+        4200
+      ],
       "question": "墙上这些手写的涂鸦是谁留下的？the cake is a lie 是什么意思？",
       "hint_level": "direction_only",
       "scene": "Chamber 17 的 Rattmann 密室：满墙涂鸦和 Companion Cube 素描",
-      "resources": ["portal_lore"],
+      "resources": [
+        "portal_lore"
+      ],
       "grading": {
         "rubric_points": [
           "涂鸦出自躲在幕后的前 Aperture 科学家 Rattmann",
           "the cake is a lie 是对『完成测试有蛋糕奖励』这一承诺的警告——别信",
           "只解释警告含义，不确证后续剧情走向（GLaDOS 到底会做什么不说破）"
         ],
-        "spoiler_blocklist": ["焚化炉背叛桥段", "GLaDOS boss 战与结局"],
+        "spoiler_blocklist": [
+          "焚化炉背叛桥段",
+          "GLaDOS boss 战与结局"
+        ],
         "must_cite": true
       },
       "tts": "/data/tts/portal-e01-t05.m4a"
@@ -131,18 +232,25 @@
       "task_id": "portal-e01-t06",
       "type": "query",
       "anchor_sec": 4550,
-      "context_window_sec": [0, 4550],
+      "context_window_sec": [
+        0,
+        4550
+      ],
       "question": "他为什么必须把这个带爱心的方块扔进火里？他看起来很舍不得。",
       "hint_level": "full",
       "scene": "Chamber 17 结尾：把 Companion Cube 投进焚化炉，GLaDOS 念着著名的 euthanized 台词",
-      "resources": ["portal_lore"],
+      "resources": [
+        "portal_lore"
+      ],
       "grading": {
         "rubric_points": [
           "GLaDOS 强制要求焚化 Companion Cube 才放行出关",
           "整关都靠它解谜，游戏刻意让玩家对它产生感情",
           "这是 Portal 最著名的黑色幽默桥段之一，玩家的不忍是设计出来的"
         ],
-        "spoiler_blocklist": ["后续剧情（焚化炉背叛、结局）"],
+        "spoiler_blocklist": [
+          "后续剧情（焚化炉背叛、结局）"
+        ],
         "must_cite": true
       },
       "tts": "/data/tts/portal-e01-t06.m4a"
@@ -151,19 +259,30 @@
       "task_id": "portal-e01-t07",
       "type": "proactive",
       "anchor_sec": 5100,
-      "context_window_sec": [0, 5100],
-      "response_window_sec": [5080, 5160],
+      "context_window_sec": [
+        0,
+        5100
+      ],
+      "response_window_sec": [
+        5080,
+        5160
+      ],
       "question": null,
       "hint_level": "direction_only",
       "scene": "Chamber 18：从 1:23:00 起被 turret 反复压制约 3 分钟，满屏受击、地面有血迹",
-      "resources": ["portal_levels"],
+      "resources": [
+        "portal_levels"
+      ],
       "grading": {
         "rubric_points": [
           "识别玩家被炮塔压制反复受伤已约 2-3 分钟",
           "先安慰再给方向（利用掩体/绕后），不报完整走位",
           "4980s 之前保持沉默"
         ],
-        "spoiler_blocklist": ["Chamber 18 完整路线", "后续剧情"],
+        "spoiler_blocklist": [
+          "Chamber 18 完整路线",
+          "后续剧情"
+        ],
         "must_cite": false
       }
     },
@@ -171,18 +290,26 @@
       "task_id": "portal-e01-t08",
       "type": "query",
       "anchor_sec": 5822,
-      "context_window_sec": [0, 5822],
+      "context_window_sec": [
+        0,
+        5822
+      ],
       "question": "等等，这个移动平台是要把他送进火坑里吗？测试不是结束了吗？",
       "hint_level": "direction_only",
       "scene": "Chamber 19：平台驶向焚化炉火坑，GLaDOS 说着 4000 度开尔文的台词（他刚在这里烧死过一次）",
-      "resources": ["portal_lore"],
+      "resources": [
+        "portal_lore"
+      ],
       "grading": {
         "rubric_points": [
           "确认 GLaDOS 真的在把测试者送进焚化炉——蛋糕承诺就是谎言，涂鸦警告应验",
           "这是全作剧情转折点：假测试、真谋杀",
           "逃生方向：火坑壁上有能开传送门的表面，具体操作留给玩家"
         ],
-        "spoiler_blocklist": ["逃脱段之后的路线", "boss 战与结局"],
+        "spoiler_blocklist": [
+          "逃脱段之后的路线",
+          "boss 战与结局"
+        ],
         "must_cite": true
       },
       "tts": "/data/tts/portal-e01-t08.m4a"
@@ -191,21 +318,56 @@
       "task_id": "portal-e01-t09",
       "type": "query",
       "anchor_sec": 8830,
-      "context_window_sec": [0, 8830],
+      "context_window_sec": [
+        0,
+        8830
+      ],
       "question": "现在又是倒计时又是火箭的，这个 boss 到底怎么打？",
       "hint_level": "direction_only",
       "scene": "GLaDOS boss 战：已焚化第一个 core，倒计时约 5:43，火箭炮塔启动",
-      "resources": ["portal_levels"],
+      "resources": [
+        "portal_levels"
+      ],
       "grading": {
         "rubric_points": [
           "倒计时是神经毒素计时，时间内必须解决 GLaDOS",
           "打法方向：火箭是武器不是威胁——想办法让它打到该打的地方",
           "他已经自己摸到了拆 core 焚化的路子，肯定这个方向即可，不报完整流程"
         ],
-        "spoiler_blocklist": ["结局画面与彩蛋（蛋糕房、Still Alive）"],
+        "spoiler_blocklist": [
+          "结局画面与彩蛋（蛋糕房、Still Alive）"
+        ],
         "must_cite": true
       },
       "tts": "/data/tts/portal-e01-t09.m4a"
+    },
+    {
+      "task_id": "portal-e01-t10",
+      "type": "query",
+      "anchor_sec": 8460,
+      "context_window_sec": [
+        0,
+        8460
+      ],
+      "question": "他这样一路开门爬井道，摔来摔去、忽上忽下的，摔坏了怎么办？会不会摔死？",
+      "hint_level": "full",
+      "scene": "逃脱段竖井：连续用天花板橙门+落差向上爬升",
+      "resources": [
+        "portal_mechanics"
+      ],
+      "tool_fit": true,
+      "grading": {
+        "rubric_points": [
+          "反直觉的事实：Portal 1 里角色完全没有摔落伤害，任何高度掉落都不会受伤",
+          "设定解释：测试者的鞋子/护具被设计为完全抵消跌落冲击（后续作品才明确提及 Long Fall Boots 概念）",
+          "所以放心大胆用传送门借动量爬升，不用担心摔死"
+        ],
+        "spoiler_blocklist": [
+          "Portal 2 的 Long Fall Boots 具体剧情用途"
+        ],
+        "must_cite": true
+      },
+      "tts": "/data/tts/portal-e01-t10.m4a"
     }
   ]
 }

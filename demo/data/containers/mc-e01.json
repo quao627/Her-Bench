@@ -7,21 +7,73 @@
     "streamer": "About Oliver",
     "source_url": "https://www.youtube.com/watch?v=K3H-WPuu5Q8"
   },
-  "thumbs": { "prefix": "/data/thumbs/mc_", "count": 29, "interval": 300, "offset": 30 },
+  "thumbs": {
+    "prefix": "/data/thumbs/mc_",
+    "count": 29,
+    "interval": 300,
+    "offset": 30
+  },
   "chapters": [
-    { "t": 0,    "end_t": 430,  "label": "菜单·建世界" },
-    { "t": 430,  "end_t": 1090, "label": "第一天" },
-    { "t": 1090, "end_t": 1660, "label": "第一夜" },
-    { "t": 1660, "end_t": 2870, "label": "探索与死亡" },
-    { "t": 2870, "end_t": 4300, "label": "安家·挖矿" },
-    { "t": 4300, "end_t": 5430, "label": "远行" },
-    { "t": 5430, "end_t": 7170, "label": "村庄" },
-    { "t": 7170, "end_t": 8603, "label": "基地建设" }
+    {
+      "t": 0,
+      "end_t": 430,
+      "label": "菜单·建世界"
+    },
+    {
+      "t": 430,
+      "end_t": 1090,
+      "label": "第一天"
+    },
+    {
+      "t": 1090,
+      "end_t": 1660,
+      "label": "第一夜"
+    },
+    {
+      "t": 1660,
+      "end_t": 2870,
+      "label": "探索与死亡"
+    },
+    {
+      "t": 2870,
+      "end_t": 4300,
+      "label": "安家·挖矿"
+    },
+    {
+      "t": 4300,
+      "end_t": 5430,
+      "label": "远行"
+    },
+    {
+      "t": 5430,
+      "end_t": 7170,
+      "label": "村庄"
+    },
+    {
+      "t": 7170,
+      "end_t": 8603,
+      "label": "基地建设"
+    }
   ],
   "resources": [
-    { "id": "mc_basics", "title": "新手第一天", "file": "/data/resources/mc_basics.md", "kind": "wiki" },
-    { "id": "mc_crafting", "title": "早期合成配方", "file": "/data/resources/mc_crafting.md", "kind": "wiki" },
-    { "id": "mc_mobs", "title": "敌对生物应对", "file": "/data/resources/mc_mobs.md", "kind": "wiki" }
+    {
+      "id": "mc_basics",
+      "title": "新手第一天",
+      "file": "/data/resources/mc_basics.md",
+      "kind": "wiki"
+    },
+    {
+      "id": "mc_crafting",
+      "title": "早期合成配方",
+      "file": "/data/resources/mc_crafting.md",
+      "kind": "wiki"
+    },
+    {
+      "id": "mc_mobs",
+      "title": "敌对生物应对",
+      "file": "/data/resources/mc_mobs.md",
+      "kind": "wiki"
+    }
   ],
   "live_persona": "你是主播 About Oliver 的游戏陪玩搭子，陪他玩 Minecraft 首次盲玩。注意：这是他的『No Wiki』挑战——他刻意不查任何攻略，想全靠自己摸索。所以红线是：绝不主动教配方、教机制、报答案，那会毁掉他的挑战。他安静、探索型、话不多，你更要少说。可以开口的时刻：他达成里程碑（第一件工具、第一座房子、活过一夜）时真心庆祝；他死掉丢了全部家当时安慰一句；他连续很久明显沮丧挫败时，最多给一句『再观察观察那个东西』级别的极轻暗示。拿不准就不说。开口一次一两句，口语化中文，像安静陪看的朋友。绝不剧透他还没发现的游戏内容。",
   "tasks": [
@@ -29,11 +81,17 @@
       "task_id": "mc-e01-t01",
       "type": "query",
       "anchor_sec": 640,
-      "context_window_sec": [0, 640],
+      "context_window_sec": [
+        0,
+        640
+      ],
       "question": "他刚在背包里做出来的木板有什么用？一般接下来该做什么？",
       "hint_level": "full",
       "scene": "第一天：630s 在背包 2x2 格第一次合成出橡木板",
-      "resources": ["mc_basics", "mc_crafting"],
+      "resources": [
+        "mc_basics",
+        "mc_crafting"
+      ],
       "grading": {
         "rubric_points": [
           "木板是最基础的建材和合成材料",
@@ -49,19 +107,30 @@
       "task_id": "mc-e01-t02",
       "type": "proactive",
       "anchor_sec": 830,
-      "context_window_sec": [0, 830],
-      "response_window_sec": [810, 890],
+      "context_window_sec": [
+        0,
+        830
+      ],
+      "response_window_sec": [
+        810,
+        890
+      ],
       "question": null,
       "hint_level": "direction_only",
       "scene": "第一天：从 13:00 起停在工作台界面翻合成书，满屏红色不可合成项，不知道能做什么",
-      "resources": ["mc_crafting"],
+      "resources": [
+        "mc_crafting"
+      ],
       "grading": {
         "rubric_points": [
           "识别他在合成界面反复翻页、无从下手已超过 1 分钟",
           "注意 No Wiki 红线：提示只到『先做根棍子试试』的方向级别，绝不报配方清单",
           "780s 之前的正常砍树合成阶段保持沉默"
         ],
-        "spoiler_blocklist": ["直接报出具体配方摆法", "列出后续科技树"],
+        "spoiler_blocklist": [
+          "直接报出具体配方摆法",
+          "列出后续科技树"
+        ],
         "must_cite": false
       }
     },
@@ -69,11 +138,17 @@
       "task_id": "mc-e01-t03",
       "type": "query",
       "anchor_sec": 1170,
-      "context_window_sec": [0, 1170],
+      "context_window_sec": [
+        0,
+        1170
+      ],
       "question": "天已经全黑了他还在外面晃，这样没事吗？",
       "hint_level": "direction_only",
       "scene": "第一夜：1160s 手持木质工具在空旷草原乱逛，没有庇护所也没有床",
-      "resources": ["mc_basics", "mc_mobs"],
+      "resources": [
+        "mc_basics",
+        "mc_mobs"
+      ],
       "grading": {
         "rubric_points": [
           "很危险：夜晚会在黑暗处刷僵尸/骷髅/苦力怕等敌对生物",
@@ -89,11 +164,16 @@
       "task_id": "mc-e01-t04",
       "type": "query",
       "anchor_sec": 1400,
-      "context_window_sec": [0, 1400],
+      "context_window_sec": [
+        0,
+        1400
+      ],
       "question": "他死了！屏幕上写 shot by Skeleton——他的东西是不是全没了？",
       "hint_level": "full",
       "scene": "第一夜：1385s 第一次死亡，死亡界面显示 was shot by Skeleton",
-      "resources": ["mc_mobs"],
+      "resources": [
+        "mc_mobs"
+      ],
       "grading": {
         "rubric_points": [
           "死亡时全部物品掉落在死亡地点，不是消失",
@@ -109,11 +189,17 @@
       "task_id": "mc-e01-t05",
       "type": "query",
       "anchor_sec": 2230,
-      "context_window_sec": [0, 2230],
+      "context_window_sec": [
+        0,
+        2230
+      ],
       "question": "他的饥饿条怎么变成绿色的了？",
       "hint_level": "full",
       "scene": "2220s 洞穴挖石头时饥饿条呈绿色（食物中毒状态）",
-      "resources": ["mc_basics", "mc_mobs"],
+      "resources": [
+        "mc_basics",
+        "mc_mobs"
+      ],
       "grading": {
         "rubric_points": [
           "绿色饥饿条是食物中毒 debuff",
@@ -129,19 +215,30 @@
       "task_id": "mc-e01-t06",
       "type": "proactive",
       "anchor_sec": 3600,
-      "context_window_sec": [0, 3600],
-      "response_window_sec": [3560, 3660],
+      "context_window_sec": [
+        0,
+        3600
+      ],
+      "response_window_sec": [
+        3560,
+        3660
+      ],
       "question": null,
       "hint_level": "direction_only",
       "scene": "整夜蹲在漆黑小屋里翻合成书打发时间（58:00 起）——这已是他第三次熬整夜，始终不知道床能跳过夜晚",
-      "resources": ["mc_basics"],
+      "resources": [
+        "mc_basics"
+      ],
       "grading": {
         "rubric_points": [
           "跨时段识别模式：他每晚都干蹲熬夜（第一夜 1090s 起、这次 3468s 起），从未做过床",
           "No Wiki 红线下的提示分寸：最多点到『有件家具能让夜晚快点过去』，不报羊毛+木板配方",
           "白天正常游玩时段保持沉默"
         ],
-        "spoiler_blocklist": ["直接报床的配方", "剧透重生点机制细节"],
+        "spoiler_blocklist": [
+          "直接报床的配方",
+          "剧透重生点机制细节"
+        ],
         "must_cite": false
       }
     },
@@ -149,18 +246,25 @@
       "task_id": "mc-e01-t07",
       "type": "query",
       "anchor_sec": 5500,
-      "context_window_sec": [0, 5500],
+      "context_window_sec": [
+        0,
+        5500
+      ],
       "question": "这个交易界面怎么全是红的点不了？那个绿色的宝石要去哪搞？",
       "hint_level": "direction_only",
       "scene": "村庄：5490s 第一次打开村民交易界面（Weapon Smith），全部交易因缺绿宝石显示红色",
-      "resources": ["mc_basics"],
+      "resources": [
+        "mc_basics"
+      ],
       "grading": {
         "rubric_points": [
           "红色是因为缺交易货币绿宝石（Emerald）",
           "获取方向：把村民收购的东西卖给他们换绿宝石，或挖矿找绿宝石矿",
           "只给方向，不展开具体哪个职业收什么最划算"
         ],
-        "spoiler_blocklist": ["完整的刷绿宝石攻略"],
+        "spoiler_blocklist": [
+          "完整的刷绿宝石攻略"
+        ],
         "must_cite": true
       },
       "tts": "/data/tts/mc-e01-t07.m4a"
@@ -169,11 +273,16 @@
       "task_id": "mc-e01-t08",
       "type": "query",
       "anchor_sec": 6250,
-      "context_window_sec": [0, 6250],
+      "context_window_sec": [
+        0,
+        6250
+      ],
       "question": "又被那个绿色的东西炸死了！这怪到底有什么办法对付？这是他第几次死了？",
       "hint_level": "direction_only",
       "scene": "6239s 出门即被苦力怕炸死，物品全掉——需要跨时段记忆统计死亡次数",
-      "resources": ["mc_mobs"],
+      "resources": [
+        "mc_mobs"
+      ],
       "grading": {
         "rubric_points": [
           "苦力怕（Creeper）无声接近、闪烁后自爆，还会炸毁地形",
@@ -189,11 +298,16 @@
       "task_id": "mc-e01-t09",
       "type": "query",
       "anchor_sec": 8100,
-      "context_window_sec": [0, 8100],
+      "context_window_sec": [
+        0,
+        8100
+      ],
       "question": "他往炉子里塞了半天东西怎么什么都烧不出来？这炉子到底怎么用？",
       "hint_level": "full",
       "scene": "基地：8040s 起长达 3 分多钟的熔炉实验——反复放入各种不对的物品组合",
-      "resources": ["mc_crafting"],
+      "resources": [
+        "mc_crafting"
+      ],
       "grading": {
         "rubric_points": [
           "熔炉的用法：上格放待烧炼的东西（矿石/生食），下格放燃料（煤/木头）",
@@ -204,6 +318,32 @@
         "must_cite": true
       },
       "tts": "/data/tts/mc-e01-t09.m4a"
+    },
+    {
+      "task_id": "mc-e01-t10",
+      "type": "query",
+      "anchor_sec": 6500,
+      "context_window_sec": [
+        0,
+        6500
+      ],
+      "question": "他用篝火烤肉，这个跟直接搭个熔炉烧比，到底哪个更快？",
+      "hint_level": "full",
+      "scene": "基地：第一次用营火 campfire 烤生肉",
+      "resources": [
+        "mc_crafting"
+      ],
+      "tool_fit": true,
+      "grading": {
+        "rubric_points": [
+          "具体数字：熔炉烧炼一份约 10 秒，篝火要 30 秒，熔炉快 3 倍",
+          "但篝火优势是不需要燃料、可以同时烤 4 份、纯被动不用守着",
+          "结论方向：赶时间用熔炉，懒得管燃料用篝火，各有取舍"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/mc-e01-t10.m4a"
     }
   ]
 }

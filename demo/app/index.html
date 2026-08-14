@@ -76,6 +76,8 @@ video{width:100%; height:100%; object-fit:contain; background:#000;}
 .titem .mk.q{background:var(--q);} .titem .mk.p{background:transparent; border:2px solid var(--p);}
 .titem .tc{font-family:var(--mono); font-size:10.5px; color:var(--muted); flex-shrink:0; width:52px;}
 .titem .qq{font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--ink);}
+.tfit{flex-shrink:0; font-size:11px;}
+.tfit[title]{cursor:help;}
 .titem .st{margin-left:auto; font-size:10px; font-family:var(--mono); color:var(--dim); flex-shrink:0;}
 .titem .st.done{color:var(--ok);}
 
@@ -551,6 +553,7 @@ function renderTaskPane(){
       <div class="mk ${t.type==='query'?'q':'p'}"></div>
       <div class="tc">${fmtShort(t.anchor_sec)}</div>
       <div class="qq">${escapeHtml(t.question || '(主动型：判断开口时机)')}</div>
+      ${t.tool_fit ? '<span class="tfit" title="适合 lookup_game_info 工具：具体、易错、可验证的事实">🔍</span>' : ''}
       <div class="st ${taskDone(t.task_id)?'done':''}">${taskDone(t.task_id)?'✓':''}</div>
     </div>`).join('')}</div>
     <div id="tdetail"></div>`;
@@ -579,6 +582,7 @@ function renderTaskDetail(){
       <span class="pill ${t.type==='query'?'q':'p'}">${t.type.toUpperCase()}</span>
       <span class="pill g">${t.hint_level || ''}</span>
       <span class="pill g">${t.task_id}</span>
+      ${t.tool_fit ? '<span class="pill" style="color:var(--p);border:1px solid var(--p);">🔍 适合 lookup 工具</span>' : ''}
     </div>
     <div class="bigq">${escapeHtml(t.question || '主动型任务：没有提问，agent 需自行判断是否开口、何时开口、说多少。')}</div>
     <div class="kv"><b>锚点</b><span>${fmt(t.anchor_sec)}</span></div>
