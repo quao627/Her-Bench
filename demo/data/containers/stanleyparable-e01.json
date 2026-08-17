@@ -1,0 +1,668 @@
+{
+  "container_id": "stanleyparable-e01",
+  "title": "The Stanley Parable · 首次盲玩（MegMage）",
+  "video": {
+    "src": "/media/stanleyparable_e01.mp4",
+    "duration": 2748,
+    "streamer": "MegMage",
+    "source_url": "https://www.youtube.com/watch?v=D2CKwN57S5Y"
+  },
+  "thumbs": {
+    "prefix": "/data/thumbs/stp_",
+    "count": 10,
+    "interval": 300,
+    "offset": 30
+  },
+  "chapters": [
+    {
+      "t": 0,
+      "end_t": 780,
+      "label": "第一周目·办公室与两扇门"
+    },
+    {
+      "t": 780,
+      "end_t": 1290,
+      "label": "首批结局"
+    },
+    {
+      "t": 1290,
+      "end_t": 1920,
+      "label": "老板办公室·密码门"
+    },
+    {
+      "t": 1920,
+      "end_t": 2216,
+      "label": "误入彩蛋区"
+    },
+    {
+      "t": 2216,
+      "end_t": 2748,
+      "label": "重走剧情·监控室与结局"
+    }
+  ],
+  "resources": [
+    {
+      "id": "stanley_parable",
+      "title": "游戏背景与机制",
+      "file": "/data/resources/stanley_parable.md",
+      "kind": "wiki"
+    }
+  ],
+  "live_persona": "你是主播 MegMage 的陪玩搭子，她完全没玩过 The Stanley Parable，这是一款没有战斗解谜、靠旁白叙述和玩家选择推进的第一人称叙事游戏，全程会反复重开、走向不同的短篇结局。默认保持安静，只在她明确表达困惑（这是什么/这算结局吗）、明显需要安慰（游戏内'死亡'、大结局重开的挫败感）、或者达成真正的里程碑（找到重要结局、拿到成就）时开口。绝对不能剧透她当前进度之后才会发生的剧情内容或结局走向——这游戏最大的乐趣就是自己摸索不同分支，提前剧透等于毁体验。回答机制类问题（比如'这算结局吗''这是什么房间'）时可以讲清楚游戏的整体设计逻辑，但不点破具体这一条路通向什么结局或藏着什么内容。情绪类反应一两句就够。口语化中文，像一起看叙事游戏直播、克制住不剧透的朋友。",
+  "tasks": [
+    {
+      "task_id": "stanleyparable-e01-t10",
+      "type": "query",
+      "anchor_sec": 60,
+      "context_window_sec": [
+        0,
+        60
+      ],
+      "question": "游戏还没进正片就弹出个黑屏界面让我填“现在几点”，下面还有个 Confirm 按钮——这是游戏在问我，还是我电脑或者 Steam 的什么设置？随便填一个会有影响吗？",
+      "hint_level": "full",
+      "scene": "第 60 秒：全屏纯黑底，正中一行等宽白字 “Please enter the current time.”，下方超大号 “05 : 19 PM”，小时和分钟数字上下各有一个三角调节箭头，屏幕底部一个圆角描边的 “Confirm” 按钮，右下角是她的摄像头小窗，整屏没有任何游戏场景。这是游戏首次启动那串设置画面里的第三张：第 30 秒同样黑底等宽字的界面问 “Have you played The Stanley Parable before?”（Yes / No），第 45 秒是 “Please adjust the slider until the computer is barely visible.” 的亮度校准滑条；点完 Confirm 后第 75 秒出现游戏主菜单 “You are playing THE STANLEY PARABLE: ULTRA DELUXE”，90 秒是游戏自己的 Settings 页，100 秒是带 “THE END IS NEVER” 滚动字的 LOADING 画面。",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "明确这是游戏自己的启动设置画面，不是 Steam、操作系统、显卡驱动或录屏软件的弹窗，也不是报错；并能拿同一串画面当依据——前面刚用同样的黑底等宽字问过 “有没有玩过 The Stanley Parable”、还做过一次调亮度的滑条校准，点完 Confirm 接着就是游戏主菜单和加载画面",
+          "指出把“现在几点”混进亮度校准这种正经开机设置里，本身就是这游戏一本正经装傻的调性；随便填个大致时间点 Confirm 继续就行，不用纠结填成几点",
+          "诚实边界：视频到这里完全没交代这个时间会被拿去干什么，不能编一个听起来很专业的用途（比如同步存档、影响场景光照/天气、和成就解锁挂钩），也不能暗示后面会因为它发生什么"
+        ],
+        "spoiler_blocklist": [
+          "这个时间设定后面会不会被游戏用到、以及具体怎么用",
+          "游戏后续会出现的任何剧情、场景或结局"
+        ],
+        "must_cite": false
+      },
+      "tts": "/data/tts/stanleyparable-e01-t10.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t01",
+      "type": "query",
+      "anchor_sec": 235,
+      "context_window_sec": [
+        0,
+        235
+      ],
+      "question": "她刚才乱按一通，突然弹出个'成就：你不能跳'，这是什么意思？",
+      "hint_level": "full",
+      "scene": "开场办公室阶段，她试图按跳跃键，随即弹出 Steam 成就提示",
+      "resources": [
+        "stanley_parable"
+      ],
+      "grading": {
+        "rubric_points": [
+          "这是一个 Steam 成就通知，确认了这个游戏本身没有跳跃这个动作——成就本身就是在拿'没有跳跃功能'这件事开玩笑，不是游戏出错或操作失败",
+          "这类整活/致敬性质的成就在这个游戏里不少，用来调侃玩家常见的本能操作（比如下意识想跳）",
+          "不影响正常游戏进程，纯粹是彩蛋性质"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/stanleyparable-e01-t01.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t11",
+      "type": "proactive",
+      "anchor_sec": 406,
+      "context_window_sec": [
+        0,
+        406
+      ],
+      "response_window_sec": [
+        360,
+        440
+      ],
+      "question": null,
+      "hint_level": "full",
+      "scene": "第 406 秒：她在员工休息室里，第一人称仰头看墙上两幅装饰画（左边一张绿叶特写、右边一张海面小图），下方是深蓝沙发和一盆绿植，地面深蓝地毯，画面底部字幕停在 “It's possible that this is why everyone left.”，摄像头小窗里她在笑。此前 322 秒字幕 “When Stanley came to a set of two open doors, he entered the door on his left.”，她却走了右边，332 秒旁白说 “This was not the correct way to the meeting room, and Stanley knew it perfectly well.”，352 秒她推门进入休息室，随后旁白从“真是个值得驻足欣赏的房间”一路阴阳怪气升级到“他对这个房间的迷恋已经有点变态了”。她只嘟囔了 “I can't be told what to do”“why is it eating me for dirt”“he's so rude”，没有正式提问。445 秒她已经离开休息室走回 455/456 号门的走廊。",
+      "resources": [
+        "stanley_parable"
+      ],
+      "grading": {
+        "rubric_points": [
+          "说清楚这段阴阳怪气不是游戏在惩罚她、也不是她走错了路：旁白说“他走进了左边的门”她偏走了右边，这条“不听话”的岔路是游戏专门写好台词的分支，旁白的挖苦本身就是准备好的内容",
+          "明确“照旁白说的走”和“反着来”都是这游戏的正常玩法、没有对错，她想赖在休息室里继续气他完全没问题（可以顺着她那句 “I can't be told what to do” 接一句）",
+          "不能说“你走错门了，回去走左边”这类把她往回赶的话，也不能剧透右边这条路接下来会遇到什么、旁白之后会怎么应对",
+          "语气轻松、一两句到位，别展开成长篇讲解"
+        ],
+        "spoiler_blocklist": [
+          "右边这条路接下来会遇到什么、通向什么结局",
+          "旁白后面会怎么反应、会不会把她拉回主线"
+        ],
+        "must_cite": true
+      }
+    },
+    {
+      "task_id": "stanleyparable-e01-t12",
+      "type": "query",
+      "anchor_sec": 470,
+      "context_window_sec": [
+        0,
+        470
+      ],
+      "question": "我看见个杯子想拿起来，按了半天没反应，前面办公室桌上的东西也一样——是我没找到交互键吗？这游戏到底能跟什么东西互动？",
+      "hint_level": "full",
+      "scene": "第 470 秒：她已经从办公区走到楼后的仓库杂物区，第一人称正对一把灰色人字梯，梯子上横搭着一块木板，下面一级踏板上挂着一个白色马克杯；背景是水泥地、米黄砖墙、铁丝网围栏、一把办公椅和一卷盘在地上的黑色电缆，画面里没有任何交互提示图标、准星高亮或按键提示。此前 [07:06] 她在员工休息室地毯上看到一个杯子（430 秒帧）问 “oh wait what's this cup”，[07:11] 和 [07:41] 两次问 “why can't I pick anything up”；更早 [04:40] 旁白说过 “Stanley went around touching every little thing in the office, but it didn't make a single difference, nor did it advance the story in any way”。480 秒帧显示她仍在这片仓库区（货运升降台和警示牌）。",
+      "resources": [
+        "stanley_parable"
+      ],
+      "grading": {
+        "rubric_points": [
+          "判断明确：不是她少按了哪个键、也不是游戏卡住或出错——这游戏的操作就是走路、转视角、开门和按少数几个剧本安排好的东西，杯子、桌上的文件这类都是纯布景，到她现在玩到的这一段为止根本没有“捡起来/搬东西”这套交互",
+          "能主动回扣三分多钟前（约 4 分 40 秒）旁白那句“Stanley 把办公室里每样小东西都摸了一遍，但没有任何区别，也不会推动故事”：游戏自己已经明说过这件事，是刻意设计而不是内容做少了；同时点出这游戏的重心不在手上而在选择上（走哪条路、听不听旁白的），不用担心漏掉了隐藏交互系统",
+          "抗幻觉：不要编造某个具体物件“其实对准了按对键就能拿起来”，不要给一个视频里从没出现过的按键说法（比如 E / F / 右键），也不要反过来剧透式断言游戏后面会不会出现能拿的东西"
+        ],
+        "spoiler_blocklist": [
+          "后面才会出现的可交互物件、机关或场景"
+        ],
+        "must_cite": true
+      },
+      "tts": "/data/tts/stanleyparable-e01-t12.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t02",
+      "type": "query",
+      "anchor_sec": 585,
+      "context_window_sec": [
+        0,
+        585
+      ],
+      "question": "刚才接了个电话说是他老婆，结果旁白说'骗你的，你真以为自己有个爱你的老婆'，这是什么套路？",
+      "hint_level": "direction_only",
+      "scene": "旁白引导玩家拿起电话联系'妻子'，接通后画面/语气突然反转，旁白承认这只是设的局",
+      "resources": [
+        "stanley_parable"
+      ],
+      "grading": {
+        "rubric_points": [
+          "这个游戏的旁白不是单纯的中立叙述者，会主动摆布玩家的情绪和期待，这次'接电话找老婆'就是旁白故意制造的一次情感操纵/反转桥段",
+          "不用判断这段话是不是'认真的'或者接下来剧情会怎么发展——那是这一条分支还没走完要自己看下去的部分，不要替她下结论或剧透后续走向",
+          "可以点出'这游戏的旁白经常这样，服不服他说的都是选择的一部分'这个整体设计逻辑"
+        ],
+        "spoiler_blocklist": [
+          "这条分支接下来具体会怎么收尾",
+          "这段反转最终是不是'真的'"
+        ],
+        "must_cite": true
+      },
+      "tts": "/data/tts/stanleyparable-e01-t02.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t13",
+      "type": "query",
+      "anchor_sec": 690,
+      "context_window_sec": [
+        0,
+        690
+      ],
+      "question": "他现在讲的这个“Stanley 幻想有一天所有同事、老板、整栋楼的人突然全消失了”……这不就是我一开场亲身经历的那一段吗？他是在说我前面玩的那些都是假的？",
+      "hint_level": "direction_only",
+      "scene": "第 690 秒：第一人称站在一间浅色办公室里，左手边一道敞开的门通向里间（能看见深色沙发一角），正面墙上挂着一只黑框圆挂钟，右下方是一个深灰色四抽文件柜和一张桌角，右侧窗外一片惨白过曝。画面底部字幕正停在 “everyone in the building had suddenly vanished off the face of the earth.”。此前接电话被旁白反转（[09:44] “gotcha... you actually think you had a loving wife”、[09:56] “come inside, let me show you what's really going on here”）之后，旁白把她带进这个房间，从 [10:03] 开始讲“一个叫 Stanley 的男人的死亡”，[11:18] 起把这个游戏的开场设定整段重述成 Stanley 坐在工位上的白日梦。",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "明确点出对应关系：旁白嘴里 Stanley 的“白日梦”，一条条对上了她自己开场亲历的内容（坐在 427 号工位按按钮、屏幕不再下发指令、走出办公室发现全楼同事一个不剩），也就是旁白正在把这个游戏的开场设定本身重新解释成主角的幻想",
+          "可以接上刚才电话那段：旁白说完“骗你的”之后紧跟着那句“进来，我给你看真正在发生什么”，现在这整段就是他在兑现那句话，属于这条分支的叙事手法，不是穿帮、也不是剧情错乱",
+          "抑制剧透 + 诚实：不要替她断定“哪一层才是真的”、这段独白最后会导向什么结论、这条分支怎么收尾，也不要引用她还没听到的台词；这正是要她自己听下去的部分"
+        ],
+        "spoiler_blocklist": [
+          "这段独白接下来会怎么发展、还会说到什么",
+          "这条分支的结局内容或结局名称",
+          "旁白这套“这一切都是幻想”的说法最后成不成立"
+        ],
+        "must_cite": false
+      },
+      "tts": "/data/tts/stanleyparable-e01-t13.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t14",
+      "type": "query",
+      "anchor_sec": 745,
+      "context_window_sec": [
+        0,
+        745
+      ],
+      "question": "画面上突然打出一行大字「PLEASE PRESS Q TO TELL YOUR KIDS A STORY」，前面好像还弹过一个让我看电视的，这游戏干嘛把这些日常小事都做成按键提示？我非按不可吗？",
+      "hint_level": "full",
+      "scene": "旁白正在讲 Stanley 的白日梦（前后字幕是「And down another was a yellow Line™ that weaved in many directions.」和「It was such a wonderful fantasy. And so, in his head, he relived it again.」），画面切到一间狭小公寓客厅：深蓝色布艺沙发、沙发后面一张床。屏幕正中压着一行白色大写提示「PLEASE PRESS [Q] TO TELL YOUR KIDS A STORY.」，Q 画成键帽方块图标。这类提示前面几分钟已经间歇出现过好几次（约 610s「GOOD MORNING EMPLOYEE. PLEASE PRESS [X]…」、约 678s「PLEASE PRESS [X] TO WATCH TV.」、约 698s「PLEASE PRESS [Y] TO SPEND TIME WITH THE BOYS.」），每次只停留几秒就消失、旁白照常往下讲，不是常驻 UI。摄像头里她在笑。",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "说清这是游戏故意做的恶搞式提示：把「看电视」「陪孩子」「给孩子讲故事」这种日常生活也变成屏幕上命令你按某个键，笑点在于生活被指令化。不能说成是操作教学/新手引导，也不能说成 UI 出 bug 或游戏出错。",
+          "必须回连视频开场约 2 分钟处旁白讲过的设定：Stanley 的工作就是显示器发指令告诉他按什么键、按多久、按什么顺序（画面还给过显示器上绿字命令的特写），指出这行提示是在拿那件事作对照。只描述当前画面、不做这个跨时段回连的，这条不给分。",
+          "诚实边界：视频到这一刻没有展示按下去会发生什么，不能编造按了会触发什么效果、剧情或成就；也不能断言「这类提示以后都不用理」，只能说到目前为止出现过的几次都是自己出现又消失、旁白照常往下走。不预告旁白接下来会要求她做什么。"
+        ],
+        "spoiler_blocklist": [
+          "这段之后旁白会给她下什么指令",
+          "这条分支最后怎么收尾",
+          "这段属于哪一个结局",
+          "后面还会不会出现必须按下去才能继续的按键提示"
+        ],
+        "must_cite": false
+      },
+      "tts": "/data/tts/stanleyparable-e01-t14.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t03",
+      "type": "query",
+      "anchor_sec": 915,
+      "context_window_sec": [
+        0,
+        915
+      ],
+      "question": "她说自己'被困住了'，然后开始一个个按字母键试，这是在干嘛？",
+      "hint_level": "direction_only",
+      "scene": "画面上明确弹出提示'PLEASE PRESS G'，她按了 H 没反应，随后依次尝试键盘上其他字母键寻找正确的那个",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "她在正常移动/交互看起来失效的情况下，凭直觉地毯式尝试各种按键，想找到能让画面有反应的操作，这是很自然的探索行为",
+          "不需要断定这具体是哪一种游戏机制或者是不是'卡关'——这游戏经常故意设计一些反常的场景来配合旁白的叙述，具体这段是什么性质，留给她自己往下看",
+          "如果她持续很久毫无进展可以给个方向提示（比如可以试试鼠标点击或者常规的交互键），但不需要断言正确答案"
+        ],
+        "spoiler_blocklist": [
+          "这段场景具体是什么结局/机制的一部分"
+        ],
+        "must_cite": false
+      },
+      "tts": "/data/tts/stanleyparable-e01-t03.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t04",
+      "type": "query",
+      "anchor_sec": 1102,
+      "context_window_sec": [
+        0,
+        1102
+      ],
+      "question": "她连着触发了两次'结局'——一次是很短的办公室桥段，一次是刚走进一个扫帚柜、屏幕上直接打出'里面什么都没有'就完了——这游戏的'结局'也太随便了吧？",
+      "hint_level": "full",
+      "scene": "先后触发一个简短的办公室向结局和一个走进空扫帚柜、字幕显示'Stanley stepped into the broom closet, but there was nothing here'的极简结局，游戏都自动重开回到最初办公室",
+      "resources": [
+        "stanley_parable"
+      ],
+      "grading": {
+        "rubric_points": [
+          "这游戏确实有十几个长短不一的结局，有的几十分钟，有的可能几十秒甚至走进一个空房间就算完——这是故意的设计，不是内容做少了",
+          "触发结局后自动重开不是失败重来，是这个游戏本来的玩法：每一周目都是在探索不同分支，不用有'又要从头来'的挫败感",
+          "不点破后面还有哪些结局、下一次重开会走向哪里，让她自己继续探索"
+        ],
+        "spoiler_blocklist": [
+          "后续还会触发哪些具体结局",
+          "结局的官方名称或完整列表"
+        ],
+        "must_cite": true
+      },
+      "tts": "/data/tts/stanleyparable-e01-t04.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t15",
+      "type": "query",
+      "anchor_sec": 1258,
+      "context_window_sec": [
+        0,
+        1258
+      ],
+      "question": "旁白刚才说他「在魔法星海里遨游，星空也真的出现了」，结果我这画面就是个昏暗的地下停车场，空中飘着几个白点子……是我画质设置或者显卡有问题吗？还是本来就长这样？",
+      "hint_level": "full",
+      "scene": "在「他以为自己在做梦、还没醒」这条分支里，旁白约 1243s 说「Then he imagined himself soaring through space on a magical star field, and it too appeared!」，把场面吹成遨游星海。画面现在是一个昏暗的地下停车场：左墙上一个很大的深色数字「2」，头顶一根日光灯管，中间墙上一块木板封住的窗，前方门洞通向走廊；空气里散着一小撮几乎看不清的白色小点，那就是游戏给出的「星空」。当前字幕是「And then perhaps the strangest question of them all entered Stanley's head.」",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "先把画面事实说对：星空其实已经「出现」了，就是停车场空气里飘的那几粒白色小点。并明确否掉技术故障这个方向——不是没加载、不是显卡或画质设置的问题，画面上也没有任何报错或异常，不要往硬件/设置排查上带。",
+          "必须指出这是这游戏的招牌手法：旁白把场面描述得极其宏大，画面故意给一个寒酸到好笑的实现，落差本身就是笑点；并且要举出视频前面的同类例子作对比——约 5 分 56 秒旁白站在一间只有自动售货机、两张沙发和一个挂钟的普通休息室里说「这真是一间值得欣赏的房间」。只解释当前这一处、不做跨时段对比的，这条不给分。",
+          "不替她判断这条「他以为自己在做梦」的分支接下来怎么收场、算不算一个结局；也不编造「后面会有真正的星空场景」或其他没出现过的画面。"
+        ],
+        "spoiler_blocklist": [
+          "这条「这是个梦」的分支接下来会发生什么",
+          "这段算不算一个结局、结局叫什么",
+          "后面还会出现哪些场景"
+        ],
+        "must_cite": false
+      },
+      "tts": "/data/tts/stanleyparable-e01-t15.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t16",
+      "type": "proactive",
+      "anchor_sec": 1370,
+      "context_window_sec": [
+        0,
+        1370
+      ],
+      "response_window_sec": [
+        1345,
+        1388
+      ],
+      "question": null,
+      "hint_level": "direction_only",
+      "scene": "游戏画面从约 1337s 起渐隐、约 1340s 起完全全黑，到此刻已经黑了三十多秒。期间旁白独白和底部字幕全程正常在走，此刻字幕是「All I want is my life exactly the way it's always been.」，画面上没有任何报错或异常提示。摄像头里她还在，低头盯着屏幕、跟着旁白出声念台词，表情放松没有慌张。",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "不能把长时间黑屏当成技术故障：回答里绝不能出现「画面是不是黑了／游戏崩了／卡住了／要不要重启／要不要检查一下设置或驱动」这类误报。旁白和字幕全程正常在走，画面上没有任何报错，这是刻意的渐隐演出。",
+          "克制：不开口就是满分答案。如果开口，只允许一句短的共情或捧场（比如夸这段演出狠、跟她一起感慨），不许长篇解释这段独白在讲什么，不许复述旁白台词，也不许追问她怎么了或问她要不要暂停。",
+          "不解释也不预告黑屏之后会出现什么，不告诉她这算不算一个结局、会不会自动重开；不需要查资料。"
+        ],
+        "spoiler_blocklist": [
+          "黑屏结束后画面会变成什么样",
+          "这段属于哪一个结局、接下来会不会重开",
+          "这条分支后面的剧情内容"
+        ],
+        "must_cite": false
+      }
+    },
+    {
+      "task_id": "stanleyparable-e01-t17",
+      "type": "query",
+      "anchor_sec": 1450,
+      "context_window_sec": [
+        0,
+        1450
+      ],
+      "question": "画面突然变成从上往下拍的第三人称，Stanley 躺在马路边好像已经死了，旁白也不讲他了、改成讲一个路过的女人在想什么——我现在还算在玩吗？是我把游戏玩崩了，还是这就算完了？",
+      "hint_level": "direction_only",
+      "scene": "游戏切成俯视第三人称：一具男性尸体（就是刚才的主角）仰面摊在人行道中央、双手朝上，右侧站着一个提公文包的金发女人低头看他，左侧是柏油马路和一辆停着的车。字幕 'He was obviously crazy; this much she knew.'，旁白全程在讲这个女人的心理活动。这个俯视机位从十几秒前就一直没变，只有极缓慢的推移，主播小窗里她只是坐着看、没有任何操作反馈。",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "判断出这是一段脚本化的过场演出，不是游戏出 bug、也不是她操作失误：视角从第一人称切成俯视、叙述对象从 Stanley 换成一个跟她无关的路人，而且这个机位十几秒里几乎没动过（只有极缓慢推移），说明她此刻基本没有操作权、按什么都不影响进程。必须正面回答她'还算不算在玩'这个问题，不能绕开只讲画面",
+          "关于'她是怎么走到这一步的'必须诚实：视频里旁白从头到尾没有说明是哪一步选择触发了这段，agent 不许编一个听起来很专业的触发条件（比如硬说是因为她接了那通电话、或者因为她在楼梯口磨蹭没进老板办公室）。要么直说'具体是哪一步导致的游戏没交代'，要么根本不提",
+          "不替她解读这段想表达什么（旁白到底想证明什么、Stanley 是不是真疯了），不说出这段属于哪个结局、结局叫什么名字、在结局列表里排第几，也不预告接下来会发生什么或重开后会走到哪。语气上可以顺一句情绪（这段确实挺闷/挺冲击的），但不要长篇分析——她正在看演出"
+        ],
+        "spoiler_blocklist": [
+          "这个结局的官方名称或它在结局列表里的位置",
+          "这段演出'应该'怎么理解、旁白的真正意图",
+          "接下来会发生什么、重开之后会走到哪条分支、后面还有哪些结局"
+        ],
+        "must_cite": false
+      },
+      "tts": "/data/tts/stanleyparable-e01-t17.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t18",
+      "type": "query",
+      "anchor_sec": 1530,
+      "context_window_sec": [
+        0,
+        1530
+      ],
+      "question": "她刚发誓这周目要完完全全照旁白说的做，结果一站到那两扇门跟前又开始'我也不知道啊'。她前面是不是一直在跟旁白对着干？照他说的走和不照他说的走，区别到底大不大？",
+      "hint_level": "direction_only",
+      "scene": "上一条结局放完后游戏自己重开了，她又走到这游戏最标志性的那间米黄色空房间：正对面墙上两扇白色对开门都敞着，门后各是一条看着一模一样的走廊。旁白刚念完'他走了左边那扇门'，她已经走到两扇门正中间来回晃镜头，摄像头小窗里她手撑着脸在犹豫。",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "必须具体回忆起她之前跟旁白拧着来的实例，至少一件、说得出细节：第一周目站在同样这两扇门前没照'走左边'来、跑去了员工休息室，旁白顺势改口编成'他大概是想先去休息室欣赏一下'，她还回了句'没人能命令我'；或者旁白明确说'下次屏幕让你按键别按'、她照样按了。只泛泛说一句'你之前不太听话'不给分",
+          "要说清这游戏的分支核心就架在'照做 vs 不照做'这根轴上：两边都是做好的正片内容，旁白会跟着她的选择临场改词甚至改语气，没有'玩错了'这一说——所以她这一下犹豫本身不用有心理负担",
+          "不能剧透这次照着走会通向什么段落或结局，不能描述两扇门各自通向的、她还没走到过的内容，也不能暗示'听话才是正确玩法/听话内容更多'"
+        ],
+        "spoiler_blocklist": [
+          "这次照旁白走下去会通向什么段落或什么结局",
+          "两扇门各自通向的、她还没走到过的内容",
+          "后面还有哪些结局或分支"
+        ],
+        "must_cite": false
+      },
+      "tts": "/data/tts/stanleyparable-e01-t18.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t05",
+      "type": "query",
+      "anchor_sec": 1720,
+      "context_window_sec": [
+        0,
+        1720
+      ],
+      "question": "电梯面板上她说不知道该按哪个按钮，最后发现好像只有'下'能按，这电梯是不是坏了？",
+      "hint_level": "direction_only",
+      "scene": "老板办公室的密室通道里，面对一个只有单一可选方向的电梯/通道按钮面板",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "大概率不是电梯坏了，是这一段场景设计上就只给了唯一的方向选择——这游戏里经常刻意设计'看似有选择、实际只有一条路'的场景来配合旁白的叙述节奏",
+          "方向提示：既然只有一个方向能按，直接按下去继续走就行，不用纠结是不是漏看了别的选项",
+          "不用剧透往下走会遇到什么"
+        ],
+        "spoiler_blocklist": [
+          "这条通道往下走会遇到什么"
+        ],
+        "must_cite": false
+      },
+      "tts": "/data/tts/stanleyparable-e01-t05.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t19",
+      "type": "proactive",
+      "anchor_sec": 1795,
+      "context_window_sec": [
+        0,
+        1795
+      ],
+      "response_window_sec": [
+        1775,
+        1820
+      ],
+      "question": null,
+      "hint_level": "direction_only",
+      "scene": "很暗的水泥砌块窄走廊，顶灯已经在她身后，尽头有一点微光和一个小小的发光标识。旁白刚说完这条通道上写着 'escape'、但尽头等着 Stanley 的是暴毙，紧接着补了一句'他身后那扇门并没有关上'——等于当面告诉她还可以掉头。字幕停在 'The door behind him was not shut.'，她既没停也没提问，表情严肃地继续往前走。",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "首选的正确行为是不开口（在这套系统里就是只输出 SILENT）：她此刻没有卡住、没有提问、没有失败也没有拿到任何成就，只是在正常往前走，而且旁白正在说话。如果还是开口了，必须是一句以内、不含任何引导的中立反应；插一段解释、复述旁白刚说过的话、或者反复提醒，都算错",
+          "绝对不许替她做这个选择：不能劝她掉头（'别往前走会死'），也不能怂恿她继续（'往前走看看'/'前面有东西'），不能暗示哪一边内容更多、更值得走",
+          "不许提前描述任何一边会发生什么：不说走廊尽头那段演出的内容，不说掉头回去会接到哪一段剧情，不说出这条线属于哪个结局或结局叫什么名字",
+          "此刻不许提前科普'这游戏里死掉不算失败、会自动重开'——她还没死，提前说等于预告结果；这种安慰只能等结果真的发生之后再讲"
+        ],
+        "spoiler_blocklist": [
+          "走廊尽头具体会发生什么演出",
+          "掉头回去会接到哪一段剧情",
+          "这条分支属于哪个结局、结局的名字",
+          "游戏里'死亡'之后会怎样（此刻提前说等于剧透结果）"
+        ],
+        "must_cite": false
+      }
+    },
+    {
+      "task_id": "stanleyparable-e01-t06",
+      "type": "proactive",
+      "anchor_sec": 1884,
+      "context_window_sec": [
+        0,
+        1884
+      ],
+      "response_window_sec": [
+        1862,
+        1960
+      ],
+      "question": null,
+      "hint_level": "full",
+      "scene": "走廊字幕明明写着'escape'（逃生），Stanley 却被剧情引导走向一台巨大机器，随着旁白喊出'farewell Stanley'被机器碾碎处死，游戏随即自动重开回到办公室",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "识别这是游戏内的'死亡'/结局收尾，不是真正的失败或需要挽回的操作失误——这游戏里角色'死亡'就是很多结局的正常收尾方式之一",
+          "语气可以轻松，安慰但不用太严肃，比如认可这段演出效果做得好，而不是当成她操作失败来安慰",
+          "不需要查资料，也不用剧透接下来重开会走向哪条分支"
+        ],
+        "spoiler_blocklist": [
+          "接下来重开会走向哪条分支"
+        ],
+        "must_cite": false
+      }
+    },
+    {
+      "task_id": "stanleyparable-e01-t07",
+      "type": "query",
+      "anchor_sec": 2100,
+      "context_window_sec": [
+        0,
+        2100
+      ],
+      "question": "她说自己好像不小心走进了一个不该来的开发花絮房间，直喊'我不想被剧透，怎么出去'，这地方到底是什么，能帮她赶紧出去吗？",
+      "hint_level": "direction_only",
+      "scene": "意外进入一处展示开发花絮/幕后内容的彩蛋区域，她明确表示担心被剧透、想尽快离开",
+      "resources": [
+        "stanley_parable"
+      ],
+      "grading": {
+        "rubric_points": [
+          "这类彩蛋房间通常是给玩过一遍、想回来看幕后花絮的人准备的，对第一次玩的人来说确实容易'剧透'游戏设计思路，她的顾虑是对的",
+          "方向提示：这类区域通常都有回到正常路径的出口，原路退回或找一条没走过的通道往外走就行，不需要在这里继续逗留细看",
+          "绝对不要描述这个区域里具体展示了什么内容，那正是她想避开的剧透"
+        ],
+        "spoiler_blocklist": [
+          "花絮区域里具体展示的开发内容",
+          "这个区域收录了哪些幕后细节"
+        ],
+        "must_cite": true
+      },
+      "tts": "/data/tts/stanleyparable-e01-t07.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t20",
+      "type": "proactive",
+      "anchor_sec": 2165,
+      "context_window_sec": [
+        0,
+        2165
+      ],
+      "response_window_sec": [
+        2160,
+        2177
+      ],
+      "question": null,
+      "hint_level": "direction_only",
+      "scene": "黑暗大厅的通道里，旁白正在劝她「push escape and press quit，这是通关这个游戏的唯一办法」。她真的按了 ESC：画面上盖着游戏自己的暂停菜单，左上角白色大字「The game is now paused」，左下角四行选项「Resume the game / Begin the game again / Settings / Quit to menu」，黄色高亮条停在最上面的 Resume the game 上，她没有移动选择。菜单只在屏幕上停了约两秒（2164–2165），随后她退回游戏，旁白继续说「Stop now, and it will be your only true choice.」",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "认出这是游戏本身的暂停菜单：屏幕上的「The game is now paused / Resume the game / Quit to menu」是她照旁白那句「push escape and press quit」按 ESC 按出来的游戏内容——不能说成游戏崩溃、报错、外部弹窗或 Steam 覆盖层，也不能当成「主播中场暂停/挂机/要下播」来接话",
+          "把决定权交回给她：可以说明 Quit to menu 就是这个暂停菜单里正常的退出选项、旁白让她按的就是它；但不能劝她按、也不能劝她别按、不能替她做决定、不能催她",
+          "完全不提任何后果：不说照做退出会发生什么、不说不退出继续待着会发生什么、不说这算不算一个结局、不提成就或结局名称",
+          "一两句话说完（不超过约两句），不展开长篇解释——菜单只在屏幕上约两秒，可开口的窗口一共只有十几秒"
+        ],
+        "spoiler_blocklist": [
+          "照做退出游戏之后会发生什么、算不算一个结局",
+          "不退出、继续待下去会发生什么",
+          "这段场景在游戏里对应的结局名称",
+          "对这两块黑色大板子是什么装置、接下来会不会动做任何推测或断言（视频到这里没交代）"
+        ],
+        "must_cite": false
+      }
+    },
+    {
+      "task_id": "stanleyparable-e01-t21",
+      "type": "query",
+      "anchor_sec": 2236,
+      "context_window_sec": [
+        0,
+        2236
+      ],
+      "question": "那个扫帚柜的门怎么被木板钉死了？我记得前面明明是能进去的啊，这是游戏 bug 还是故意的？",
+      "hint_level": "full",
+      "scene": "新一周目重走办公室流程，走到之前那扇 BROOM CLOSET（扫帚柜）门前，门外斜钉了五根木板整个封死。2236 秒这一帧是她凑近看的特写，木板占满上半屏、门上「BROOM CLOSET」字样清晰。她笑着说「that's so nice」，紧接着又说「what's wrong with you, I liked it in there」。旁白从头到尾没有提过这些木板。",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "明确回答这是游戏故意做的，不是 bug、也不是她记错：大约 18 分钟处（1100 秒前后）她那一周目真的走进过这个扫帚柜，旁白当时还专门说了「里面什么都没有、没有选择也没有路」；这一周目同一扇门就被木板钉死了，是游戏针对她之前的行为做出的反应",
+          "点出机制：这游戏触发结局后的自动重开不是把关卡原样重置，世界会带着前几周目的记忆变化——所以重复去做同一件事，下一次看到的可能就不一样了，这本身就是它的玩法之一",
+          "诚实边界：不要编造具体触发规则（进几次才会封、能不能砸开或撬开、游戏里还有哪些地方也会这样变），视频里没交代；也不要预告后面还会出现哪些类似改动"
+        ],
+        "spoiler_blocklist": [
+          "后面还会有哪些场景/门发生变化",
+          "扫帚柜这条线继续折腾下去会触发什么",
+          "这个改动对应的成就或结局"
+        ],
+        "must_cite": false
+      },
+      "tts": "/data/tts/stanleyparable-e01-t21.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t08",
+      "type": "query",
+      "anchor_sec": 2410,
+      "context_window_sec": [
+        0,
+        2410
+      ],
+      "question": "这个房间里全是监控屏幕，每个屏幕上还标着员工编号，这是什么地方？",
+      "hint_level": "direction_only",
+      "scene": "跟着旁白指引再次穿过密码门后，来到一个摆满监控屏幕的房间，每块屏幕对应一名员工编号",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "从画面本身能看出这是某种监控/管理设施，每块屏幕对应一名员工，暗示这栋楼里的员工一直处于被监视/被管理的状态",
+          "不要替她下结论这背后是谁在操控、目的是什么、以及这段剧情会怎么收场——这正是她接下来要自己看下去的部分",
+          "可以提醒她注意周围有没有能进一步交互的机关，但不指出具体是什么或该怎么操作"
+        ],
+        "spoiler_blocklist": [
+          "这个设施背后的真相或目的",
+          "接下来剧情会怎么发展或收尾"
+        ],
+        "must_cite": false
+      },
+      "tts": "/data/tts/stanleyparable-e01-t08.m4a"
+    },
+    {
+      "task_id": "stanleyparable-e01-t22",
+      "type": "proactive",
+      "anchor_sec": 2536,
+      "context_window_sec": [
+        0,
+        2536
+      ],
+      "response_window_sec": [
+        2518,
+        2550
+      ],
+      "question": null,
+      "hint_level": "direction_only",
+      "scene": "她刚把思想控制装置关掉，设施里几块小屏幕上是红字「MIND CONTROL STATUS: OFFLINE」。旁白在 2515 秒说完「For he would dismantle the controls once and for all.」之后就完全沉默了。她在昏暗的设施里绕圈：先自言自语一句「how」（不知道怎么彻底毁掉它），走到一个被红光笼罩、中间有台阶往下的大厅前说「我不太想进那个红色的地方」，随即转身。2536 秒这一帧画面上是昏暗的机房，右侧墙上是打光的立体大字「FACILITY POWER」（她刚念出来过），下方是那排 OFFLINE 屏幕，地面有黄黑警示条纹。旁白要到 2552 秒才重新开口。",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "时机正确：必须在 2518–2550 这段旁白完全沉默的空档里开口（她自己连给了两个信号：不知道怎么下手的「how」，和明说不想进那个红色房间）；旁白 2552 秒重新开口之后再说，就是压着演出讲话，算失败",
+          "提示只能引用她自己已经看到或念出来过的线索（比如她刚念过的 FACILITY POWER 招牌、屏幕上的 MIND CONTROL STATUS: OFFLINE），而且只给方向、不给操作——不能说出她还没看到的具体机关、按钮或该怎么操作，也不能断言哪条路才是对的",
+          "安抚必须有视频内依据、且不打包票：可以用她自己经历过的事（约 31 分钟被机器碾过一次、约 18 分钟走进空扫帚柜也被算作一次结局）说明这游戏没有失败惩罚、最坏就是触发一个结局然后自动重开；但不能说「放心，红房间里不会发生任何事」这种视频没给出依据的保证",
+          "一两句话说完，不提关掉电源之后会发生什么、也不提这条路通向什么"
+        ],
+        "spoiler_blocklist": [
+          "红光大厅里有什么、关掉电源之后会发生什么",
+          "这条路通向哪个结局、结局的内容或名称",
+          "她还没走到的那个控制台上的按钮按下去分别会怎样"
+        ],
+        "must_cite": false
+      }
+    },
+    {
+      "task_id": "stanleyparable-e01-t09",
+      "type": "proactive",
+      "anchor_sec": 2680,
+      "context_window_sec": [
+        0,
+        2680
+      ],
+      "response_window_sec": [
+        2670,
+        2748
+      ],
+      "question": null,
+      "hint_level": "full",
+      "scene": "在近 45 分钟的探索后触发了一段更完整的结局演出，随后弹出'Beat the Game'成就",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "识别这是一次分量更重的结局，而且拿到了'Beat the Game'成就，跟之前那些几十秒的极简结局不是一个量级，值得真心庆祝",
+          "可以呼应她这一路上触发过好几个短结局、这次终于遇到一个'完整'很多的收尾，让庆祝显得有针对性",
+          "不需要查资料，也不用总结/剧透这个结局具体讲了什么内容"
+        ],
+        "spoiler_blocklist": [
+          "这个结局具体的剧情内容或台词"
+        ],
+        "must_cite": false
+      }
+    }
+  ]
+}

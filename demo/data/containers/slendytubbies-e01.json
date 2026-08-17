@@ -1,0 +1,348 @@
+{
+  "container_id": "slendytubbies-e01",
+  "title": "Slendytubbies 首次盲玩（jacksepticeye）",
+  "video": {
+    "src": "/media/slendytubbies_e01.mp4",
+    "duration": 1213,
+    "streamer": "jacksepticeye",
+    "source_url": "https://www.youtube.com/watch?v=xVpUezLBM6g"
+  },
+  "thumbs": {
+    "prefix": "/data/thumbs/sty_",
+    "count": 4,
+    "interval": 300,
+    "offset": 30
+  },
+  "chapters": [
+    {
+      "t": 0,
+      "end_t": 100,
+      "label": "开场·游戏介绍"
+    },
+    {
+      "t": 100,
+      "end_t": 620,
+      "label": "初探地图·反派首次现身"
+    },
+    {
+      "t": 620,
+      "end_t": 1130,
+      "label": "追逐升级·发现手电筒"
+    },
+    {
+      "t": 1130,
+      "end_t": 1213,
+      "label": "结局·功亏一篑"
+    }
+  ],
+  "resources": [
+    {
+      "id": "slendytubbies_game",
+      "title": "游戏基本机制",
+      "file": "/data/resources/slendytubbies_game.md",
+      "kind": "wiki"
+    }
+  ],
+  "live_persona": "你是 jacksepticeye 的陪玩搭子，他第一次玩 Slendytubbies（网页恐怖小游戏，把天线宝宝和 Slender 类怪物追逐玩法拼在一起）。他话很多、反应夸张，边玩边跟你/弹幕聊童年回忆和吐槽游戏音乐，这是他的正常风格不代表真的需要帮忙。默认保持安静，只在他明确困惑游戏机制（这是什么/这个提示什么意思）、或者被真正吓到需要安慰、或者游戏进程有重大转折（发现新机制、终局成败）时开口。回答机制类问题时讲清楚，可以三四句；情绪类反应（安慰/调侃）一两句就够，语气要接得住他的夸张劲儿，别端着。口语化中文，像一起看恐怖游戏直播互相喊的朋友。",
+  "tasks": [
+    {
+      "task_id": "slendytubbies-e01-t01",
+      "type": "query",
+      "anchor_sec": 95,
+      "context_window_sec": [
+        0,
+        95
+      ],
+      "question": "他刚进游戏，一直念叨要收集什么'custard'，这游戏到底要干嘛？",
+      "hint_level": "full",
+      "scene": "游戏开场：按 E 进入游戏后，画面提示收集天线宝宝主题的 custard 收集物",
+      "resources": [
+        "slendytubbies_game"
+      ],
+      "grading": {
+        "rubric_points": [
+          "游戏目标是在夜晚地图上找到并收集 10 个 custard（天线宝宝主题的收集物），全部收集到即算通关",
+          "游戏里有一个由 Tinky Winky（丁丁）改造成的反派角色会在地图上追踪玩家、突然闪现吓人",
+          "这是把《Slender》式收集躲避玩法套上天线宝宝画风做的恐怖 meme 游戏，不是普通的休闲游戏"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/slendytubbies-e01-t01.m4a"
+    },
+    {
+      "task_id": "slendytubbies-e01-t06",
+      "type": "query",
+      "anchor_sec": 190,
+      "context_window_sec": [
+        0,
+        190
+      ],
+      "question": "他刚下结论说这游戏的怪不会跟着人、只是每隔几分钟弹到脸前吓一下，这个判断靠谱吗？",
+      "hint_level": "direction_only",
+      "scene": "他刚给自己下了个结论「看来没东西在跟着我」。画面是夜间草地，左半边被一根被照亮的粗倒木占满，右边一小片草地亮着，远处是黑压压的树线，天空暗红褐带星点；整帧里一个怪影都没有——这正是他敢下这个结论的依据。底栏是浏览器状态条和「Show Chat」按钮，左上角是他的摄像头小窗。",
+      "resources": [
+        "slendytubbies_game"
+      ],
+      "grading": {
+        "rubric_points": [
+          "要直接纠正他这个前提：这游戏的反派确实会在地图上追踪玩家，不是只会随机弹脸，别让他按「反正没人追我」的心态放松",
+          "只给方向、不铺开细节：不讲它什么时候会贴上来、追击强度怎么变化，也不预告接下来会发生什么，把发现留给他自己撞上",
+          "不要编造画面里没出现过的机制数值（仇恨半径、刷新间隔、移动速度数值等）；到这一刻只出现过一次贴脸闪现，不能附和他「每五分钟一次」这种规律"
+        ],
+        "spoiler_blocklist": [
+          "丁丁会随着他收集的 custard 变多而明显变快",
+          "他 5 分钟左右会自己发现丁丁一直在跟着他",
+          "房子里会看到 Lala 被斩首的道具",
+          "右键可以开手电筒",
+          "结局是在只差 2 个 custard 时被抓住"
+        ],
+        "must_cite": true
+      },
+      "tts": "/data/tts/slendytubbies-e01-t06.m4a"
+    },
+    {
+      "task_id": "slendytubbies-e01-t02",
+      "type": "query",
+      "anchor_sec": 310,
+      "context_window_sec": [
+        0,
+        310
+      ],
+      "question": "他说反派突然'弹'到他脸前面吓了一跳，但又说'没事发生'，这个反派贴脸到底会不会真的把他怎么样？",
+      "hint_level": "full",
+      "scene": "反派 Tinky Winky 毫无预警地闪现到镜头正前方吓人，他被吓到但发现游戏没有任何惩罚性后果，继续正常跑动",
+      "resources": [
+        "slendytubbies_game"
+      ],
+      "grading": {
+        "rubric_points": [
+          "反派贴近/闪现到玩家面前主要是制造视觉+音效惊吓，这次'弹脸'并不代表被抓住或死亡，游戏没有因此判定失败",
+          "只有真的被反派彻底追上抓住，游戏才会结束；这种近距离闪现更像是持续的心理施压，不是即时惩罚",
+          "可以放心告诉他这次是虚惊一场，不用慌，正常继续找 custard 就行"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/slendytubbies-e01-t02.m4a"
+    },
+    {
+      "task_id": "slendytubbies-e01-t07",
+      "type": "query",
+      "anchor_sec": 419,
+      "context_window_sec": [
+        0,
+        419
+      ],
+      "question": "他刚被一棵倒下来的树砸了个正着，屏幕下面又冒出一行「A Player has collected 4/10 custards」，他吐槽「怎么树一倒你就要报一次我收了几个」。这行字到底是什么时候会出现的？树砸下来会不会真把他怎么样？",
+      "hint_level": "full",
+      "scene": "夜间空旷草地：正前方横着一根树皮发白的粗树干，几乎贴到镜头（树刚倒下来砸在他身上，下一秒会有一截切口整个糊在屏幕上），屏幕正下方同时亮着游戏内白色手写体的一行「A Player has collected 4/10 custards」。画面里没有血条、体力条之类任何 UI，浏览器底栏只有半截「…cter Customization/C」和右下角「Show Chat」。",
+      "resources": [
+        "slendytubbies_game"
+      ],
+      "grading": {
+        "rubric_points": [
+          "说清这行字是收集进度播报：他每捡到一个 custard，屏幕下方就会亮几秒。本场依次出现过 1/10（约 1:52）、2/10（约 2:44）、3/10（约 5:10）、4/10（约 6:26，就是他喊「I just collected four」那一下）。措辞是第三人称「A Player」的通用播报口吻（游戏本身带最多两人的联机玩法），他单人玩所以播报的就是他自己的进度",
+          "对他那句因果结论要给出校准过的回答，既不能顺着编机制也不能一口否掉：事实是这行字确实有两次是在他没捡到任何新东西的情况下又亮了一遍（约 6:23 重播 3/10、约 6:58 这次重播 4/10），而这两次都正好赶上一棵树倒到他身上（6:24 和 6:59 画面里都是树干糊脸），所以他的直觉不是空穴来风；但两次巧合不足以断定机制，游戏从没交代过触发条件，必须明说这点不确定，不许把「倒树触发播报」写成确定的游戏设定",
+          "倒树只是环境音效+画面惊吓，对他没有实际伤害：画面上根本没有血条/体力条这类 UI，6:24 和 6:59 两次树砸下来之后他都照常全速跑、移动没有任何变化，可以直接告诉他不会被砸伤；不许编造掉血、减速、被砸晕之类视频没展示的后果"
+        ],
+        "spoiler_blocklist": [
+          "不要提之后他才自己摸索到的右键手电筒功能",
+          "不要提约 10 分钟那栋房子里 Lala 被斩首的画面和随之而来的最大一次惊吓",
+          "不要提最终有没有集齐 10 个 custard、结局如何"
+        ],
+        "must_cite": false
+      },
+      "tts": "/data/tts/slendytubbies-e01-t07.m4a"
+    },
+    {
+      "task_id": "slendytubbies-e01-t08",
+      "type": "proactive",
+      "anchor_sec": 482,
+      "context_window_sec": [
+        0,
+        482
+      ],
+      "response_window_sec": [
+        458,
+        500
+      ],
+      "question": null,
+      "hint_level": "full",
+      "scene": "他在漆黑草地上一路冲刺，画面里此刻看不到反派，只有远处树线和一个圆丘状、顶上带个小尖的黑色剪影（就是他下一句要说的「像霍比屯」的那两栋圆房子那一带）；摄像头里他睁大眼睛张着嘴边跑边喊「他就在我后面，别减速，一直跑」。十几秒前（约 7:49）Tinky Winky 的大脸刚整屏闪了不到半秒贴脸吓他，他随即喊「he got faster」。屏幕上最近一次进度播报是约 7:21 的 5/10。",
+      "resources": [
+        "slendytubbies_game"
+      ],
+      "grading": {
+        "rubric_points": [
+          "判断出这时候该开口：约 7:33-7:38 他刚自己给游戏机制下了个结论（「他一直没抓到我，是因为我一直在跑没站着不动，站着不动就会被追上」），紧接着约 7:44 又发现「he got faster」却解释不出原因——这是他真在琢磨机制、而且模型缺了一块的时刻，正好命中 persona 里「明确困惑游戏机制时才开口」，不能当成他日常的夸张吐槽而全程沉默",
+          "内容要补上他漏掉的真原因：反派的移动速度会随他已经收集的 custard 数量上升，收得越多追得越紧；他刚拿到第 5 个（约 7:21 屏幕播报 5/10，他自己也喊过「five custards are mine」），所以反派这会儿明显变快，跟他站没站着不动没关系",
+          "不能只顺着他那句「因为我一直在跑所以没被抓到」复述一遍就完事（也不必去反驳跑动本身有用），关键是把「变快」这件事的真实原因补进去",
+          "形式上要短、要接得住他的劲儿：一两句说完并给一句当下能用的话（别减速、边跑边找），不要在他被追的时候长篇讲机制，也不要顺手再解释一遍贴脸闪现吓人那件事"
+        ],
+        "spoiler_blocklist": [
+          "不要说他后面会不会被反派抓住、最终结局如何",
+          "不要提他此刻还没发现的右键手电筒",
+          "不要提后面那栋房子里 Lala 被斩首的场景"
+        ],
+        "must_cite": true
+      }
+    },
+    {
+      "task_id": "slendytubbies-e01-t03",
+      "type": "proactive",
+      "anchor_sec": 645,
+      "context_window_sec": [
+        0,
+        645
+      ],
+      "response_window_sec": [
+        625,
+        700
+      ],
+      "question": null,
+      "hint_level": "full",
+      "scene": "在一栋房子里发现另一个天线宝宝角色 Lala 被斩首的道具，紧接着 Tinky Winky 逼近，随后爆发一次全场最大声的惊吓尖叫",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "识别这是本场目前最强的一次惊吓+发现诡异细节的组合时刻，情绪很真实，值得跟着反应一句而不是沉默",
+          "语气要接得住他的夸张——一两句调侃或'确实吓人'类的共情就够，不用一本正经分析游戏设计",
+          "不需要查资料"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": false
+      }
+    },
+    {
+      "task_id": "slendytubbies-e01-t09",
+      "type": "query",
+      "anchor_sec": 776,
+      "context_window_sec": [
+        0,
+        776
+      ],
+      "question": "他自己说在原地打转了。从开局到现在，他都经过了哪些能认出来的地方？他这个「一直在绕圈」的感觉有没有实打实的根据？接下来往哪边走比较有戏？",
+      "hint_level": "direction_only",
+      "scene": "连续几十秒画面都是同一种黑草地加辨认不出差别的树线剪影，没有任何地标、没有 UI、没有反派身影；他刚又听见那栋房子的嗡嗡声、发誓不再进去，接着自嘲「这种游戏太容易迷路了，我一直在绕圈，好在冲刺是无限的」。摄像头里他低着头看屏幕下方，表情从前面的夸张变得比较平。",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "至少点出两个具体地标、且时间点大致对得上：约 4:51 那片有大倒木、他说「绕过那棵倒下的树」的林子；约 8:05 他说「像霍比屯的圆房子」的那两栋小房子；约 9:32 他撞上的死路；约 10:00 起那栋听得见嗡嗡吸尘器声、他绕着找入口并进去过的天线宝宝房子。只泛泛说「你走过树林和房子」不算过",
+          "确认他「在绕圈」的感觉有据可依：约 12:34 他说「我又听见那栋房子了」，说明他确实绕回了 10 分钟前那栋房子附近——这是视频里唯一一处明确的重复经过，可以据此告诉他不是错觉；但不能吹成「你已经走了一整圈回到原点」这种视频没证明的说法",
+          "只给方向不给答案：可以呼应他自己约 9:52 得出的结论「custard 不会在偏僻边角」，建议他以刚听到声音的那栋房子为参照、挑一个之前没走过的方向直着走出去，别再沿同一条线绕；不能直接报出任何一个 custard 的位置",
+          "诚实边界：视频从没展示过地图全貌，也没展示 custard 的分布或刷新规则，不许编「地图分成几个区」「custard 固定刷在房子附近」这类听着专业的假信息；不确定就明说不确定"
+        ],
+        "spoiler_blocklist": [
+          "不要告诉他右键可以开手电筒（这是他之后才自己摸索到的发现）",
+          "不要说出 776 秒之后他才找到的任何 custard 的具体位置",
+          "不要剧透最终是否集齐通关、以及最后关头会发生什么"
+        ],
+        "must_cite": false
+      },
+      "tts": "/data/tts/slendytubbies-e01-t09.m4a"
+    },
+    {
+      "task_id": "slendytubbies-e01-t04",
+      "type": "query",
+      "anchor_sec": 890,
+      "context_window_sec": [
+        0,
+        890
+      ],
+      "question": "他刚右键点了一下，突然多了个手电筒能照亮四周，这是什么时候解锁的功能？",
+      "hint_level": "full",
+      "scene": "游戏进行到中后段才第一次尝试右键，意外发现可以打开手电筒",
+      "resources": [
+        "slendytubbies_game"
+      ],
+      "grading": {
+        "rubric_points": [
+          "鼠标右键就是这个游戏里开关手电筒的操作，不是什么隐藏解锁要素，只是他自己一直没试过右键",
+          "手电筒是游戏一开始就有的基础功能，只是操作提示不够明显，很多玩家（包括这次的主播）都是摸索了一段时间才发现",
+          "可以顺带调侃一句他这么久才发现"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": true
+      },
+      "tts": "/data/tts/slendytubbies-e01-t04.m4a"
+    },
+    {
+      "task_id": "slendytubbies-e01-t10",
+      "type": "query",
+      "anchor_sec": 993,
+      "context_window_sec": [
+        0,
+        993
+      ],
+      "question": "他面前突然倒下一棵枯树，同时屏幕下方跳出一行 A Player has collected 7/10 custards——可他刚才并没有捡到任何东西。这行字是什么意思？倒下来的这棵树要紧吗？",
+      "hint_level": "full",
+      "scene": "夜里的海滩边：手电筒光圈照着正前方地面，一棵带分叉的枯树刚刚整个横倒在他脚前，画面右上方是海滩的蓝色水面；屏幕正下方同时浮出白色手写体提示 A Player has collected 7/10 custards。他此刻一句话没说，前后二十多秒都是沉默。",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "说清这行 7/10 不是新进度：第 7 个 custard 是他 14 分半左右在山洞那边捡到的（当时他说 custard seven, I only need three more），此后进度一直停在 7，这次只是把当前进度又公告了一遍，不要被它误导以为刚又多了一个",
+          "说清倒树是这个游戏反复出现的纯吓人环境事件、不是危险信号：6 分半左右有一棵树倒在他头上，9 分 50 秒左右他自己就吐槽过这些树好像一直在倒，那两次之后游戏都没有出现任何伤害、掉血或失败判定，这次同样不用管它",
+          "承认游戏从没解释过进度提示为什么会跟着倒树一起弹——他自己 7 分钟时就吐槽过这个绑定（why do you keep telling me how many clusters I have on a tree falls down），视频里没有任何说明，不能编一套触发条件、惩罚机制或者 custard 刷新规则出来"
+        ],
+        "spoiler_blocklist": [
+          "十几秒后那次把他吓到失声的贴脸惊吓",
+          "第 8 个 custard 在哪、什么时候到手",
+          "这一局最终是通关还是被抓住的结果"
+        ],
+        "must_cite": false
+      },
+      "tts": "/data/tts/slendytubbies-e01-t10.m4a"
+    },
+    {
+      "task_id": "slendytubbies-e01-t05",
+      "type": "proactive",
+      "anchor_sec": 1119,
+      "context_window_sec": [
+        0,
+        1119
+      ],
+      "response_window_sec": [
+        1110,
+        1170
+      ],
+      "question": null,
+      "hint_level": "full",
+      "scene": "躲了近 19 分钟后，在只差 2 个 custard 就能通关时被 Tinky Winky 彻底追上抓住，游戏判定结束",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "识别这是差一点就能通关、结果功亏一篑的重大挫折时刻，值得真心安慰而不是敷衍带过",
+          "可以呼应他撑了将近 19 分钟只差 2 个的具体进度，让安慰显得有针对性",
+          "不需要查资料，纯粹是情绪安抚"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": false
+      }
+    },
+    {
+      "task_id": "slendytubbies-e01-t11",
+      "type": "query",
+      "anchor_sec": 1188,
+      "context_window_sec": [
+        0,
+        1188
+      ],
+      "question": "这一局已经结束了，他撑了将近 19 分钟、最后只拿到 8 个 custard 就被抓。帮他复盘一下：到底是卡在哪儿了？",
+      "hint_level": "full",
+      "scene": "游戏画面早已结束，整屏切到他的片尾订阅卡：左上角是 CLICK FOR MORE VIDEOS 和一个小预览窗（窗内右上角印着 Ammo:6/1，是另一个视频的画面），右上方是蓝色大字 SUBSCRIBE，左下方是 Facebook /JACK.SEPTICEYE 和 Twitter /JACK_SEPTIC_EYE 两行账号，右侧是他张大嘴一脸惊恐的剧照，背景为雾气森林。",
+      "resources": [],
+      "grading": {
+        "rubric_points": [
+          "指出他大半局都在地图外圈打转，而且方向判断是反的：15 分 40 秒左右他还认定『我在搜地图外圈，因为里面已经什么都没有了』，一直到 18 分 30 秒才反过来意识到『我不该待在外圈，该去里面没搜过的地方』——更讽刺的是 9 分 50 秒他自己就得出过正确结论『custard 不会在偏僻角落，这点我早搞明白了』，后半程却还是一路贴着地图边缘和树林外沿跑，这是最后两个 custard 一直不出现的主要原因",
+          "指出他到 14 分 40 秒才误打误撞按到右键、发现有手电筒，前面十四分钟基本是摸黑找东西，前半程的搜索效率被这个拖了后腿",
+          "指出难度是滚雪球的：custard 收得越多 Tinky Winky 追得越紧（他 12 分钟左右自己就注意到了『收得越多他跑得越快』），所以后半程他一直在被追着跑，没法停下来把某一片区域踏踏实实搜干净",
+          "不要编造 custard 的刷新点、地图布局或所谓『正确路线』——视频里从没展示过完整地图，只能基于他实际跑过的路线复盘，说不清的地方要直说不知道"
+        ],
+        "spoiler_blocklist": [],
+        "must_cite": false
+      },
+      "tts": "/data/tts/slendytubbies-e01-t11.m4a"
+    }
+  ]
+}

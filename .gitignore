@@ -1,3 +1,6 @@
 demo/.env
 demo/media/
 videos/
+live/pokemon-agent/
+__pycache__/
+.DS_Store
