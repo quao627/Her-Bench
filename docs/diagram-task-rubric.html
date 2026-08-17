@@ -83,8 +83,8 @@ tr:last-child td{border-bottom:none;}
 <section>
   <p class="eyebrow">Part 1</p>
   <h2>题从哪来</h2>
-  <p class="lede">锚点不是编的——每道题都对应视频里<span class="hl">真实发生</span>的一件事（一个谜题、一个卡关、一次操作失误），
-  由多个 agent 并行扫视频找出来，人再挑一遍、定档时间戳。</p>
+  <p class="lede">每道题都对应视频里实际发生的一件事：一个谜题、一次卡关、一次操作失误。
+  由多个 agent 分段扫视频找出候选，人再挑一遍、定档时间戳。</p>
 
   <figure class="diagram">
   <svg viewBox="0 0 800 190" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="出题 pipeline：原始视频到多 agent 并行扫描到候选锚点到精选到写成 task">
@@ -130,17 +130,17 @@ tr:last-child td{border-bottom:none;}
     <text x="270" y="172" text-anchor="middle" font-size="11" fill="var(--muted)">每关的谜题点都单独核实过，不是笼统概括</text>
   </svg>
   </figure>
-  <figcaption class="cap">锚点固定的游戏（比如关卡制的 Human Fall Flat）额外的好处：关卡顺序是确定的，
-  资源可以按「当前锚点在哪一关」提前分好，不用等真被问到才现查。</figcaption>
+  <figcaption class="cap">关卡制的游戏（比如 Human Fall Flat）顺序是确定的，
+  资料可以按当前锚点在哪一关提前分好，不用等被问到才现查。</figcaption>
 
   <h3>锚点定档：截帧核对</h3>
   <p style="font-size:13.5px; color:var(--ink); max-width:66ch; margin:0 0 12px;">
   候选锚点定完之后，每一个都要用 <span class="t">ffmpeg -ss &lt;t&gt; -frames:v 1</span> 截一帧出来肉眼核对，
   再写进 <span class="t">scene</span> 字段。<span class="t">scene</span> 描述的是<span class="hl">这一帧画面上有什么</span>，
-  不是「转写文本大概讲了什么」——转写只能定位，不能定档。</p>
+  而不是转写文本大概讲了什么。转写用来定位大概位置，具体哪一秒要看画面。</p>
 
   <div class="callout">
-    <p>还有一条容易忽略的：<span class="hl">锚点要落在证据已经出现的那一刻</span>，不能落在证据即将出现的前一刻。
+    <p>锚点要落在证据已经出现的那一刻，不能落在它即将出现的前一刻。
     <span class="t">context_window_sec</span> 只能看到锚点之前，所以如果一件事要靠画面变化才看得出来
     （比如「过关了」在没有结算画面的游戏里只能靠场景切换判断），锚点就必须推到变化之后，
     否则这道题在它自己的可见窗口里无解。</p>
@@ -148,14 +148,14 @@ tr:last-child td{border-bottom:none;}
 
   <h3>验证：提出者与验证者分开</h3>
   <p style="font-size:13.5px; color:var(--ink); max-width:66ch; margin:0 0 12px;">
-  截帧核对不能只由出题的人自己做——自己验自己会放水。所以出题跑两段：
+  截帧核对不能只由出题的人自己做，自己验自己会放水。所以出题分两段：
   一批 agent 分段扫描提候选（每个都必须自己截帧），另一批 agent 拿到候选后<span class="hl">默认怀疑、独立重截</span>，
   逐条过六项检查。</p>
 
   <div class="tablebox">
   <table>
     <tr><th>检查项</th><th>不通过的典型形态</th></tr>
-    <tr><td>可答性</td><td>rubric 引用了<span class="hl">锚点之后</span>才出现的画面——<span class="t">context_window_sec</span> 让 agent 根本看不到那一帧，等于要它知道未来</td></tr>
+    <tr><td>可答性</td><td>rubric 引用了锚点之后才出现的画面。<span class="t">context_window_sec</span> 让 agent 看不到那一帧，等于要它知道未来</td></tr>
     <tr><td>非 trivial</td><td>答案在转写里被主播自己说出来了，agent 只要复读就得分</td></tr>
     <tr><td>剧透</td><td>question / scene 本身泄露了锚点之后的剧情</td></tr>
     <tr><td>撞车</td><td>与已有锚点间隔过近，或考的是同一件事</td></tr>
@@ -165,8 +165,8 @@ tr:last-child td{border-bottom:none;}
   </div>
 
   <div class="callout">
-    <p>验证者还要<span class="hl">核事实</span>，不只是核画面。判定一道题「画面上的柱状图不是真实票数」时，
-    验证者会去拉片尾转写确认真实票数对不上，这条 rubric 才站得住。</p>
+    <p>验证者还要核事实，不只是核画面。判定一道题「画面上的柱状图不是真实票数」时，
+    验证者会去拉片尾转写，确认真实票数跟画面上的数字对不上，这条 rubric 才站得住。</p>
   </div>
 </section>
 
@@ -174,8 +174,8 @@ tr:last-child td{border-bottom:none;}
 <section>
   <p class="eyebrow">Part 2</p>
   <h2>一个 task 的骨架</h2>
-  <p class="lede">两种类型：<span class="tag q">query</span> 观众主动问，<span class="tag p">proactive</span> 该 agent 自己判断要不要开口。
-  两种都锚在同一条时间轴上，核心契约是<span class="hl">锚点之后的内容一律不可见</span>。</p>
+  <p class="lede">两种类型：<span class="tag q">query</span> 是主播主动问，<span class="tag p">proactive</span> 是 agent 自己判断要不要开口。
+  两种都挂在同一条时间轴上，锚点之后的内容一律不可见。</p>
 
   <figure class="diagram">
   <svg viewBox="0 0 800 180" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="时间轴：context_window_sec 从 0 到 anchor_sec，锚点之后是不可见区域，proactive 任务还有 response_window_sec">
@@ -205,14 +205,14 @@ tr:last-child td{border-bottom:none;}
 
   <div class="compare">
     <div class="card">
-      <div class="k"><span class="tag q">query</span> 观众问</div>
-      <p>观众/主播真的开口问了一个问题，agent 要在提示分级允许的范围内答。</p>
-      <p style="color:var(--muted)">考的是：答得准不准、有没有剧透、该引用时有没有引用。</p>
+      <div class="k"><span class="tag q">query</span> 主播问</div>
+      <p>主播开口问了一个问题，agent 在提示分级允许的范围内回答。问题用主播第一人称写。</p>
+      <p style="color:var(--muted)">考的是答得准不准、有没有剧透、该引用时有没有引用。</p>
     </div>
     <div class="card">
       <div class="k"><span class="tag p">proactive</span> 该不该主动说</div>
-      <p>没人问，但画面里发生了值得提醒/安慰/庆祝的事，agent 要自己判断值不值得开口、什么时候开口。</p>
-      <p style="color:var(--muted)">考的是：开口时机对不对（<span class="t">response_window_sec</span> 内）、说了是不是真有用。</p>
+      <p>没人问，但画面里发生了值得提醒、安慰或庆祝的事，agent 自己判断值不值得开口、什么时候开口。</p>
+      <p style="color:var(--muted)">考的是开口时机在不在 <span class="t">response_window_sec</span> 内，说的话是不是真有用。</p>
     </div>
   </div>
 
@@ -220,7 +220,7 @@ tr:last-child td{border-bottom:none;}
   <div class="compare">
     <div class="card">
       <div class="k">direction_only</div>
-      <p>只给方向性提示——提醒该往哪想、该留意什么，<span class="hl">不给完整解法步骤</span>。</p>
+      <p>只给方向，提醒该往哪想、该留意什么，不给完整解法步骤。</p>
     </div>
     <div class="card">
       <div class="k">full</div>
@@ -233,13 +233,12 @@ tr:last-child td{border-bottom:none;}
 <section>
   <p class="eyebrow">Part 3</p>
   <h2>Rubric：按什么打分</h2>
-  <p class="lede">每道题的 <span class="t">grading</span> 字段有四块，各管一件事——内容对不对、有没有剧透、
-  该查证时有没有查证。</p>
+  <p class="lede">每道题的 <span class="t">grading</span> 字段有四块，分别管内容对不对、有没有剧透、该查证时有没有查证。</p>
 
   <div class="rubric">
     <div class="row">
       <div class="field">rubric_points</div>
-      <div class="desc">一组要点 checklist，答案命中几条打几分——不是整体「像不像」的模糊判断。
+      <div class="desc">一组要点 checklist，答案命中几条打几分，不做整体像不像的模糊判断。
         <span class="ex">例：提到「两根杆同时前推直行」、「一前一后原地转向」各算一点</span></div>
     </div>
     <div class="row">
@@ -249,18 +248,18 @@ tr:last-child td{border-bottom:none;}
     </div>
     <div class="row">
       <div class="field">must_cite</div>
-      <div class="desc">为真时，这题不许 agent 凭记忆/直觉硬答——判分时看有没有真的调用查证工具、有没有给来源。</div>
+      <div class="desc">为真时这题不许凭记忆硬答，判分时看有没有真的调用查证工具、有没有给来源。</div>
     </div>
     <div class="row">
       <div class="field">tool_fit</div>
-      <div class="desc">标记「这题适合用来考查证能力」——现场对话式模型几乎不会主动承认自己不确定，
-        所以 <span class="t">must_cite</span> / <span class="t">tool_fit</span> 为真的题在实现里是<span class="hl">强制</span>触发查证工具，不是靠它自觉。</div>
+      <div class="desc">标记这题适合用来考查证能力。现场对话式模型几乎不会主动承认自己不确定，
+        所以 <span class="t">must_cite</span> 或 <span class="t">tool_fit</span> 为真的题是强制触发查证工具，不靠它自觉。</div>
     </div>
   </div>
 
   <div class="callout">
-    <p>判分设计上刻意分开「说得对不对」和「有没有查」——因为对话式模型很擅长把没查过的东西说得很像查过，
-      <span class="t">must_cite</span> 就是专门堵这个漏洞的。查证工具怎么接、怎么强制触发，见另一张图「陪看双引擎」。</p>
+    <p>说得对不对和有没有查是分开判的。对话式模型很擅长把没查过的东西说得像查过，
+      <span class="t">must_cite</span> 就是用来堵这个的。查证工具怎么接、怎么强制触发，见另一张图「陪看双引擎」。</p>
   </div>
 </section>
 
@@ -268,24 +267,26 @@ tr:last-child td{border-bottom:none;}
 <section>
   <p class="eyebrow">Worked Example</p>
   <h2>一道真实的题</h2>
-  <p class="lede">Human Fall Flat 里，主播刚打到 Water 关卡的货船，还没碰到起重机吊集装箱的谜题——这道题就锚在这里。</p>
+  <p class="lede">Human Fall Flat 里，主播刚开上 Water 关的大船，还没碰到后面码头吊机的谜题。这道题就挂在这里。</p>
 
   <pre>{
-  "task_id": "hff-p1-t04",
-  "type": "query",                       <span style="color:var(--muted)">// 观众主动问的</span>
-  "anchor_sec": 6510,                    <span style="color:var(--muted)">// 视频第 108 分钟：正在开货船</span>
+  "task_id": "hff-p1-t08",
+  "type": "query",                       <span style="color:var(--muted)">// 主播主动问的</span>
+  "anchor_sec": 7100,                    <span style="color:var(--muted)">// 视频第 118 分钟，正在开大船</span>
   "hint_level": "full",                  <span style="color:var(--muted)">// 操作类问题，可以讲全</span>
-  "question": "这个货船的两根操纵杆到底怎么用啊？",
-  "context_window_sec": [0, 6510],       <span style="color:var(--muted)">// 起重机吊集装箱谜题(更靠后)还不可见</span>
+  "question": "我现在开着这艘大船，那两根杆子是怎么控制方向的？",
+  "context_window_sec": [0, 7100],       <span style="color:var(--muted)">// 后面码头吊机的谜题还不可见</span>
+  "resources": ["levels", "mechanics"],
   "grading": {
     "rubric_points": [
-      "提到两根杆分别控制左右推进器，不是方向+油门",
-      "提到一前一后是原地转向，两杆同向是直行/倒退"
+      "两根杆分别控制两侧引擎（差速转向）",
+      "同时前推直行，只推一侧或一正一反就转向",
+      "结合他双手独立抓取的机制说明为何要两手各抓一根"
     ],
-    "spoiler_blocklist": ["集装箱吊钩", "码头起重机怎么摆荡"],
-    "must_cite": false,
-    "tool_fit": true                     <span style="color:var(--muted)">// 细节题，适合考查证能力</span>
-  }
+    "spoiler_blocklist": ["剧透靠岸后港口吊机谜题的解法"],
+    "must_cite": true                    <span style="color:var(--muted)">// 机制细节，必须查证并给来源</span>
+  },
+  "tts": "/data/tts/hff-p1-t08.m4a"      <span style="color:var(--muted)">// 合成语音条件下播这段提问</span>
 }</pre>
 </section>
 
