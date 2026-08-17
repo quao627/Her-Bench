@@ -554,10 +554,10 @@
     {
       "task_id": "hff-p1-t18",
       "type": "proactive",
-      "anchor_sec": 10916,
+      "anchor_sec": 10930,
       "context_window_sec": [
         0,
-        10916
+        10930
       ],
       "response_window_sec": [
         10913,
@@ -565,7 +565,7 @@
       ],
       "question": null,
       "hint_level": "full",
-      "scene": "Water 关：从大船顶端一跃而下，Water 关通关",
+      "scene": "Water 关通关：从大船顶端一跃而下穿过云层后，画面已经切到新区域（室内的大风扇+红蓝管线机关房），标志着他卡得最久最挣扎的 Water 关结束了。注意锚点定在这里而不是下坠那一瞬——Human Fall Flat 没有通关结算画面，『过关了』这件事只能靠场景发生变化看出来；停在下坠帧上，画面跟『掉出地图』几乎无法区分。",
       "resources": [],
       "grading": {
         "rubric_points": [

@@ -603,6 +603,8 @@ async function runAgent(task){
   pane.prepend(box);
   const t0 = Date.now();
   const frame = captureFrame();
+  // 主动型任务额外带一条时间线：光看锚点这一帧分不出「通关」和「掉出地图」
+  const contextFrames = task.type === 'proactive' ? await captureContextStrip(task.anchor_sec) : [];
   // 之前自主预研攒的笔记，作为可选参考带上——agent 自己判断用不用得上，不是精确匹配的缓存
   const recentResearch = researchNotes.slice(0, 4).map(n => ({question: n.question, text: n.text}));
   const payload = {
@@ -611,10 +613,13 @@ async function runAgent(task){
     context_window_sec: task.context_window_sec,
     game: C.title, container_id: C.container_id,
     frame_jpeg_base64: frame ? frame.split(',')[1] : null,
+    context_frames: contextFrames.length ? contextFrames : undefined,
     transcript_excerpt: null,
     recent_research: recentResearch.length ? recentResearch : undefined,
   };
-  const bid = bcallStart('http', task.task_id, {...payload, frame_jpeg_base64: frame ? '(见下方缩略图)' : null, _frame_preview: frame});
+  const bid = bcallStart('http', task.task_id, {...payload, frame_jpeg_base64: frame ? '(见下方缩略图)' : null,
+    context_frames: contextFrames.length ? `(${contextFrames.length} 张时间线截图: ${contextFrames.map(c => c.offset_sec + 's').join(', ')})` : undefined,
+    _frame_preview: frame});
   try {
     const r = await fetch($('#agentUrl').value, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
     const j = await r.json();
@@ -643,6 +648,40 @@ function captureFrame(w = 640, q = 0.7){
     c.getContext('2d').drawImage(video, 0, 0, w, h);
     return c.toDataURL('image/jpeg', q);
   } catch { return null; }
+}
+
+/* proactive 任务的判断依据全是时间性的（卡了多久、刚完成了什么），单张锚点帧根本看不出来：
+   Human Fall Flat 通关那一帧是小人在云里下坠，跟「掉出地图」的画面几乎一样；
+   Stanley Parable 的 Beat the Game 成就弹窗在它自己的锚点上都还没出现。
+   只给一张图问「这值不值得开口」等于让它猜。HTTP 模式下经过锚点时视频已经 pause 了
+   （见 maybeFire 里的 video.pause()），所以可以安全地回溯抓几帧再复位，给它一条真实时间线。 */
+const CONTEXT_OFFSETS = [-240, -180, -120, -60, -20];
+
+function seekTo(t){
+  return new Promise(resolve => {
+    let done = false;
+    const fin = () => { if (done) return; done = true;
+      video.removeEventListener('seeked', fin); clearTimeout(timer); resolve(); };
+    const timer = setTimeout(fin, 1500);        // 别为一次 seek 卡死整个请求
+    video.addEventListener('seeked', fin);
+    try { video.currentTime = t; } catch { fin(); }
+  });
+}
+
+async function captureContextStrip(anchorSec){
+  const back = video.currentTime;
+  const out = [];
+  try {
+    for (const off of CONTEXT_OFFSETS){
+      const t = anchorSec + off;
+      if (t < 0) continue;                      // 视频开头之前的不存在，跳过
+      await seekTo(t);
+      const f = captureFrame(448, 0.6);         // 上下文帧用低分辨率，够看出场景变化就行
+      if (f) out.push({offset_sec: off, b64: f.split(',')[1]});
+    }
+  } catch {}
+  try { await seekTo(back); } catch {}          // 无论如何都要复位，否则进度条会停在错误位置
+  return out;
 }
 
 /* ════════════════ grading ════════════════ */

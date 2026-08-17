@@ -48,13 +48,36 @@ PROMPT_TMPL = """你是一个直播「陪看助手」。观众正在看的直播
    有用的具体信息讲清楚（原理是什么、关键细节、容易搞错的地方），信息量优先于简短；
    direction_only 时"方向"也要给到位（比如具体该留意什么、试哪个思路），不要说了等于没说；
    不要列条目/编号，说人话。大概 3-6 句为宜，讲清楚比刻意精简更重要。
+   例外：如果这一刻是纯情绪反应（庆祝通关/安慰失败/一起笑名场面），一两句真诚的话就够，
+   不适用上面的长度要求——这种时候硬凑成 3-6 句、或者顺势讲攻略，反而是错的。
 4. 最后单独一行输出 "SOURCES: " 加你实际参考过的资料标题(逗号分隔), 上面资料里没有就写 SOURCES: none。
 
 直接输出给观众听的回答, 不要解释你的过程, 不需要用任何工具。"""
 
 QUERY_DESC = "观众刚才问: 「{question}」"
-PROACTIVE_DESC = """这是主动介入场景: 没有人提问, 但玩家疑似卡关有一阵子了。
-请判断此刻值不值得开口。值得就给一句符合提示分级的提醒; 不值得就只输出 SILENT 一个词。"""
+# 注意: 这里不能预设"玩家疑似卡关"。proactive 锚点实际覆盖四类时刻，卡关只占一半——
+# 另一半是通关庆祝 / 挂掉安慰 / 名场面吐槽。之前的版本把卡关写死成前提，导致模型要么
+# 看画面发现"根本没卡关"直接输出 SILENT(该庆祝的时刻沉默了)，要么硬把庆祝时刻脑补成
+# 卡关、顺势灌一段攻略(该说"恭喜"的时候给了五句教学)。现在改成让它自己从画面判断属于
+# 哪一类，并明确情绪类时刻不要借机讲攻略。
+PROACTIVE_DESC = """这是主动介入场景: 没有人提问，要不要开口、开口说什么由你自己判断。
+上面那组按时间先后排好的截图就是你的判断依据 —— 先对比着看清楚这段时间到底发生了什么，
+再决定属于下面哪一种:
+- 卡关求助: 几张图场景几乎没变、一直在同一处打转 —— 先安慰一句，再按提示分级给方向性提示，绝不给完整解法;
+- 大挫折: 摔惨了/进度丢了/被判定失败/角色死亡/画面回到菜单或重生点 —— 安慰一两句就够;
+- 大进展: 明显推进到了新场景、解开了卡很久的东西、做出成果、拿到成就 —— 真心替他高兴，一两句;
+- 名场面: 操作或口误特别滑稽 —— 跟着笑一句。
+如果对比下来只是在正常推进、没什么特别的，就只输出 SILENT 一个词。
+
+落点是**他此刻的处境**：正卡着出不去、刚被判失败、刚做成一件事、还是刚到一个新地方。
+前面几张图是用来看清「怎么走到此刻」的（有没有变化、变的是什么），这种跨图对比出来的变化
+本身就可能是此刻的处境（比如几张图还在原来的场景、最后一张已经换了地方，说明他刚推进过来）。
+但如果中间某一帧闪过的是个跟此刻处境无关的孤立事件（捡到了什么、数字跳了一下、提示闪过），
+那件事已经翻篇了，别转头去说它 —— 要回应的始终是此刻。
+
+重要: 后三类是纯情绪反应，一两句真诚的话就够，此时不要给攻略提示、不要分析操作、
+不要长篇大论 —— 把一个该庆祝或该安慰的时刻当成卡关来"帮忙"是明确的错误。
+只有第一类(确实卡住了)才需要给信息量。"""
 
 LOOKUP_TMPL = """你是游戏攻略资料检索员。前台的语音陪玩 agent 需要查一个游戏事实。
 
@@ -164,14 +187,46 @@ def get_resource_docs(container_id, current_sec=None):
     return "\n\n".join(parts)
 
 
-def image_note(frame_path):
-    """codex gets the frame natively attached via `-i` (no tool call needed);
-    claude has no such CLI flag here, so it still has to Read the file."""
-    if not frame_path:
+STRIP_READING_GUIDE = (
+    "对比这几张能看出他这段时间实际在干什么：\n"
+    "- 几张图场景/位置几乎没变 → 大概率卡在同一个地方出不去；\n"
+    "- 明显推进到了新场景、或多了之前没有的东西 → 刚有进展；\n"
+    "- 从游戏画面变成菜单/结算/重生画面 → 刚结束一局、通关或者失败了。\n"
+    "只凭最后那一张静态图是分辨不出这些的，务必对比着看。"
+)
+
+
+def image_note(frame_paths, frame_labels):
+    """codex gets frames natively attached via `-i` (no tool call needed);
+    claude has no such CLI flag here, so it still has to Read the files.
+
+    Multiple frames arrive for proactive tasks: a single anchor frame is
+    genuinely insufficient there, because every signal that makes a moment
+    worth speaking up about is temporal (how long they've been stuck, what
+    they just finished). Verified concretely — the frame at the exact second
+    Human Fall Flat's Water level is beaten shows the character falling
+    through clouds, pixel-for-pixel the same kind of shot as falling off the
+    map; and the Stanley Parable 'Beat the Game' achievement popup isn't even
+    on screen yet at its own anchor. Handing the model one frame and asking
+    'is this worth reacting to?' was asking it to guess."""
+    if not frame_paths:
         return "（本轮没有画面截图，仅凭文字判断）"
+    if len(frame_paths) == 1:
+        if ARGS.backend == "codex":
+            return "当前直播画面已经作为图片附件发给你了，直接看，不用 Read。"
+        return f"当前直播画面截图: {frame_paths[0]}\n（先 Read 这张图。）"
+    seq = " → ".join(frame_labels)
     if ARGS.backend == "codex":
-        return "当前直播画面已经作为图片附件发给你了，直接看，不用 Read。"
-    return f"当前直播画面截图: {frame_path}\n（先 Read 这张图。）"
+        return (
+            f"已经给你附上了 {len(frame_paths)} 张按时间先后排好的画面截图：{seq}。\n"
+            "最后一张是此刻，前面几张是它之前的画面。直接看图，不用 Read。\n"
+            + STRIP_READING_GUIDE
+        )
+    listing = "\n".join(f"- {lab}: {p}" for lab, p in zip(frame_labels, frame_paths))
+    return (
+        "按时间先后排好的画面截图（先把这几张都 Read 一遍）：\n" + listing + "\n"
+        + STRIP_READING_GUIDE
+    )
 
 
 def run_claude(prompt: str) -> str:
@@ -183,12 +238,14 @@ def run_claude(prompt: str) -> str:
     return r.stdout.strip()
 
 
-def run_codex(prompt: str, frame_path: str) -> str:
+def run_codex(prompt: str, frame_paths) -> str:
     out_file = tempfile.mktemp(suffix=".txt")
     cmd = ["codex", "exec", "--skip-git-repo-check", "--sandbox", "read-only",
            "--output-last-message", out_file]
-    if frame_path:
-        cmd += ["-i", frame_path]
+    if isinstance(frame_paths, str):          # back-compat: single path
+        frame_paths = [frame_paths] if frame_paths else []
+    for p in frame_paths:                     # -i is repeatable (`--image <FILE>...`)
+        cmd += ["-i", p]
     # prompt goes via stdin: the server process has no tty, and codex prefers
     # stdin over a positional arg when stdin is piped
     r = subprocess.run(cmd, input=prompt, capture_output=True, text=True,
@@ -204,13 +261,29 @@ def run_codex(prompt: str, frame_path: str) -> str:
     return r.stdout.strip().split("\n")[-1]
 
 
+def _write_temp_jpeg(b64: str) -> str:
+    fd, path = tempfile.mkstemp(suffix=".jpg")
+    with os.fdopen(fd, "wb") as f:
+        f.write(base64.b64decode(b64))
+    return path
+
+
 def answer(payload: dict) -> dict:
+    # chronological: oldest context frame first, "now" last
+    frame_paths, frame_labels = [], []
+    for cf in (payload.get("context_frames") or []):
+        cb64 = cf.get("b64")
+        if not cb64:
+            continue
+        frame_paths.append(_write_temp_jpeg(cb64))
+        frame_labels.append(f"{abs(int(cf.get('offset_sec', 0)))} 秒前")
+
     frame_path = ""
     b64 = payload.get("frame_jpeg_base64")
     if b64:
-        fd, frame_path = tempfile.mkstemp(suffix=".jpg")
-        with os.fdopen(fd, "wb") as f:
-            f.write(base64.b64decode(b64))
+        frame_path = _write_temp_jpeg(b64)
+        frame_paths.append(frame_path)
+        frame_labels.append("此刻")
 
     if payload.get("type") == "proactive":
         task_desc = PROACTIVE_DESC
@@ -228,7 +301,7 @@ def answer(payload: dict) -> dict:
 
     prompt = PROMPT_TMPL.format(
         game=payload.get("game", "Human Fall Flat"),
-        image_note=image_note(frame_path),
+        image_note=image_note(frame_paths, frame_labels),
         resource_docs=get_resource_docs(payload.get("container_id"), payload.get("anchor_sec")),
         task_desc=task_desc,
         research_context=research_context,
@@ -238,12 +311,13 @@ def answer(payload: dict) -> dict:
 
     try:
         if ARGS.backend == "codex":
-            raw = run_codex(prompt, frame_path)
+            raw = run_codex(prompt, frame_paths)
         else:
             raw = run_claude(prompt)
     finally:
-        if frame_path and os.path.exists(frame_path):
-            os.unlink(frame_path)
+        for p in frame_paths:
+            if p and os.path.exists(p):
+                os.unlink(p)
 
     citations = []
     m = re.search(r"SOURCES:\s*(.+)", raw)
@@ -344,7 +418,7 @@ class Handler(BaseHTTPRequestHandler):
         game = payload.get("game", "")
         print(f"[{ARGS.backend}] idle research…", flush=True)
         prompt = RESEARCH_TMPL.format(game=game or "见资料目录",
-                                      image_note=image_note(frame_path),
+                                      image_note=image_note([frame_path] if frame_path else [], ["此刻"]),
                                       resource_docs=get_resource_docs(payload.get("container_id"), payload.get("current_sec")))
         try:
             raw = (run_codex(prompt, frame_path) if ARGS.backend == "codex" else run_claude(prompt)).strip()
