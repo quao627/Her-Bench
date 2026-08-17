@@ -37,6 +37,24 @@
   ],
   "resources": [
     {
+      "id": "blender_recovery",
+      "title": "崩溃救援与自动保存",
+      "file": "/data/resources/blender_recovery.md",
+      "kind": "wiki"
+    },
+    {
+      "id": "blender_texture_paint",
+      "title": "纹理绘制与颜色丢失",
+      "file": "/data/resources/blender_texture_paint.md",
+      "kind": "wiki"
+    },
+    {
+      "id": "blender_reference_image",
+      "title": "参考图导入与正交对齐",
+      "file": "/data/resources/blender_reference_image.md",
+      "kind": "wiki"
+    },
+    {
       "id": "blender_navigation",
       "title": "视口导航",
       "file": "/data/resources/blender_navigation.md",
@@ -52,6 +70,18 @@
       "id": "blender_workflow",
       "title": "新手常见困惑",
       "file": "/data/resources/blender_workflow.md",
+      "kind": "guide"
+    },
+    {
+      "id": "blender_troubleshooting",
+      "title": "崩溃与掉色排查（社区版）",
+      "file": "/data/resources/blender_troubleshooting.md",
+      "kind": "guide"
+    },
+    {
+      "id": "blender_community_tips",
+      "title": "镜像、参考图与版本差异（社区版）",
+      "file": "/data/resources/blender_community_tips.md",
       "kind": "guide"
     }
   ],
@@ -123,7 +153,7 @@
         0,
         128
       ],
-      "question": "他说做到一半程序直接崩了，然后又说'找到办法不用重做三小时'，这是怎么把进度救回来的？",
+      "question": "我刚说做到一半程序直接崩了，然后又说'找到办法不用重做三小时'，这是怎么把进度救回来的？",
       "hint_level": "direction_only",
       "scene": "Level 1：画面上用醒目黄字打出'3 HOURS LOST'（丢了三小时）的字幕特效，同时旁白说程序在做贴图途中崩溃关闭，随后说自己找到了解决办法，没有从头重做",
       "resources": [
@@ -148,7 +178,7 @@
         0,
         200
       ],
-      "question": "画面中间那两块交叉立着的白板子，就是他刚说的丢进项目里的稿子吧？为什么非要这么十字交叉着摆，前面他画的那张侧视图是不是就是这么用的？",
+      "question": "画面中间那两块交叉立着的白板子，就是我刚说的丢进项目里的稿子吧？为什么非要这么十字交叉着摆，前面我画的那张侧视图是不是就是这么用的？",
       "hint_level": "full",
       "scene": "Level 2 开始建模。Blender 视口（Object Mode，Camera Perspective）里两张白色的图片平面呈 90 度十字交叉竖在场景中央，中间夹着正在建的灰色小角色模型（头顶两只尖耳朵、细长身体）；右上角大纲栏 Scene Collection 下除了 Camera、Cube、Light，还单独挂着一个 reference 集合，展开是 Front View 和 Side View 两项。旁白同时在说他又看了个教程，干脆把自己画的稿子丢进项目里，这样就能开始建模了。",
       "resources": [
@@ -177,7 +207,7 @@
         0,
         265
       ],
-      "question": "他说贴图一上到角色身上，之前画好的颜色说没就没了，试了好几次都这样，最后咋解决的？",
+      "question": "我刚说贴图一上到角色身上，之前画好的颜色说没就没了，试了好几次都这样，最后咋解决的？",
       "hint_level": "direction_only",
       "scene": "Level 2：画面正是 Texture Paint 工作区——左侧是灰白色的粘土质感贴图色板，视口里蓝色调的小角色模型带着圆形画笔光标，旁白说反复尝试给身体上贴图后手绘的颜色就消失，后来改用渐变色才成功，画嘴巴时又出现类似问题，折腾几小时后干脆删掉嘴巴放弃",
       "resources": [
@@ -202,7 +232,7 @@
         0,
         328
       ],
-      "question": "他开工前都先在 iPad 上画草图，上一关做那个小人的时候还画了正面和侧面两张。这些手画的稿子拖进 Blender 之后到底是怎么用的？",
+      "question": "我开工前都先在 iPad 上画草图，上一关做那个小人的时候还画了正面和侧面两张。这些手画的稿子拖进 Blender 之后到底是怎么用的？",
       "hint_level": "full",
       "scene": "Level 3 开场：俯拍他的书桌，他戴黑色绘图手套、用 Apple Pencil 在支架上架着的 iPad 上画概念草图，白色画布上已经有一个方盒状物体的铅笔轮廓；左边主显示器开着一个文件传输页面（有 Drive 卡片和一个 snapdrop 开头的文件名），右边副屏是一个正在倒着走的大号计时器（42:08）。旁白说他开始画一些关于日本之行的概念稿。",
       "resources": [],
@@ -259,7 +289,7 @@
         0,
         430
       ],
-      "question": "他说因为用了镜像工具，结果角色两只手都变成了要去拿饮料的姿势，这个镜像是干嘛用的，为什么会闹这个笑话？",
+      "question": "我刚说因为用了镜像工具，结果角色两只手都变成了要去拿饮料的姿势，这个镜像是干嘛用的，为什么会闹这个笑话？",
       "hint_level": "full",
       "scene": "Level 3：制作场景里的人物角色时，旁白解释因为用了镜像编辑功能摆姿势受限，导致给一只手做拿杯子的动作时，另一只手也被迫做出同样的动作，看起来很怪，最后干脆去掉了手里的杯子",
       "resources": [

@@ -1,6 +1,6 @@
 # Blender 视口导航与选择基础
 
-> 来源：https://docs.blender.org/manual/en/latest/editors/3dview/navigate/navigation.html 、https://docs.blender.org/manual/en/latest/editors/3dview/modes.html
+> 来源：https://docs.blender.org/manual/en/latest/editors/3dview/navigate/navigation.html 、https://docs.blender.org/manual/en/latest/editors/3dview/navigate/viewpoint.html 、https://docs.blender.org/manual/en/latest/editors/3dview/navigate/projections.html 、https://docs.blender.org/manual/en/latest/editors/3dview/display/gizmo.html 、https://docs.blender.org/manual/en/latest/editors/3dview/display/overlays.html 、https://docs.blender.org/manual/en/latest/scene_layout/object/editing/transform/control/axis_locking.html
 
 ## 视口（Viewport）导航三件套
 
@@ -42,3 +42,29 @@ Blender 里最基础的两个模式：
 - 框选（按住鼠标左键拖出一个框）也能一次选中多个物体，这个习惯在 Edit Mode 里选顶点、边、面时同样好用。
 
 先练熟这几个手感，后面学具体建模工具会顺很多。
+
+## 怎么分清自己在哪根轴上：X 红、Y 绿、Z 蓝
+
+新手最常犯晕的就是「我到底是在 X 轴还是 Y 轴」。Blender 用一套**固定的颜色**来标轴向，认颜色比认字母快得多。
+
+手册在讲 Object Gizmos 时写得很直白：「A gizmo always has three **color-coded axes: X (red), Y (green), and Z (blue)**.」这套配色是全局统一的——地面网格里那两条穿过原点的高亮线（Overlays 面板里的 **Axes** 开关控制「Show the X, Y and/or Z axis lines」）、右上角那个导航球、变换 gizmo 上的三根杆，用的都是同一套红绿蓝。
+
+**看到一条黄绿色的线亮着，就是 Y 轴；红的是 X，蓝的是 Z。**
+
+## 锁轴：G / S / R 之后再按 X / Y / Z
+
+手册的 Axis Locking 页：「The axis of movement can be changed at any time during transformation by typing X, Y, Z.」在 Object Mode 和 Edit Mode 下，移动、缩放、旋转、挤出都能这么锁。
+
+几条实用细节，都是手册原文：
+
+- **锁住的那根轴会画得更亮**：「A locked axis will display in a brighter color than an unlocked axis.」
+- **左上角会直接写出当前锁在哪根轴上**：「The current mode will be displayed in the left-hand side of the 3D Viewport header.」——比如 `Scale: 9.54833 along global Y axis` 这行，就是在告诉你「现在沿全局 Y 轴缩放，倍数 9.54833」。分不清方向的时候，看这行字比看画面靠谱。
+- **同一个键按多次会换参考系**：第一次按锁到当前 Transform Orientation 的对应轴，第二次按切到 **Global** 轴（如果本来就是 Global，则切到 Local），第三次按取消所有约束。
+- **Shift + X/Y/Z 是「平面锁」**：锁住两根轴、放开一根，等于让物体只在某个平面内自由移动或缩放。手册注明平面锁只对移动和缩放有意义。
+- 锁轴之后照样可以直接打数字，键盘输入的精确值不受影响。
+
+## 正交 vs 透视：Numpad 5
+
+手册解释了这两种投影的差别：透视是我们眼睛习惯的「distant objects appear smaller」；正交则是「objects stay the same size regardless of their distance… making it easier to model and judge proportions」——量比例、对参考图的时候必须用正交。
+
+另外 Preferences → Navigation 里有个 **Auto Perspective**，开着的时候按 Numpad 1/3/7 对齐到某个轴会**自动切成正交**，转动视角又自动回到透视。所以有时候你并没有主动按 Numpad 5，视图却已经是正交的了。

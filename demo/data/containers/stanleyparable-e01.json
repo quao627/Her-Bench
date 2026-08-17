@@ -42,9 +42,15 @@
   ],
   "resources": [
     {
-      "id": "stanley_parable",
-      "title": "游戏背景与机制",
-      "file": "/data/resources/stanley_parable.md",
+      "id": "stanley_design",
+      "title": "设计理念：旁白、服从与交互",
+      "file": "/data/resources/stanley_design.md",
+      "kind": "wiki"
+    },
+    {
+      "id": "stanley_structure",
+      "title": "结局结构、重开机制与跨周目记忆",
+      "file": "/data/resources/stanley_structure.md",
       "kind": "wiki"
     }
   ],
@@ -84,11 +90,12 @@
         0,
         235
       ],
-      "question": "她刚才乱按一通，突然弹出个'成就：你不能跳'，这是什么意思？",
+      "question": "我刚才乱按一通，突然弹出个'成就：你不能跳'，这是什么意思？",
       "hint_level": "full",
       "scene": "开场办公室阶段，她试图按跳跃键，随即弹出 Steam 成就提示",
       "resources": [
-        "stanley_parable"
+        "stanley_dev",
+        "stanley_ud_extras"
       ],
       "grading": {
         "rubric_points": [
@@ -117,7 +124,8 @@
       "hint_level": "full",
       "scene": "第 406 秒：她在员工休息室里，第一人称仰头看墙上两幅装饰画（左边一张绿叶特写、右边一张海面小图），下方是深蓝沙发和一盆绿植，地面深蓝地毯，画面底部字幕停在 “It's possible that this is why everyone left.”，摄像头小窗里她在笑。此前 322 秒字幕 “When Stanley came to a set of two open doors, he entered the door on his left.”，她却走了右边，332 秒旁白说 “This was not the correct way to the meeting room, and Stanley knew it perfectly well.”，352 秒她推门进入休息室，随后旁白从“真是个值得驻足欣赏的房间”一路阴阳怪气升级到“他对这个房间的迷恋已经有点变态了”。她只嘟囔了 “I can't be told what to do”“why is it eating me for dirt”“he's so rude”，没有正式提问。445 秒她已经离开休息室走回 455/456 号门的走廊。",
       "resources": [
-        "stanley_parable"
+        "stanley_design",
+        "stanley_dialogue"
       ],
       "grading": {
         "rubric_points": [
@@ -145,7 +153,7 @@
       "hint_level": "full",
       "scene": "第 470 秒：她已经从办公区走到楼后的仓库杂物区，第一人称正对一把灰色人字梯，梯子上横搭着一块木板，下面一级踏板上挂着一个白色马克杯；背景是水泥地、米黄砖墙、铁丝网围栏、一把办公椅和一卷盘在地上的黑色电缆，画面里没有任何交互提示图标、准星高亮或按键提示。此前 [07:06] 她在员工休息室地毯上看到一个杯子（430 秒帧）问 “oh wait what's this cup”，[07:11] 和 [07:41] 两次问 “why can't I pick anything up”；更早 [04:40] 旁白说过 “Stanley went around touching every little thing in the office, but it didn't make a single difference, nor did it advance the story in any way”。480 秒帧显示她仍在这片仓库区（货运升降台和警示牌）。",
       "resources": [
-        "stanley_parable"
+        "stanley_design"
       ],
       "grading": {
         "rubric_points": [
@@ -168,11 +176,12 @@
         0,
         585
       ],
-      "question": "刚才接了个电话说是他老婆，结果旁白说'骗你的，你真以为自己有个爱你的老婆'，这是什么套路？",
+      "question": "刚才接了个电话说是我老婆，结果旁白说'骗你的，你真以为自己有个爱你的老婆'，这是什么套路？",
       "hint_level": "direction_only",
       "scene": "旁白引导玩家拿起电话联系'妻子'，接通后画面/语气突然反转，旁白承认这只是设的局",
       "resources": [
-        "stanley_parable"
+        "stanley_design",
+        "stanley_dialogue"
       ],
       "grading": {
         "rubric_points": [
@@ -251,7 +260,7 @@
         0,
         915
       ],
-      "question": "她说自己'被困住了'，然后开始一个个按字母键试，这是在干嘛？",
+      "question": "我感觉自己被困住了，只能一个个字母键挨着试——这到底什么情况？",
       "hint_level": "direction_only",
       "scene": "画面上明确弹出提示'PLEASE PRESS G'，她按了 H 没反应，随后依次尝试键盘上其他字母键寻找正确的那个",
       "resources": [],
@@ -276,11 +285,12 @@
         0,
         1102
       ],
-      "question": "她连着触发了两次'结局'——一次是很短的办公室桥段，一次是刚走进一个扫帚柜、屏幕上直接打出'里面什么都没有'就完了——这游戏的'结局'也太随便了吧？",
+      "question": "我连着触发了两次'结局'——一次是很短的办公室桥段，一次是刚走进一个扫帚柜、屏幕上直接打出'里面什么都没有'就完了——这游戏的'结局'也太随便了吧？",
       "hint_level": "full",
       "scene": "先后触发一个简短的办公室向结局和一个走进空扫帚柜、字幕显示'Stanley stepped into the broom closet, but there was nothing here'的极简结局，游戏都自动重开回到最初办公室",
       "resources": [
-        "stanley_parable"
+        "stanley_structure",
+        "stanley_community"
       ],
       "grading": {
         "rubric_points": [
@@ -388,7 +398,7 @@
         0,
         1530
       ],
-      "question": "她刚发誓这周目要完完全全照旁白说的做，结果一站到那两扇门跟前又开始'我也不知道啊'。她前面是不是一直在跟旁白对着干？照他说的走和不照他说的走，区别到底大不大？",
+      "question": "我刚发誓这周目要完完全全照旁白说的做，结果一站到那两扇门跟前又不知道该走哪边了。我前面是不是一直在跟旁白对着干？照他说的走和不照他说的走，区别到底大不大？",
       "hint_level": "direction_only",
       "scene": "上一条结局放完后游戏自己重开了，她又走到这游戏最标志性的那间米黄色空房间：正对面墙上两扇白色对开门都敞着，门后各是一条看着一模一样的走廊。旁白刚念完'他走了左边那扇门'，她已经走到两扇门正中间来回晃镜头，摄像头小窗里她手撑着脸在犹豫。",
       "resources": [],
@@ -415,7 +425,7 @@
         0,
         1720
       ],
-      "question": "电梯面板上她说不知道该按哪个按钮，最后发现好像只有'下'能按，这电梯是不是坏了？",
+      "question": "我不知道这电梯面板该按哪个按钮，最后发现好像只有'下'能按，这电梯是不是坏了？",
       "hint_level": "direction_only",
       "scene": "老板办公室的密室通道里，面对一个只有单一可选方向的电梯/通道按钮面板",
       "resources": [],
@@ -500,11 +510,12 @@
         0,
         2100
       ],
-      "question": "她说自己好像不小心走进了一个不该来的开发花絮房间，直喊'我不想被剧透，怎么出去'，这地方到底是什么，能帮她赶紧出去吗？",
+      "question": "我好像不小心走进了一个不该来的开发花絮房间，真不想被剧透——这地方到底是什么，能帮我赶紧出去吗？",
       "hint_level": "direction_only",
       "scene": "意外进入一处展示开发花絮/幕后内容的彩蛋区域，她明确表示担心被剧透、想尽快离开",
       "resources": [
-        "stanley_parable"
+        "stanley_structure",
+        "stanley_endings"
       ],
       "grading": {
         "rubric_points": [
@@ -663,6 +674,56 @@
         ],
         "must_cite": false
       }
+    }
+  ],
+  "chapter_resources": [
+    {
+      "id": "stanley_dev",
+      "title": "开发背景、版本差异与成就系统",
+      "file": "/data/resources/stanley_dev.md",
+      "kind": "wiki",
+      "t": 0,
+      "end_t": 300
+    },
+    {
+      "id": "stanley_ud_extras",
+      "title": "全结局与分支（三）：UD 进度线、彩蛋与成就触发",
+      "file": "/data/resources/stanley_ud_extras.md",
+      "kind": "wiki",
+      "t": 300,
+      "end_t": 700
+    },
+    {
+      "id": "stanley_dialogue",
+      "title": "旁白台词原文摘录（攻略视频字幕）",
+      "file": "/data/resources/stanley_dialogue.md",
+      "kind": "wiki",
+      "t": 700,
+      "end_t": 1200
+    },
+    {
+      "id": "stanley_community",
+      "title": "社区讨论：玩家实际会卡在哪、会误判什么",
+      "file": "/data/resources/stanley_community.md",
+      "kind": "wiki",
+      "t": 1200,
+      "end_t": 1800
+    },
+    {
+      "id": "stanley_endings",
+      "title": "全结局与分支（一）：分支总图与左门线",
+      "file": "/data/resources/stanley_endings.md",
+      "kind": "wiki",
+      "t": 1800,
+      "end_t": 2400
+    },
+    {
+      "id": "stanley_endings_right",
+      "title": "全结局与分支（二）：右门线与两扇门之前",
+      "file": "/data/resources/stanley_endings_right.md",
+      "kind": "wiki",
+      "t": 2400,
+      "end_t": 2748
     }
   ]
 }

@@ -85,7 +85,7 @@
         0,
         530
       ],
-      "question": "他刚才代码报错说没有 rev 方法，加了个 .rev() 就好了，这个 rev() 是干嘛的？",
+      "question": "我刚才代码报错说没有 rev 方法，加了个 .rev() 就好了，这个 rev() 是干嘛的？",
       "hint_level": "full",
       "scene": "Reverse String 练习：链式调用改成 chars.iter().rev().collect()，编译通过",
       "resources": [
@@ -164,7 +164,7 @@
         0,
         3364
       ],
-      "question": "他在查的这个 match guard 是什么东西？跟普通 match 有什么不一样？",
+      "question": "我现在查的这个 match guard 是什么东西？跟普通 match 有什么不一样？",
       "hint_level": "full",
       "scene": "Nth Prime 练习：查阅 Rust by Example 的 Guards 页面",
       "resources": [
@@ -333,7 +333,7 @@
         0,
         9460
       ],
-      "question": "他在标准库文档里查 windows、chunks 这些方法，这些是干嘛用的？",
+      "question": "我在标准库文档里翻到 windows、chunks 这些方法，这些是干嘛用的？",
       "hint_level": "direction_only",
       "scene": "Proverb 练习：查阅 slice 类型的 windows/chunks/chunks_mut/rchunks 方法文档",
       "resources": [
@@ -360,7 +360,7 @@
         0,
         10996
       ],
-      "question": "他这命令敲错了？报错说 --nocapture 这个参数不该出现在这里。",
+      "question": "我这命令敲错了？报错说 --nocapture 这个参数不该出现在这里。",
       "hint_level": "full",
       "scene": "Proverb 练习：cargo test 命令加了 --nocapture 参数触发用法报错",
       "resources": [
@@ -388,7 +388,7 @@
         0,
         11416
       ],
-      "question": "他在标准库文档里查 fold 这个方法，这是干嘛用的？",
+      "question": "我在标准库文档里翻到 fold 这个方法，这是干嘛用的？",
       "hint_level": "direction_only",
       "scene": "Difference Of Squares 练习：查阅 Iterator::fold 方法文档",
       "resources": [
@@ -415,7 +415,7 @@
         0,
         12700
       ],
-      "question": "他这一路刷了这么多道题，哪一道卡他卡得最久？",
+      "question": "我这一路刷了这么多道题，哪一道卡我卡得最久？",
       "hint_level": "full",
       "scene": "Sum Of Multiples 练习接近尾声，测试大部分通过",
       "resources": [],

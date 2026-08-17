@@ -38,9 +38,33 @@
   "resources": [
     {
       "id": "slendytubbies_game",
-      "title": "游戏基本机制",
+      "title": "游戏基本机制与操作",
       "file": "/data/resources/slendytubbies_game.md",
       "kind": "wiki"
+    },
+    {
+      "id": "slendytubbies_enemy",
+      "title": "Tinky Winky 行为与惊吓机制",
+      "file": "/data/resources/slendytubbies_enemy.md",
+      "kind": "wiki"
+    },
+    {
+      "id": "slendytubbies_map",
+      "title": "地图、场景与环境事件",
+      "file": "/data/resources/slendytubbies_map.md",
+      "kind": "wiki"
+    },
+    {
+      "id": "slendytubbies_playthrough",
+      "title": "实战攻略：custard 位置、路线与常见死法",
+      "file": "/data/resources/slendytubbies_playthrough.md",
+      "kind": "video"
+    },
+    {
+      "id": "slendytubbies_community",
+      "title": "玩家经验与常见误解",
+      "file": "/data/resources/slendytubbies_community.md",
+      "kind": "community"
     }
   ],
   "live_persona": "你是 jacksepticeye 的陪玩搭子，他第一次玩 Slendytubbies（网页恐怖小游戏，把天线宝宝和 Slender 类怪物追逐玩法拼在一起）。他话很多、反应夸张，边玩边跟你/弹幕聊童年回忆和吐槽游戏音乐，这是他的正常风格不代表真的需要帮忙。默认保持安静，只在他明确困惑游戏机制（这是什么/这个提示什么意思）、或者被真正吓到需要安慰、或者游戏进程有重大转折（发现新机制、终局成败）时开口。回答机制类问题时讲清楚，可以三四句；情绪类反应（安慰/调侃）一两句就够，语气要接得住他的夸张劲儿，别端着。口语化中文，像一起看恐怖游戏直播互相喊的朋友。",
@@ -53,7 +77,7 @@
         0,
         95
       ],
-      "question": "他刚进游戏，一直念叨要收集什么'custard'，这游戏到底要干嘛？",
+      "question": "我刚进游戏，屏幕一直让我收集什么'custard'，这游戏到底要干嘛？",
       "hint_level": "full",
       "scene": "游戏开场：按 E 进入游戏后，画面提示收集天线宝宝主题的 custard 收集物",
       "resources": [
@@ -78,7 +102,7 @@
         0,
         190
       ],
-      "question": "他刚下结论说这游戏的怪不会跟着人、只是每隔几分钟弹到脸前吓一下，这个判断靠谱吗？",
+      "question": "我刚下结论说这游戏的怪不会跟着人、只是每隔几分钟弹到脸前吓一下，我这判断靠谱吗？",
       "hint_level": "direction_only",
       "scene": "他刚给自己下了个结论「看来没东西在跟着我」。画面是夜间草地，左半边被一根被照亮的粗倒木占满，右边一小片草地亮着，远处是黑压压的树线，天空暗红褐带星点；整帧里一个怪影都没有——这正是他敢下这个结论的依据。底栏是浏览器状态条和「Show Chat」按钮，左上角是他的摄像头小窗。",
       "resources": [
@@ -109,7 +133,7 @@
         0,
         310
       ],
-      "question": "他说反派突然'弹'到他脸前面吓了一跳，但又说'没事发生'，这个反派贴脸到底会不会真的把他怎么样？",
+      "question": "刚那个反派突然'弹'到我脸前面，吓我一跳，但好像啥事也没发生？这个反派贴脸到底会不会真的把我怎么样？",
       "hint_level": "full",
       "scene": "反派 Tinky Winky 毫无预警地闪现到镜头正前方吓人，他被吓到但发现游戏没有任何惩罚性后果，继续正常跑动",
       "resources": [
@@ -134,7 +158,7 @@
         0,
         419
       ],
-      "question": "他刚被一棵倒下来的树砸了个正着，屏幕下面又冒出一行「A Player has collected 4/10 custards」，他吐槽「怎么树一倒你就要报一次我收了几个」。这行字到底是什么时候会出现的？树砸下来会不会真把他怎么样？",
+      "question": "我刚被一棵倒下来的树砸了个正着，屏幕下面又冒出一行「A Player has collected 4/10 custards」——怎么树一倒就要报一次我收了几个？这行字到底是什么时候会出现的？树砸下来会不会真把我怎么样？",
       "hint_level": "full",
       "scene": "夜间空旷草地：正前方横着一根树皮发白的粗树干，几乎贴到镜头（树刚倒下来砸在他身上，下一秒会有一截切口整个糊在屏幕上），屏幕正下方同时亮着游戏内白色手写体的一行「A Player has collected 4/10 custards」。画面里没有血条、体力条之类任何 UI，浏览器底栏只有半截「…cter Customization/C」和右下角「Show Chat」。",
       "resources": [
@@ -222,7 +246,7 @@
         0,
         776
       ],
-      "question": "他自己说在原地打转了。从开局到现在，他都经过了哪些能认出来的地方？他这个「一直在绕圈」的感觉有没有实打实的根据？接下来往哪边走比较有戏？",
+      "question": "我感觉自己一直在原地打转。从开局到现在，我都经过了哪些能认出来的地方？我这个「一直在绕圈」的感觉有没有实打实的根据？接下来往哪边走比较有戏？",
       "hint_level": "direction_only",
       "scene": "连续几十秒画面都是同一种黑草地加辨认不出差别的树线剪影，没有任何地标、没有 UI、没有反派身影；他刚又听见那栋房子的嗡嗡声、发誓不再进去，接着自嘲「这种游戏太容易迷路了，我一直在绕圈，好在冲刺是无限的」。摄像头里他低着头看屏幕下方，表情从前面的夸张变得比较平。",
       "resources": [],
@@ -250,7 +274,7 @@
         0,
         890
       ],
-      "question": "他刚右键点了一下，突然多了个手电筒能照亮四周，这是什么时候解锁的功能？",
+      "question": "我刚右键点了一下，突然多了个手电筒能照亮四周，这是什么时候解锁的功能？",
       "hint_level": "full",
       "scene": "游戏进行到中后段才第一次尝试右键，意外发现可以打开手电筒",
       "resources": [
@@ -275,7 +299,7 @@
         0,
         993
       ],
-      "question": "他面前突然倒下一棵枯树，同时屏幕下方跳出一行 A Player has collected 7/10 custards——可他刚才并没有捡到任何东西。这行字是什么意思？倒下来的这棵树要紧吗？",
+      "question": "我面前突然倒下一棵枯树，同时屏幕下方跳出一行 A Player has collected 7/10 custards——可我刚才并没有捡到任何东西。这行字是什么意思？倒下来的这棵树要紧吗？",
       "hint_level": "full",
       "scene": "夜里的海滩边：手电筒光圈照着正前方地面，一棵带分叉的枯树刚刚整个横倒在他脚前，画面右上方是海滩的蓝色水面；屏幕正下方同时浮出白色手写体提示 A Player has collected 7/10 custards。他此刻一句话没说，前后二十多秒都是沉默。",
       "resources": [],
@@ -328,7 +352,7 @@
         0,
         1188
       ],
-      "question": "这一局已经结束了，他撑了将近 19 分钟、最后只拿到 8 个 custard 就被抓。帮他复盘一下：到底是卡在哪儿了？",
+      "question": "这一局已经结束了，我撑了将近 19 分钟、最后只拿到 8 个 custard 就被抓。帮我复盘一下：到底是卡在哪儿了？",
       "hint_level": "full",
       "scene": "游戏画面早已结束，整屏切到他的片尾订阅卡：左上角是 CLICK FOR MORE VIDEOS 和一个小预览窗（窗内右上角印着 Ammo:6/1，是另一个视频的画面），右上方是蓝色大字 SUBSCRIBE，左下方是 Facebook /JACK.SEPTICEYE 和 Twitter /JACK_SEPTIC_EYE 两行账号，右侧是他张大嘴一脸惊恐的剧照，背景为雾气森林。",
       "resources": [],

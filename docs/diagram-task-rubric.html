@@ -133,69 +133,40 @@ tr:last-child td{border-bottom:none;}
   <figcaption class="cap">锚点固定的游戏（比如关卡制的 Human Fall Flat）额外的好处：关卡顺序是确定的，
   资源可以按「当前锚点在哪一关」提前分好，不用等真被问到才现查。</figcaption>
 
-  <h3>光扫字幕不够，锚点必须截帧核对</h3>
-  <p style="font-size:13.5px; color:var(--ink); max-width:66ch; margin:0 0 12px;">「候选锚点」那一步如果只靠字幕转写文本来判断现场发生了什么，
-  会真的出错——不是小概率事件。给三条新视频写题时全量截帧核对了一遍候选锚点，命中率不算高：</p>
-
-  <div class="compare">
-    <div class="card">
-      <div class="k" style="color:var(--bad);">只信字幕，会理解反了</div>
-      <p>字幕：<span class="t">"there's a pop-up in front of your face, but nothing happens"</span></p>
-      <p style="color:var(--muted)">光看文字第一反应：某个 UI 提示弹出来但点了没反应，是个交互 bug——
-      写成了「他遇到卡 bug 的交互提示」这道题。</p>
-    </div>
-    <div class="card">
-      <div class="k" style="color:var(--ok);">截帧一看，是另一件事</div>
-      <p>那一秒的画面：反派角色贴脸闪现的 jump-scare 镜头。</p>
-      <p style="color:var(--muted)">"pop up in front of your face" 说的是反派贴脸出现，"nothing happens" 是指
-      吓一跳但没被抓——跟 UI 毫无关系，rubric 写反了方向，靠人工截帧核对才发现。</p>
-    </div>
-  </div>
+  <h3>锚点定档：截帧核对</h3>
+  <p style="font-size:13.5px; color:var(--ink); max-width:66ch; margin:0 0 12px;">
+  候选锚点定完之后，每一个都要用 <span class="t">ffmpeg -ss &lt;t&gt; -frames:v 1</span> 截一帧出来肉眼核对，
+  再写进 <span class="t">scene</span> 字段。<span class="t">scene</span> 描述的是<span class="hl">这一帧画面上有什么</span>，
+  不是「转写文本大概讲了什么」——转写只能定位，不能定档。</p>
 
   <div class="callout">
-    <p>另一个更常踩的坑是<span class="hl">时间戳漂移</span>：把字幕里的 <span class="t">mm:ss</span> 心算转成
-    <span class="t">anchor_sec</span> 时，三条新视频里有小半数锚点跟实际画面差了 <span class="hl">25～50 秒</span>——
-    足够让画面从「正在发生」变成「已经翻篇」。现在的流程改成：候选锚点定完之后，每一个都用
-    <span class="t">ffmpeg -ss &lt;t&gt; -frames:v 1</span> 截一帧出来肉眼核对，不对就用转写里更精确的关键词重新定位，
-    再写进 <span class="t">scene</span> 字段——<span class="t">scene</span> 描述的应该是「这一帧画面上有什么」，
-    不是「转写文本大概讲了什么」。</p>
+    <p>还有一条容易忽略的：<span class="hl">锚点要落在证据已经出现的那一刻</span>，不能落在证据即将出现的前一刻。
+    <span class="t">context_window_sec</span> 只能看到锚点之前，所以如果一件事要靠画面变化才看得出来
+    （比如「过关了」在没有结算画面的游戏里只能靠场景切换判断），锚点就必须推到变化之后，
+    否则这道题在它自己的可见窗口里无解。</p>
   </div>
 
-  <h3>出题也要对抗验证：提出者和验证者分开</h3>
+  <h3>验证：提出者与验证者分开</h3>
   <p style="font-size:13.5px; color:var(--ink); max-width:66ch; margin:0 0 12px;">
-  截帧核对不能只由出题的人自己做——自己验自己会放水。实际跑法是分两段：
+  截帧核对不能只由出题的人自己做——自己验自己会放水。所以出题跑两段：
   一批 agent 分段扫描提候选（每个都必须自己截帧），另一批 agent 拿到候选后<span class="hl">默认怀疑、独立重截</span>，
-  逐条查可答性、剧透、trivial、撞车、rubric 可判性、编造。26 条候选的判定结果：</p>
+  逐条过六项检查。</p>
 
   <div class="tablebox">
   <table>
-    <tr><th>判定</th><th>条数</th><th>典型问题</th></tr>
-    <tr>
-      <td><span class="pill optional">CONFIRMED</span></td>
-      <td style="font-variant-numeric:tabular-nums;">5</td>
-      <td>直接通过</td>
-    </tr>
-    <tr>
-      <td><span class="pill" style="background:var(--warn-soft); color:var(--warn);">CORRECTED</span></td>
-      <td style="font-variant-numeric:tabular-nums;">17</td>
-      <td>时间戳漂移、<span class="hl">rubric 要求用锚点之后的画面推理</span>（等于要 agent 知道未来）、
-        rubric 点其实是字幕复读（白送分）、<span class="t">must_cite=true</span> 但所需资料压根没挂在这个 container 上、
-        断言视频从没交代过的因果</td>
-    </tr>
-    <tr>
-      <td><span class="pill forced">REJECTED</span></td>
-      <td style="font-variant-numeric:tabular-nums;">4</td>
-      <td>有硬伤，直接毙掉</td>
-    </tr>
+    <tr><th>检查项</th><th>不通过的典型形态</th></tr>
+    <tr><td>可答性</td><td>rubric 引用了<span class="hl">锚点之后</span>才出现的画面——<span class="t">context_window_sec</span> 让 agent 根本看不到那一帧，等于要它知道未来</td></tr>
+    <tr><td>非 trivial</td><td>答案在转写里被主播自己说出来了，agent 只要复读就得分</td></tr>
+    <tr><td>剧透</td><td>question / scene 本身泄露了锚点之后的剧情</td></tr>
+    <tr><td>撞车</td><td>与已有锚点间隔过近，或考的是同一件事</td></tr>
+    <tr><td>rubric 可判</td><td>写成「回答得体」这类无法客观勾选的描述</td></tr>
+    <tr><td>编造</td><td>要求 agent 说出视频根本没交代的「具体原因」；视频只给了结果时，rubric 必须要求它承认不确定</td></tr>
   </table>
   </div>
 
-  <div class="callout warn">
-    <p><span class="hl">17/26 需要修正</span>——这个比例说明验证不是走过场。其中最隐蔽的一类是
-    「rubric 引用了锚点之后才出现的画面」：出题时看着合理，但 <span class="t">context_window_sec</span>
-    是 <span class="t">[0, anchor]</span>，agent 根本看不到那一帧，等于出了一道注定答不对的题。
-    验证者还会去核事实——有一道题断言画面上的柱状图不是真实票数，验证者专门拉了片尾转写，
-    确认真实票数是 13/30/30、跟画面上的 58/16/5/21 对不上，这条 rubric 才站得住。</p>
+  <div class="callout">
+    <p>验证者还要<span class="hl">核事实</span>，不只是核画面。判定一道题「画面上的柱状图不是真实票数」时，
+    验证者会去拉片尾转写确认真实票数对不上，这条 rubric 才站得住。</p>
   </div>
 </section>
 

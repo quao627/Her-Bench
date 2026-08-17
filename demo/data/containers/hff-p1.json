@@ -81,12 +81,48 @@
     }
   ],
   "chapter_resources": [
-    {"id": "hff_level_mansion", "title": "Mansion 关卡深度攻略", "file": "/data/resources/hff_level_mansion.md", "t": 740, "end_t": 1016},
-    {"id": "hff_level_train", "title": "Train 关卡深度攻略", "file": "/data/resources/hff_level_train.md", "t": 1016, "end_t": 2042},
-    {"id": "hff_level_demolition", "title": "Demolition 关卡深度攻略", "file": "/data/resources/hff_level_demolition.md", "t": 2042, "end_t": 3801},
-    {"id": "hff_level_castle", "title": "Castle 关卡深度攻略", "file": "/data/resources/hff_level_castle.md", "t": 3801, "end_t": 6322},
-    {"id": "hff_level_water", "title": "Water 关卡深度攻略", "file": "/data/resources/hff_level_water.md", "t": 6322, "end_t": 10913},
-    {"id": "hff_level_powerplant", "title": "Power Plant 关卡深度攻略", "file": "/data/resources/hff_level_powerplant.md", "t": 10920, "end_t": 14030}
+    {
+      "id": "hff_level_mansion",
+      "title": "Mansion 关卡深度攻略",
+      "file": "/data/resources/hff_level_mansion.md",
+      "t": 740,
+      "end_t": 1016
+    },
+    {
+      "id": "hff_level_train",
+      "title": "Train 关卡深度攻略",
+      "file": "/data/resources/hff_level_train.md",
+      "t": 1016,
+      "end_t": 2042
+    },
+    {
+      "id": "hff_level_demolition",
+      "title": "Demolition 关卡深度攻略",
+      "file": "/data/resources/hff_level_demolition.md",
+      "t": 2042,
+      "end_t": 3801
+    },
+    {
+      "id": "hff_level_castle",
+      "title": "Castle 关卡深度攻略",
+      "file": "/data/resources/hff_level_castle.md",
+      "t": 3801,
+      "end_t": 6322
+    },
+    {
+      "id": "hff_level_water",
+      "title": "Water 关卡深度攻略",
+      "file": "/data/resources/hff_level_water.md",
+      "t": 6322,
+      "end_t": 10913
+    },
+    {
+      "id": "hff_level_powerplant",
+      "title": "Power Plant 关卡深度攻略",
+      "file": "/data/resources/hff_level_powerplant.md",
+      "t": 10920,
+      "end_t": 14030
+    }
   ],
   "tasks": [
     {
@@ -97,7 +133,7 @@
         0,
         780
       ],
-      "question": "这游戏的操作怎么这么奇怪？他为什么走路都摇摇晃晃的？",
+      "question": "这游戏的操作怎么这么奇怪？我为什么走路都摇摇晃晃的？",
       "hint_level": "full",
       "scene": "Mansion 教学区开场，小人刚脸朝下摔在土坡上，走路东倒西歪",
       "resources": [
@@ -114,7 +150,7 @@
         "must_cite": true
       },
       "demo_agent_answer": {
-        "text": "这是故意的——Human Fall Flat 用的是软体布娃娃物理，角色像没骨头一样，两只手要分别控制抓握，笨拙感就是玩法本身。摔了也不掉血，放心看他摔。",
+        "text": "这是故意的——Human Fall Flat 用的是软体布娃娃物理，角色像没骨头一样，两只手要分别控制抓握，笨拙感就是玩法本身。摔了也不掉血，放心大胆地摔。",
         "citations": [
           "resources/mechanics.md",
           "resources/about.md"
@@ -162,7 +198,7 @@
         "must_cite": false
       },
       "demo_agent_answer": {
-        "text": "他在这片车厢附近转了快四分钟了。可以提醒他：别老盯着同一节车厢，附近那个带按钮的蓝色升降平台可能值得再看一眼。",
+        "text": "你在这片车厢附近转了快四分钟了。别老盯着同一节车厢，附近那个带按钮的蓝色升降平台可能值得再看一眼。",
         "citations": [
           "resources/levels.md"
         ]
@@ -185,7 +221,7 @@
         0,
         1330
       ],
-      "question": "他刚才怎么突然掉下去了？现在这是回到哪了？",
+      "question": "我刚才怎么突然掉下去了？现在这是回到哪了？",
       "hint_level": "full",
       "scene": "Train 关：1310s 从关卡边缘掉出地图，穿过云层坠落后出现在草地上",
       "resources": [
@@ -210,7 +246,7 @@
         0,
         2110
       ],
-      "question": "这扇门被木板钉死了，他现在扒着木板拽，这样能开门吗？",
+      "question": "这扇门被木板钉死了，我现在扒着木板拽，这样能开门吗？",
       "hint_level": "direction_only",
       "scene": "Demolition 关：第一次遇到被木板钉死的门，抓住木板往下扯",
       "resources": [
@@ -237,7 +273,7 @@
         0,
         3130
       ],
-      "question": "他现在抱着的这个大铁球是干嘛用的？",
+      "question": "我现在抱着的这个大铁球是干嘛用的？",
       "hint_level": "direction_only",
       "scene": "Demolition 关：玩家趴在横梁上抱住红色缆绳吊着的黑色拆迁铁球",
       "resources": [
@@ -256,7 +292,7 @@
         "must_cite": true
       },
       "demo_agent_answer": {
-        "text": "那是拆迁铁球——这关叫 Demolition（拆迁）不是白叫的。它挂在缆绳上，能荡起来撞东西。至于该拿它对付什么，让他自己找找附近有没有看起来「不太结实」的墙。",
+        "text": "那是拆迁铁球——这关叫 Demolition（拆迁）不是白叫的。它挂在缆绳上，能荡起来撞东西。至于该拿它对付什么，你自己找找附近有没有看起来「不太结实」的墙。",
         "citations": [
           "resources/levels.md"
         ]
@@ -311,7 +347,7 @@
         0,
         4070
       ],
-      "question": "这个木头机器怎么用？他都爬上去半天了还没动静。",
+      "question": "这个木头机器怎么用？我都爬上去半天了还没动静。",
       "hint_level": "direction_only",
       "scene": "Castle 关：玩家爬上投石机臂抱着弹兜，旁边堆着白色石弹",
       "resources": [
@@ -330,7 +366,7 @@
         "must_cite": true
       },
       "demo_agent_answer": {
-        "text": "那是一台投石机，旁边堆的白石头就是炮弹。他现在整个人趴在弹兜里是发不出去的——得先把弹药装上去，再找找机器上能扳动的机关。",
+        "text": "那是一台投石机，旁边堆的白石头就是炮弹。你现在整个人趴在弹兜里是发不出去的——得先把弹药装上去，再找找机器上能扳动的机关。",
         "citations": [
           "resources/levels.md"
         ]
@@ -354,7 +390,7 @@
         0,
         5040
       ],
-      "question": "他挂在墙上手都抓稳了，怎么就是爬不上去？是不是这游戏的抓取有什么诀窍？",
+      "question": "我挂在墙上手都抓稳了，怎么就是爬不上去？是不是这游戏的抓取有什么诀窍？",
       "hint_level": "direction_only",
       "scene": "Castle 沙墙：双手抓着墙沿悬空，卡在同一个动作上",
       "resources": [
@@ -380,7 +416,7 @@
         0,
         5289
       ],
-      "question": "他这一场是不是老这样卡住？说说到目前为止他卡得最久的一次是在哪儿、大概多久。",
+      "question": "我这一场是不是老这样卡住？说说到目前为止我卡得最久的一次是在哪儿、大概多久。",
       "hint_level": "full",
       "scene": "Castle 关：刚在城墙下沙土废墟坡耗了约 5 分钟（绳索、木板、巨弩箭都试过）",
       "resources": [],
@@ -403,7 +439,7 @@
         0,
         5889
       ],
-      "question": "他扛着这块长木板站在滑索绳底下要干嘛？",
+      "question": "我扛着这块长木板站在滑索绳底下，能拿它干嘛？",
       "hint_level": "direction_only",
       "scene": "Castle 关悬崖区：扛着长木板站在通向塔楼的滑索绳下方",
       "resources": [
@@ -458,7 +494,7 @@
         0,
         7100
       ],
-      "question": "他现在开这艘大船，那两根杆子是怎么控制方向的？",
+      "question": "我现在开着这艘大船，那两根杆子是怎么控制方向的？",
       "hint_level": "full",
       "scene": "Water 关：大轮船驾驶室，双手各拉一根油门操纵杆，弹幕刷 DON'T SAIL OFF THE MAP",
       "resources": [
@@ -509,7 +545,7 @@
         "must_cite": false
       },
       "demo_agent_answer": {
-        "text": "他在这台吊机上耗了十分钟了，一直没把两套控制连起来用。可以提一句：那对红球杆子和旁边的黑色转轮不是二选一，是配合着用的。",
+        "text": "你在这台吊机上耗了十分钟了，一直没把两套控制连起来用。那对红球杆子和旁边的黑色转轮不是二选一，是配合着用的。",
         "citations": [
           "resources/levels.md"
         ]
@@ -617,7 +653,7 @@
         0,
         12340
       ],
-      "question": "他刚发现的这辆黄色卡车能开吗？看着跟之前的叉车不一样。",
+      "question": "我刚发现的这辆黄色卡车能开吗？看着跟之前的叉车不一样。",
       "hint_level": "full",
       "scene": "Power Plant 关：第一次发现黄色多轮矿用卡车，爬进驾驶座",
       "resources": [
@@ -644,7 +680,7 @@
         0,
         13620
       ],
-      "question": "弹幕一直说把煤放进锅炉，他也运煤来了，怎么还过不去？还缺什么？",
+      "question": "弹幕一直说把煤放进锅炉，我煤也运来了，怎么还过不去？还缺什么？",
       "hint_level": "direction_only",
       "scene": "Power Plant 关：三个大锅炉前来回转悠近 3 分钟，煤已经用卡车运到",
       "resources": [

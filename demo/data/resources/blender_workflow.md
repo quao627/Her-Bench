@@ -1,6 +1,6 @@
 # Blender 新手常见困惑排查
 
-> 来源：https://docs.blender.org/manual/en/latest/interface/window_system/tabs_panels.html 、https://docs.blender.org/manual/en/latest/interface/undo_redo.html 、https://docs.blender.org/manual/en/latest/render/materials/introduction.html
+> 来源：https://docs.blender.org/manual/en/latest/interface/window_system/tabs_panels.html 、https://docs.blender.org/manual/en/latest/interface/undo_redo.html 、https://docs.blender.org/manual/en/latest/render/materials/introduction.html 、https://docs.blender.org/manual/en/latest/troubleshooting/crash.html
 
 ## 找不到某个面板/按钮怎么办
 
@@ -15,11 +15,19 @@ Blender 界面里大部分面板是可以被隐藏或者滚动到看不见的地
 
 Blender 的撤销机制很直接：
 
-- **Ctrl+Z**：撤销上一步操作，可以连续按，一路撤回到之前很多步。
-- **Shift+Ctrl+Z**：重做（Redo），如果撤销多了想恢复回来就用这个。
-- **Ctrl+Alt+Z**：打开 Undo History（撤销历史）面板，可以直接看到操作列表，点击某一步跳回那个状态，不用一步步按 Ctrl+Z。
+- **Ctrl+Z**：撤销上一步操作（手册：Edit ‣ Undo），可以连续按，一路撤回到之前很多步。
+- **Shift+Ctrl+Z**：重做（Redo，手册：Edit ‣ Redo），如果撤销多了想恢复回来就用这个。
+- **Edit → Undo History**：一份最近操作的列表，点某一项就跳回那个状态，不用一步步按 Ctrl+Z。手册原话：「Rolling back actions using the Undo History feature will take you back to the action you choose.」注意 3.6 / 4.2 / 5.x 的手册在这一项下**都只写了菜单位置，没有列快捷键**（Undo 和 Redo 则明确列了 Ctrl-Z 和 Shift-Ctrl-Z）。网上常见的 Ctrl+Alt+Z 说法未在官方手册中出现，也可能随键位方案不同而不同，别当成定论。
+- **F9**（Adjust Last Operation）：改上一步操作的参数而不是撤销它，比如刚挤出完想改挤出距离。
 
-误删物体、误操作变形，第一反应都是 Ctrl+Z，比在场景里手动重建要快得多。需要注意的是撤销历史是有步数上限的（可以在偏好设置里调整），关闭文件后历史也会清空，所以重要节点建议手动保存文件（Ctrl+S）留个版本。
+误删物体、误操作变形，第一反应都是 Ctrl+Z，比在场景里手动重建要快得多。需要注意的是撤销步数有上限（Preferences ‣ System ‣ Memory & Limits ‣ Undo Steps 可调；手册在讲崩溃排查时还建议内存不够就把这个值调小），而且手册明说「Once you do make a new change, the Undo History is truncated at that point」——一旦在中途做了新改动，那条时间线后面的记录就没了。所以重要节点还是要手动保存（Ctrl+S）。
+
+## 崩溃、进度丢失、贴图颜色消失
+
+这三类是最常见的翻车场景，因为涉及的官方文档比较多，单独拆了两篇：
+
+- **崩溃后怎么找回进度**（Auto Save 存在哪、`.blend1` 备份怎么来的、File → Recover 那两项各自能救什么）：见 `blender_recovery.md`。手册在 Troubleshooting → Crashes 里给的第一条建议就是「you may be able to recover your work with Auto Save」。
+- **Texture Paint 里画好的颜色为什么会消失**（图片没保存、顶点色和贴图不是一回事、Base Color 被贴图顶掉、画错 slot、UV 重叠等）：见 `blender_texture_paint.md`。
 
 ## 材质与渲染的基本关系
 

@@ -30,7 +30,7 @@ body{
 h1,h2,h3{font-family:"Songti SC","Noto Serif SC","STSong",serif; text-wrap:balance; line-height:1.3; font-weight:700;}
 h1{font-size:32px; margin:0 0 10px;}
 h2{font-size:21px; margin:0 0 6px;}
-h3{font-size:15px; margin:26px 0 10px;}
+h3{font-size:15px; margin:28px 0 10px;}
 .sub{color:var(--muted); margin:0; font-size:14.5px; max-width:60ch;}
 .eyebrow{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:600; margin:0 0 8px;}
 section{margin-top:58px;}
@@ -38,30 +38,28 @@ section > p.lede{color:var(--ink); font-size:14.5px; max-width:66ch; margin:0 0 
 p{margin:0 0 12px;}
 .hl{color:var(--accent); font-weight:600;}
 .t{font-family:"SF Mono",Menlo,monospace; font-size:11.5px; background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:0 5px;}
+pre{background:var(--code-bg); border:1px solid var(--line); border-radius:8px; padding:16px 18px; overflow-x:auto; font-size:12px; line-height:1.7; margin:10px 0 0; font-family:"SF Mono",Menlo,monospace;}
 .diagram{margin:16px 0 4px; overflow-x:auto;}
 .diagram svg{display:block; min-width:720px; width:100%;}
 figcaption.cap{font-size:12.5px; color:var(--muted); margin:10px 0 0; line-height:1.65; max-width:66ch;}
 a{color:var(--accent);}
 .callout{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:8px; padding:12px 18px; margin:16px 0; font-size:13.5px;}
 .callout p{margin:0;}
-.callout.warn{border-left-color:var(--warn);}
 table{border-collapse:collapse; width:100%; font-size:13px;}
 th{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600; text-align:left;}
 th,td{padding:9px 14px 9px 0; border-bottom:1px solid var(--line); vertical-align:top;}
 tr:last-child td{border-bottom:none;}
 .tablebox{overflow-x:auto; margin:14px 0 4px;}
+td.mono, .mono{font-family:"SF Mono",Menlo,monospace; font-size:11.5px;}
 .pill{display:inline-block; font-size:10.5px; font-weight:700; padding:2px 9px; border-radius:99px; white-space:nowrap;}
 .pill.forced{background:var(--bad-soft); color:var(--bad);}
 .pill.optional{background:var(--ok-soft); color:var(--ok);}
-/* before/after */
-.baPair{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0 4px;}
-.baCard{border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--panel);}
-.baCard .head{padding:8px 14px; font-size:11.5px; font-weight:700; letter-spacing:.04em;}
-.baCard.bad .head{background:var(--bad-soft); color:var(--bad);}
-.baCard.good .head{background:var(--ok-soft); color:var(--ok);}
-.baCard .diagram{margin:10px 12px 12px;}
-.baCard svg{min-width:0;}
-@media (max-width:680px){.baPair{grid-template-columns:1fr;}}
+.cards{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0 4px;}
+.card{border:1px solid var(--line); border-radius:10px; background:var(--panel); padding:16px 18px;}
+.card .k{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:8px;}
+.card p{font-size:13.5px; margin:0 0 8px;}
+.card p:last-child{margin-bottom:0;}
+@media (max-width:680px){.cards{grid-template-columns:1fr;}}
 </style>
 
 <div class="wrap">
@@ -73,23 +71,22 @@ tr:last-child td{border-bottom:none;}
   中间靠一次 HTTP tool call 打通。</p>
 </header>
 
-<!-- ============ PART 1: 架构 ============ -->
+<!-- ============ PART 1: 核心 loop ============ -->
 <section>
   <p class="eyebrow">Part 1</p>
-  <h2>总体架构</h2>
+  <h2>核心 loop</h2>
   <p class="lede">浏览器同时喂两路信号给 gpt-live：<span class="hl">直播原声</span>（WebAudio 图混音，不开麦克风）
   和<span class="hl">画面帧</span>（每 5 秒一张）。gpt-live 自己决定要不要开口、要不要查证；一旦要查，
   就是一次 HTTP 请求打到本地的 codex 后端。</p>
 
   <figure class="diagram">
-  <svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="架构图：浏览器通过WebRTC连gpt-live，gpt-live通过data channel强制或自主调用tool，HTTP打到agent_live.py的ThreadingHTTPServer，起codex子进程，读取按章节路由的资料，返回文本和引用">
+  <svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="架构图：浏览器通过WebRTC连gpt-live，gpt-live调用tool，HTTP打到agent_live.py，起codex子进程读取按章节路由的资料，返回文本和引用">
     <defs>
       <marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
         <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
       </marker>
     </defs>
 
-    <!-- browser -->
     <rect x="6" y="20" width="170" height="130" rx="8" fill="var(--panel)" stroke="var(--line)"/>
     <text x="91" y="42" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">浏览器</text>
     <text x="91" y="66" text-anchor="middle" font-size="11" fill="var(--ink)">🔊 直播原声</text>
@@ -100,7 +97,6 @@ tr:last-child td{border-bottom:none;}
     <line x1="176" y1="70" x2="216" y2="70" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
     <text x="196" y="60" text-anchor="middle" font-size="10" fill="var(--muted)">WebRTC</text>
 
-    <!-- gpt-live -->
     <rect x="220" y="20" width="190" height="130" rx="8" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="1.5"/>
     <text x="315" y="42" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--blue)">gpt-live</text>
     <text x="315" y="60" text-anchor="middle" font-size="10.5" fill="var(--ink)">OpenAI Realtime API</text>
@@ -114,20 +110,18 @@ tr:last-child td{border-bottom:none;}
     <line x1="450" y1="100" x2="410" y2="100" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#ar)"/>
     <text x="430" y="116" text-anchor="middle" font-size="10" fill="var(--muted)">text + 引用</text>
 
-    <!-- agent_live.py -->
     <rect x="454" y="20" width="200" height="130" rx="8" fill="var(--panel)" stroke="var(--line)"/>
     <text x="554" y="42" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">agent_live.py</text>
     <text x="554" y="60" text-anchor="middle" font-size="10.5" fill="var(--muted)">ThreadingHTTPServer</text>
     <text x="554" y="82" text-anchor="middle" font-size="11" fill="var(--ink)">/answer · /lookup · /research</text>
     <text x="554" y="100" text-anchor="middle" font-size="11" fill="var(--ink)">拼 prompt：资料 + 帧 + 分级规则</text>
-    <text x="554" y="118" text-anchor="middle" font-size="11" fill="var(--ink)">按 current_sec 路由当前+下一章</text>
-    <text x="554" y="136" text-anchor="middle" font-size="10" fill="var(--muted)">并发不互相阻塞</text>
+    <text x="554" y="118" text-anchor="middle" font-size="11" fill="var(--ink)">按 current_sec 路由资料</text>
+    <text x="554" y="136" text-anchor="middle" font-size="10" fill="var(--muted)">三个端点并发不互相阻塞</text>
 
     <line x1="654" y1="70" x2="694" y2="70" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
     <text x="674" y="60" text-anchor="middle" font-size="10" fill="var(--muted)">subprocess</text>
     <line x1="694" y1="100" x2="654" y2="100" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#ar)"/>
 
-    <!-- codex -->
     <rect x="698" y="20" width="156" height="130" rx="8" fill="var(--accent)"/>
     <text x="776" y="42" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--accent-ink)">codex CLI</text>
     <text x="776" y="64" text-anchor="middle" font-size="10.5" fill="var(--accent-ink)">Read 资料 + 截图</text>
@@ -135,31 +129,44 @@ tr:last-child td{border-bottom:none;}
     <text x="776" y="100" text-anchor="middle" font-size="10.5" fill="var(--accent-ink)">不够具体就直接搜</text>
     <text x="776" y="122" text-anchor="middle" font-size="10.5" fill="var(--accent-ink)">而不是硬编</text>
 
-    <!-- bottom strip -->
     <rect x="6" y="200" width="848" height="90" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 4"/>
     <text x="24" y="222" font-size="11" fill="var(--muted)" letter-spacing="1.5">资料从哪来</text>
-    <text x="24" y="246" font-size="11.5" fill="var(--ink)">data/resources/*.md（通用资料，wiki/攻略快照）</text>
-    <text x="24" y="266" font-size="11.5" fill="var(--ink)">container.json 的 chapter_resources（按当前+下一关卡精确路由，不是全量塞给它）</text>
+    <text x="24" y="246" font-size="11.5" fill="var(--ink)">data/resources/*.md —— 官方 wiki / 官方文档 / 攻略视频字幕 / 社区讨论的快照，每篇标注真实来源 URL</text>
+    <text x="24" y="266" font-size="11.5" fill="var(--ink)">container.json 的 resources（常驻）+ chapter_resources（按当前进度路由）</text>
   </svg>
   </figure>
   <figcaption class="cap">两条虚线是回程：codex 的文字答案带引用来源回到 agent_live.py，再回到 gpt-live——
   gpt-live 拿到的是「备好的干货」，它自己在说话时提炼压缩成口语，不是从源头就把信息掐死成两三句话。</figcaption>
+
+  <h3>一道题的完整回路</h3>
+  <div class="tablebox">
+  <table>
+    <tr><th style="width:34px;">#</th><th>发生什么</th><th>在哪</th></tr>
+    <tr><td class="mono">1</td><td>视频播到 <span class="t">anchor_sec</span>，该任务解除武装并触发</td><td>浏览器</td></tr>
+    <tr><td class="mono">2</td><td>截当前帧；<span class="hl">proactive 任务</span>额外回溯抓一条时间线（见 Part 3）</td><td>浏览器</td></tr>
+    <tr><td class="mono">3</td><td>连着 gpt-live 时走 data channel，视频不停；否则暂停视频、POST 给 <span class="t">/answer</span></td><td>浏览器</td></tr>
+    <tr><td class="mono">4</td><td>按 <span class="t">container_id</span> + <span class="t">anchor_sec</span> 取资料，拼进 prompt</td><td>agent_live.py</td></tr>
+    <tr><td class="mono">5</td><td>codex 读帧 + 资料，不够就 WebSearch，产出回答与 <span class="t">SOURCES:</span> 行</td><td>codex</td></tr>
+    <tr><td class="mono">6</td><td>抽出引用列表，回 JSON；浏览器 TTS 念出来，可点「判分」入库</td><td>agent_live.py → 浏览器</td></tr>
+  </table>
+  </div>
 </section>
 
-<!-- ============ PART 2: 三条路径 ============ -->
+<!-- ============ PART 2: 主要 API ============ -->
 <section>
   <p class="eyebrow">Part 2</p>
-  <h2>三条请求路径，各管各的</h2>
-  <p class="lede">同一个 codex 后端，但被三种不同场景触发，触发条件和是否强制都不一样。</p>
+  <h2>主要 API</h2>
+  <p class="lede">同一个 codex 后端，三个端点各管一件事，触发条件和是否强制都不一样。
+  查看器对 agent 的全部要求就是这三个 HTTP 端点，换任何后端实现都行。</p>
 
   <div class="tablebox">
   <table>
     <tr><th>端点</th><th>谁触发</th><th>强制？</th><th>内容形态</th></tr>
     <tr>
       <td><span class="t">/answer</span></td>
-      <td>HTTP 模式：视频经过锚点自动 POST 整个任务包</td>
+      <td>视频经过锚点，POST 整个任务包</td>
       <td><span class="pill optional">直接触发</span></td>
-      <td>3-6 句，直接给浏览器 TTS 念</td>
+      <td>3-6 句，直接给浏览器 TTS 念；纯情绪时刻一两句</td>
     </tr>
     <tr>
       <td><span class="t">/lookup</span></td>
@@ -176,19 +183,41 @@ tr:last-child td{border-bottom:none;}
   </table>
   </div>
 
+  <h3>/answer 的 payload 契约</h3>
+<pre>POST /answer
+{
+  "task_id":        "hff-p1-t04",
+  "type":           "query" | "proactive",
+  "question":       "我现在抱着的这个大铁球是干嘛用的？",   <span style="color:var(--muted)">// proactive 为 null</span>
+  "anchor_sec":     3130,
+  "hint_level":     "direction_only" | "full",
+  "context_window_sec": [0, 3130],
+  "game":           "Human Fall Flat · 首次盲玩 Part 1",
+  "container_id":   "hff-p1",                          <span style="color:var(--muted)">// 决定挂哪些资料</span>
+  "frame_jpeg_base64": "...",                          <span style="color:var(--muted)">// 锚点当前帧 640px</span>
+  "context_frames": [                                  <span style="color:var(--muted)">// 仅 proactive，见 Part 3</span>
+    {"offset_sec": -240, "b64": "..."}, ...            <span style="color:var(--muted)">// -240/-180/-120/-60/-20，448px</span>
+  ],
+  "recent_research": [{"question": "...", "text": "..."}]   <span style="color:var(--muted)">// 可选参考，见 Part 3</span>
+}
+  →  { "text": "...", "citations": ["..."], "latency_ms": 7300 }</pre>
+
   <div class="callout">
-    <p><span class="t">must_cite</span> / <span class="t">tool_fit</span> 为真的题，用 Realtime API 的
-    per-response <span class="t">tool_choice</span> 强制覆盖，不是靠 gpt-live 自己判断「够不够确定」——
-    现场对话式模型几乎不会主动承认不确定，所以这条规则做成硬性的。</p>
+    <p>回答里最后单独一行 <span class="t">SOURCES: </span> 是硬约定——服务端用它抽出 <span class="t">citations</span>，
+    判分时据此看 <span class="t">must_cite</span> 有没有真的兑现。写 <span class="t">SOURCES: none</span> 表示没参考任何资料。</p>
   </div>
 </section>
 
-<!-- ============ PART 3: idle research loop ============ -->
+<!-- ============ PART 3: 核心设计 ============ -->
 <section>
   <p class="eyebrow">Part 3</p>
-  <h2>自主预研闭环</h2>
-  <p class="lede">不是「提前把题目原文发过去查」（那是偷看未来），而是 agent 只从<span class="hl">自己看到的画面</span>出发，
-  自己决定查什么——查到的东西存成笔记，供之后真被问到时<span class="hl">自愿参考</span>，不是必须用。</p>
+  <h2>核心设计</h2>
+  <p class="lede">四件事决定了这套东西跟「把问题丢给一个大模型」的区别。</p>
+
+  <h3>一 · 自主预研闭环</h3>
+  <p style="font-size:14px; max-width:66ch;">agent 只从<span class="hl">自己看到的画面</span>出发，自己决定查什么——
+  查到的东西存成笔记，供之后真被问到时<span class="hl">自愿参考</span>，不是必须用。
+  它<span class="hl">读不到任何预先写好的题目文本</span>，所以这是预研不是偷看。</p>
 
   <figure class="diagram">
   <svg viewBox="0 0 860 130" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="每15秒看当前帧，自己造问题，判断NOTEWORTHY或NOTHING，存成研究笔记，之后可选参考">
@@ -213,8 +242,8 @@ tr:last-child td{border-bottom:none;}
     <rect x="366" y="8" width="120" height="46" rx="6" fill="var(--ok-soft)"/>
     <text x="426" y="35" text-anchor="middle" font-size="11.5" fill="var(--ok)" font-weight="600">NOTEWORTHY</text>
     <rect x="366" y="76" width="120" height="46" rx="6" fill="var(--bad-soft)"/>
-    <text x="426" y="103" text-anchor="middle" font-size="11.5" fill="var(--bad)" font-weight="600">NOTHING</text>
-    <text x="426" y="115" text-anchor="middle" font-size="9.5" fill="var(--bad)">丢弃，等下一轮</text>
+    <text x="426" y="99" text-anchor="middle" font-size="11.5" fill="var(--bad)" font-weight="600">NOTHING</text>
+    <text x="426" y="113" text-anchor="middle" font-size="9.5" fill="var(--bad)">丢弃，等下一轮</text>
 
     <line x1="486" y1="31" x2="522" y2="31" stroke="var(--ok)" stroke-width="1.5" marker-end="url(#ar3)"/>
 
@@ -229,136 +258,86 @@ tr:last-child td{border-bottom:none;}
     <text x="790" y="42" text-anchor="middle" font-size="9.5" fill="var(--blue)">自己判断用不用得上</text>
   </svg>
   </figure>
-  <figcaption class="cap">验证过：某一帧预写的题目是关于 snake_case 警告的，但 agent 自己注意到的是画面里
-  完全不同的一条 <span class="t">assertion failed</span> 报错——说明它真的是在观察，不是在背题。</figcaption>
-</section>
+  <figcaption class="cap">笔记只是<span class="t">可选参考</span>——用不上就还是老老实实现查，延迟是真实的，
+  所以延迟类指标不会因为「提前缓存」而失真。</figcaption>
 
-<!-- ============ PART 4: 并发修复 ============ -->
-<section>
-  <p class="eyebrow">Part 4</p>
-  <h2>一个真实的坑：请求排队</h2>
-  <p class="lede">「live agent 说得少、没用」的根因不是提示词，是并发——单线程 server 让自主预研和真提问抢同一个队列。</p>
+  <h3>二 · proactive 的时间线上下文</h3>
+  <p style="font-size:14px; max-width:66ch;">
+  <span class="pill" style="border:1.5px solid var(--accent); color:var(--accent);">proactive</span>
+  考的是「该不该开口」，而值不值得开口的依据<span class="hl">全是时间性的</span>——卡了多久、刚完成了什么。
+  单张锚点帧承载不了这些：通关那一帧是角色在云里下坠，跟「掉出地图」几乎无法区分。
+  所以主动型任务的 payload 额外带一条时间线。</p>
 
-  <div class="baPair" id="concurrency-pair">
-    <div class="baCard bad">
-      <div class="head">改之前 · HTTPServer（阻塞）</div>
-      <div class="diagram">
-        <svg viewBox="0 0 380 150" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="research占用服务器时lookup请求排队等待，用户听到长时间沉默">
-          <rect x="10" y="14" width="150" height="30" rx="5" fill="var(--bad-soft)"/>
-          <text x="85" y="34" text-anchor="middle" font-size="11" fill="var(--bad)" font-weight="600">/research 占着（15-30s）</text>
-          <rect x="10" y="54" width="150" height="30" rx="5" fill="var(--panel)" stroke="var(--bad)" stroke-dasharray="3 3"/>
-          <text x="85" y="74" text-anchor="middle" font-size="11" fill="var(--bad)">/lookup 排队等着</text>
-          <line x1="170" y1="29" x2="200" y2="29" stroke="var(--muted)" stroke-width="1.5"/>
-          <text x="230" y="34" font-size="10.5" fill="var(--muted)">codex 跑完才轮到</text>
-          <rect x="10" y="100" width="360" height="34" rx="5" fill="none" stroke="var(--bad)" stroke-dasharray="3 3"/>
-          <text x="190" y="121" text-anchor="middle" font-size="10.5" fill="var(--bad)">用户端：长时间沉默，或拿到过期/超时的答案</text>
-        </svg>
-      </div>
+  <figure class="diagram">
+  <svg viewBox="0 0 860 120" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="锚点前240到20秒共5张448px缩图加上此刻640px帧，按时间排序附给模型">
+    <g font-size="9" fill="var(--ok)" text-anchor="middle">
+      <rect x="30" y="26" width="96" height="44" rx="5" fill="var(--ok-soft)"/><text x="78" y="52" font-size="10.5">-240s</text>
+      <rect x="136" y="26" width="96" height="44" rx="5" fill="var(--ok-soft)"/><text x="184" y="52" font-size="10.5">-180s</text>
+      <rect x="242" y="26" width="96" height="44" rx="5" fill="var(--ok-soft)"/><text x="290" y="52" font-size="10.5">-120s</text>
+      <rect x="348" y="26" width="96" height="44" rx="5" fill="var(--ok-soft)"/><text x="396" y="52" font-size="10.5">-60s</text>
+      <rect x="454" y="26" width="96" height="44" rx="5" fill="var(--ok-soft)"/><text x="502" y="52" font-size="10.5">-20s</text>
+      <rect x="566" y="20" width="110" height="56" rx="5" fill="var(--accent)"/>
+      <text x="621" y="44" fill="var(--accent-ink)" font-weight="700" font-size="12">此刻</text>
+      <text x="621" y="60" fill="var(--accent-ink)" font-size="9.5">640px</text>
+    </g>
+    <text x="290" y="90" text-anchor="middle" font-size="10.5" fill="var(--muted)">前 5 张 448px 低分辨率，够看出场景变化就行</text>
+    <text x="738" y="40" font-size="10.5" fill="var(--ink)">没变 = 卡住</text>
+    <text x="738" y="56" font-size="10.5" fill="var(--ink)">换场景 = 有进展</text>
+    <text x="738" y="72" font-size="10.5" fill="var(--ink)">回菜单 = 一局结束</text>
+    <line x1="686" y1="48" x2="716" y2="48" stroke="var(--muted)" stroke-width="1.5"/>
+  </svg>
+  </figure>
+  <figcaption class="cap">不用改播放逻辑：HTTP 模式经过锚点时视频<span class="t">本来就已经 pause</span>，
+  回溯 seek 抓帧再复位即可（锚点太靠前时自动跳过负数时间点）。codex 的 <span class="t">-i</span> 可重复传多图。
+  前端开销 177ms，相对 codex 的数秒可忽略。</figcaption>
+
+  <div class="callout">
+    <p>配套的判断规则：落点是<span class="hl">此刻的处境</span>——正卡着、刚失败、刚做成一件事、还是刚到一个新地方。
+    跨图对比出来的变化本身可能就是此刻的处境；但中间某一帧闪过的孤立事件（捡到什么、数字跳一下）已经翻篇，不该转头去说它。
+    而且庆祝/安慰/一起笑这三类是<span class="hl">纯情绪反应</span>，一两句就够，此时给攻略提示是明确的错误。</p>
+  </div>
+
+  <h3>三 · 强制查证</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="k">为什么要强制</div>
+      <p>现场对话式模型几乎不会主动承认自己不确定——它很擅长把没查过的东西说得像查过。</p>
+      <p style="color:var(--muted)">靠它自觉判断「够不够确定」等于不设防。</p>
     </div>
-    <div class="baCard good">
-      <div class="head">改之后 · ThreadingHTTPServer</div>
-      <div class="diagram">
-        <svg viewBox="0 0 380 150" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="research和lookup各自开线程并行跑，lookup不用等待，实测ping在29秒的lookup跑着时候20毫秒就返回">
-          <rect x="10" y="14" width="150" height="30" rx="5" fill="var(--ok-soft)"/>
-          <text x="85" y="34" text-anchor="middle" font-size="11" fill="var(--ok)" font-weight="600">/research 自己一个线程</text>
-          <rect x="10" y="54" width="150" height="30" rx="5" fill="var(--ok-soft)"/>
-          <text x="85" y="74" text-anchor="middle" font-size="11" fill="var(--ok)" font-weight="600">/lookup 自己一个线程</text>
-          <text x="230" y="34" font-size="10.5" fill="var(--muted)">互不阻塞</text>
-          <rect x="10" y="100" width="360" height="34" rx="5" fill="none" stroke="var(--ok)" stroke-dasharray="3 3"/>
-          <text x="190" y="121" text-anchor="middle" font-size="10.5" fill="var(--ok)">实测：29s 的 lookup 跑着时，ping 20ms 就回来了</text>
-        </svg>
-      </div>
+    <div class="card">
+      <div class="k">怎么强制</div>
+      <p><span class="t">must_cite</span> / <span class="t">tool_fit</span> 为真的题，用 Realtime API 的
+      per-response <span class="t">tool_choice</span> 硬性覆盖，必须走一次 <span class="t">/lookup</span>。</p>
+      <p style="color:var(--muted)">判分时再看 <span class="t">citations</span> 是否兑现。</p>
     </div>
   </div>
-</section>
 
-<!-- ============ PART 5: 主动型任务的时间线上下文 ============ -->
-<section>
-  <p class="eyebrow">Part 5</p>
-  <h2>第二个坑：一张帧判断不了「该不该开口」</h2>
-  <p class="lede"><span class="tag" style="border:1.5px solid var(--accent); color:var(--accent);">proactive</span>
-  考的是开口时机，但值不值得开口的依据<span class="hl">全是时间性的</span>——卡了多久、刚完成了什么。
-  而 HTTP 通道只发一张锚点帧。截帧核对之后发现，这些帧里根本没有判断所需的信息。</p>
+  <h3>四 · 资料按进度路由</h3>
+  <p style="font-size:14px; max-width:66ch;">资料是<span class="hl">整篇</span>塞进 prompt 的，所以资料一多，
+  每道题都要付这份固定成本。container 因此把资料分成两层：</p>
 
   <div class="tablebox">
   <table>
-    <tr><th>锚点</th><th>那一帧画面上实际有什么</th><th>为什么判断不了</th></tr>
+    <tr><th>层</th><th>字段</th><th>行为</th></tr>
     <tr>
-      <td><span class="t">hff-p1-t18</span><br><span style="color:var(--muted); font-size:11.5px;">Water 关通关</span></td>
-      <td>小人在云雾中下坠</td>
-      <td>Human Fall Flat 没有通关结算画面。这一帧跟「掉出地图」<span class="hl">几乎无法区分</span>——而掉出地图正是同一容器里另一道题考的事</td>
+      <td>常驻</td>
+      <td><span class="t">resources</span></td>
+      <td>每次请求都带上。放底层设定类、几乎每题都用得到的</td>
     </tr>
     <tr>
-      <td><span class="t">stanleyparable-e01-t09</span><br><span style="color:var(--muted); font-size:11.5px;">Beat the Game</span></td>
-      <td>阳光小路 + 一句旁白字幕</td>
-      <td>成就弹窗要到 10 秒后才出现，<span class="hl">不在自己的锚点帧里</span></td>
-    </tr>
-    <tr>
-      <td><span class="t">slendytubbies-e01-t05</span><br><span style="color:var(--muted); font-size:11.5px;">只差 2 个被抓</span></td>
-      <td>已经回到主菜单</td>
-      <td>看不出他撑了 19 分钟、只差 2 个就通关</td>
-    </tr>
-    <tr>
-      <td><span class="t">hff-p1-t09</span><br><span style="color:var(--muted); font-size:11.5px;">吊机卡关 10 分钟</span></td>
-      <td>玩家站在吊机前</td>
-      <td>看不出「已经卡了 10 分钟」，跟正常操作长得一样</td>
+      <td>按进度</td>
+      <td><span class="t">chapter_resources</span></td>
+      <td>每条带 <span class="t">t</span> / <span class="t">end_t</span>，按 <span class="t">anchor_sec</span>
+        取<span class="hl">当前 + 下一段</span>。预取下一段是刻意的——真正的超级粉丝本来就已经知道接下来会发生什么，
+        防剧透规则管的是<span class="hl">输出</span>，不是它知道多少</td>
     </tr>
   </table>
   </div>
 
-  <div class="callout warn">
-    <p>症状分两种，同一个根因：画面平淡时模型输出 <span class="t">SILENT</span>（该庆祝的时刻沉默了）；
-    画面里有点地形时它就脑补成卡关、顺势灌一段攻略（该说「恭喜」的时候给了五句教学）。
-    <span class="hl">模型没做错——是我们只给了一张图，却问了一个只有时间轴才能回答的问题。</span></p>
-  </div>
-
-  <div class="baPair">
-    <div class="baCard bad">
-      <div class="head">改之前 · 只发锚点这一帧</div>
-      <div class="diagram">
-        <svg viewBox="0 0 380 150" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="只有一张锚点帧，模型无法判断是卡关还是通关，只能猜">
-          <rect x="120" y="18" width="140" height="52" rx="6" fill="var(--bad-soft)" stroke="var(--bad)"/>
-          <text x="190" y="40" text-anchor="middle" font-size="11.5" fill="var(--bad)" font-weight="600">此刻（1 张）</text>
-          <text x="190" y="58" text-anchor="middle" font-size="10.5" fill="var(--bad)">小人在下坠</text>
-          <text x="190" y="92" text-anchor="middle" font-size="10.5" fill="var(--muted)">卡关？通关？摔死？</text>
-          <rect x="10" y="106" width="360" height="30" rx="5" fill="none" stroke="var(--bad)" stroke-dasharray="3 3"/>
-          <text x="190" y="125" text-anchor="middle" font-size="10.5" fill="var(--bad)">5 道题里只有 1 道答对</text>
-        </svg>
-      </div>
-    </div>
-    <div class="baCard good">
-      <div class="head">改之后 · 附一条时间线</div>
-      <div class="diagram">
-        <svg viewBox="0 0 380 150" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="附上240秒到20秒前共5张帧加此刻，模型对比即可看出场景是否变化">
-          <g font-size="9" fill="var(--ok)" text-anchor="middle">
-            <rect x="8" y="22" width="56" height="40" rx="4" fill="var(--ok-soft)"/><text x="36" y="46">-240s</text>
-            <rect x="70" y="22" width="56" height="40" rx="4" fill="var(--ok-soft)"/><text x="98" y="46">-180s</text>
-            <rect x="132" y="22" width="56" height="40" rx="4" fill="var(--ok-soft)"/><text x="160" y="46">-120s</text>
-            <rect x="194" y="22" width="56" height="40" rx="4" fill="var(--ok-soft)"/><text x="222" y="46">-60s</text>
-            <rect x="256" y="22" width="56" height="40" rx="4" fill="var(--ok-soft)"/><text x="284" y="46">-20s</text>
-            <rect x="318" y="18" width="54" height="48" rx="4" fill="var(--ok)"/>
-            <text x="345" y="40" fill="var(--accent-ink)" font-weight="700">此刻</text>
-            <text x="345" y="54" fill="var(--accent-ink)" font-size="8.5">640px</text>
-          </g>
-          <text x="190" y="82" text-anchor="middle" font-size="10" fill="var(--muted)">前 5 张 448px 低分辨率，够看出场景变化就行</text>
-          <text x="190" y="97" text-anchor="middle" font-size="10.5" fill="var(--ok)">没变=卡住 · 换场景=有进展 · 回菜单=一局结束</text>
-          <rect x="10" y="106" width="360" height="30" rx="5" fill="none" stroke="var(--ok)" stroke-dasharray="3 3"/>
-          <text x="190" y="125" text-anchor="middle" font-size="10.5" fill="var(--ok)">同样 5 道题全部答对，前端开销 177ms</text>
-        </svg>
-      </div>
-    </div>
-  </div>
-
-  <figcaption class="cap">实现上不用改播放逻辑：HTTP 模式经过锚点时视频<span class="t">本来就已经 pause</span>，
-  所以能安全地回溯 seek 抓帧再复位（实测复位精确、不会意外恢复播放；锚点太靠前时自动跳过负数时间点）。
-  codex 的 <span class="t">-i</span> 可重复传多图，后端按时间顺序附上、并告诉它最后一张是「此刻」。</figcaption>
-
-  <div class="callout">
-    <p>还有一个副产品：<span class="t">hff-p1-t18</span> 的锚点<span class="hl">本身就偏早了一拍</span>。
-    它定在下坠瞬间，而「过关了」这件事只能靠场景切换看出来——锚点往后挪 14 秒到新场景可见处，
-    这道题才真正变得可答。<span class="t">context_window_sec</span> 只能看锚点之前，
-    所以<span class="hl">锚点必须落在证据已经出现的那一刻</span>，不能落在证据即将出现的前一刻。</p>
-  </div>
+  <p style="font-size:13.5px; color:var(--muted); max-width:66ch;">
+  区间不必照搬章节边界——按「哪道题需要哪篇」倒推更准。
+  以 Stanley Parable 为例（8 篇 / 77KB），路由后每次请求的资料段落在 13–26KB，均值 21KB，
+  <span class="hl">省掉约 72%</span>，而每道题声明的资料依赖仍然全部满足。</p>
 </section>
 
 </div>
