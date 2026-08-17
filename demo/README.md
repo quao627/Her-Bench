@@ -4,8 +4,27 @@
 上面挂的任务锚点、每个任务的判分配置，两种运行模式（浏览 / Agent 陪玩），
 以及一个「后台」面板把 agent 收到什么、返回什么全部摊开看。
 
-当前有 5 个 container（左上角下拉切换）：Human Fall Flat、Portal、
-Minecraft No Wiki 三个游戏盲玩，Rust 直播编程、Blender 首次上手两个工作场景。
+当前有 8 个 container（左上角下拉切换），长短搭配：
+
+| container | 时长 | 类型 |
+|---|---|---|
+| `hff-p1` / `portal-e01` / `mc-e01` | 2.4h / 2.7h / 2.4h | 游戏盲玩（话多/话中/话少三档） |
+| `rust-e01` / `blender-e01` | 3.8h / 5.0h | 直播编程 / 软件首次上手 |
+| `blender-e02` | 9.4min | 教学复盘（一周自学 Blender，事后配音） |
+| `slendytubbies-e01` | 20min | 恐怖游戏首次盲玩 |
+| `stanleyparable-e01` | 46min | 叙事游戏首次盲玩（剧透红线最严） |
+
+后三个是短视频，任务密度明显更高：
+
+| container | 题数 | 密度 | 最小锚点间隔 |
+|---|---|---|---|
+| `blender-e02` | 9 | 63s/题 | 26s |
+| `slendytubbies-e01` | 11 | 110s/题 | 63s |
+| `stanleyparable-e01` | 22 | 125s/题 | 55s |
+| 五个长 container | 14-18 | 573-1211s/题 | — |
+
+锚点间隔低于 60 秒时要单独确认两道题不冲突：不同主题、答案不重叠、
+触发时机不打架（query 会暂停视频等作答，proactive 有 30-100 秒响应窗口）才可以共存。
 
 ## 快速开始
 
@@ -58,9 +77,20 @@ prompt，可展开查看）：
 
 ```
 POST { task_id, type, question, anchor_sec, hint_level,
-       context_window_sec, frame_jpeg_base64, transcript_excerpt }
+       context_window_sec, frame_jpeg_base64, transcript_excerpt,
+       context_frames? }          // 仅 proactive：[{offset_sec, b64}, ...]
   →  { text, citations[], latency_ms }
 ```
+
+`context_frames` 是**主动型任务专用的时间线**：锚点前 240/180/120/60/20 秒各一张
+448px 低分辨率截图，按时间顺序排在当前帧之前。没有它，proactive 任务基本无法判断——
+「该不该开口」的依据全是时间性的（卡了多久、刚完成了什么），而单张锚点帧看不出这些：
+Human Fall Flat 通关那一帧是小人在云里下坠，跟「掉出地图」几乎无法区分；
+Stanley Parable 的 Beat the Game 成就弹窗在它自己的锚点上都还没出现。
+实测 5 道主动型任务，只给单帧时 1 道答对，加上时间线后 5 道全对。
+
+前端不用改播放逻辑：HTTP 模式经过锚点时视频本来就已经 pause，可以安全地回溯 seek
+抓帧再复位（实测复位精确、不会意外恢复播放，开销 177ms）。codex 侧 `-i` 可重复传多图。
 
 三档实现，按需选：
 
@@ -122,8 +152,27 @@ demo/
   media/                       浏览器兼容版视频（720p，H.264+AAC remux）
 ```
 
+## 出题时的硬性要求：锚点必须截帧核对
+
+只读字幕转写来定锚点会出错，而且不是小概率——给三条新视频出题时全量截帧核验，
+逮到两类真实错误：
+
+- **理解反了**：字幕 `"there's a pop-up in front of your face, but nothing happens"`
+  读起来像「UI 弹窗点了没反应」，截帧一看是反派贴脸的 jump-scare 镜头，
+  整道题的 rubric 方向写反了。
+- **时间戳漂移**：把 `mm:ss` 心算成 `anchor_sec` 时，小半数锚点跟实际画面差了 25~50 秒，
+  画面早就翻篇了。
+
+所以每个候选锚点都要 `ffmpeg -ss <t> -frames:v 1` 截一帧肉眼核对，
+`scene` 字段写的必须是「这一帧画面上有什么」，而不是「转写大概讲了什么」。
+
+还有一条容易忽略的：**锚点要落在证据已经出现的那一刻**，不能落在证据即将出现的前一刻。
+`context_window_sec` 只能看到锚点之前，`hff-p1-t18`（Water 关通关）原本定在下坠瞬间，
+而「过关了」只能靠场景切换看出来——锚点往后挪 14 秒到新场景可见处，这道题才真正可答。
+
 ## 已知简化（demo ≠ 正式 harness）
 
-- 主动型任务在响应窗口起点直接触发，正式评测应流式喂视频让 agent 自己决定时机；
+- 主动型任务在响应窗口起点直接触发，正式评测应流式喂视频让 agent 自己决定时机
+  （现在靠 `context_frames` 时间线补上了「这段时间发生了什么」，但仍不是真正的流式）；
 - 判分是人工勾选 rubric，正式评测由规则脚本 + LLM/VLM judge 完成；
 - `transcript_excerpt` 暂为空，跑完 ASR 后接入。

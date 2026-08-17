@@ -1,0 +1,321 @@
+<title>出题与判分逻辑</title>
+<style>
+:root{
+  --bg:#FAF7F4; --panel:#F1EAE5; --ink:#2B2422; --muted:#8A7F79;
+  --accent:#D94F3A; --accent-ink:#FFFFFF; --line:#E3DAD3; --code-bg:#F1EAE5;
+  --ok:#3D7A5C; --ok-soft:#E2EEE7; --warn:#B0762A; --warn-soft:#F3E7D3; --bad:#B0393B; --bad-soft:#F5E3E3;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#201B19; --panel:#2B2522; --ink:#EDE6E1; --muted:#9C8F88;
+    --accent:#E8664F; --accent-ink:#FFFFFF; --line:#3A322E; --code-bg:#2B2522;
+    --ok:#6BBF97; --ok-soft:#233A30; --warn:#D9A25B; --warn-soft:#3A2F1E; --bad:#DE7F81; --bad-soft:#3D2426;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#201B19; --panel:#2B2522; --ink:#EDE6E1; --muted:#9C8F88;
+  --accent:#E8664F; --accent-ink:#FFFFFF; --line:#3A322E; --code-bg:#2B2522;
+  --ok:#6BBF97; --ok-soft:#233A30; --warn:#D9A25B; --warn-soft:#3A2F1E; --bad:#DE7F81; --bad-soft:#3D2426;
+}
+*{box-sizing:border-box;}
+body{
+  background:var(--bg); color:var(--ink); margin:0;
+  font-family:"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  line-height:1.75; font-size:15px;
+}
+.wrap{max-width:860px; margin:0 auto; padding:56px 24px 90px;}
+h1,h2,h3{font-family:"Songti SC","Noto Serif SC","STSong",serif; text-wrap:balance; line-height:1.3; font-weight:700;}
+h1{font-size:32px; margin:0 0 10px;}
+h2{font-size:21px; margin:0 0 6px;}
+h3{font-size:15px; margin:26px 0 10px;}
+.sub{color:var(--muted); margin:0; font-size:14.5px; max-width:58ch;}
+.eyebrow{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:600; margin:0 0 8px;}
+section{margin-top:58px;}
+section > p.lede{color:var(--ink); font-size:14.5px; max-width:64ch; margin:0 0 18px;}
+p{margin:0 0 12px;}
+.hl{color:var(--accent); font-weight:600;}
+.t{font-family:"SF Mono",Menlo,monospace; font-size:11.5px; background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:0 5px;}
+pre{background:var(--code-bg); border:1px solid var(--line); border-radius:8px; padding:16px 18px; overflow-x:auto; font-size:12px; line-height:1.7; margin:10px 0 0; font-family:"SF Mono",Menlo,monospace;}
+.diagram{margin:16px 0 4px; overflow-x:auto;}
+.diagram svg{display:block; min-width:680px; width:100%;}
+figcaption.cap{font-size:12.5px; color:var(--muted); margin:10px 0 0; line-height:1.65; max-width:64ch;}
+a{color:var(--accent);}
+.callout{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:8px; padding:12px 18px; margin:16px 0; font-size:13.5px;}
+.callout p{margin:0;}
+.tag{display:inline-block; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; font-weight:700; padding:1px 8px; border-radius:99px;}
+.tag.q{background:var(--accent); color:var(--accent-ink);}
+.tag.p{border:1.5px solid var(--accent); color:var(--accent); background:transparent;}
+/* two-card compare */
+.compare{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0 4px;}
+.card{border:1px solid var(--line); border-radius:10px; background:var(--panel); padding:16px 18px;}
+.card .k{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:8px;}
+.card p{font-size:13.5px; margin:0 0 8px;}
+.card p:last-child{margin-bottom:0;}
+/* rubric checklist */
+.rubric{border:1px solid var(--line); border-radius:10px; overflow:hidden; margin:14px 0 4px;}
+.rubric .row{display:flex; gap:12px; align-items:flex-start; padding:11px 16px; border-bottom:1px solid var(--line); font-size:13.5px;}
+.rubric .row:last-child{border-bottom:none;}
+.rubric .row .field{font-family:"SF Mono",Menlo,monospace; font-size:12px; color:var(--accent); white-space:nowrap; padding-top:1px; min-width:132px;}
+.rubric .row .desc{color:var(--ink);}
+.rubric .row .desc .ex{display:block; color:var(--muted); font-size:12px; margin-top:3px;}
+/* verification-stats table */
+.tablebox{overflow-x:auto; margin:14px 0 4px;}
+table{border-collapse:collapse; width:100%; font-size:13px;}
+th{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600; text-align:left;}
+th,td{padding:9px 14px 9px 0; border-bottom:1px solid var(--line); vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+.pill{display:inline-block; font-size:10.5px; font-weight:700; padding:2px 9px; border-radius:99px; white-space:nowrap;}
+.pill.forced{background:var(--bad-soft); color:var(--bad);}
+.pill.optional{background:var(--ok-soft); color:var(--ok);}
+.callout.warn{border-left-color:var(--warn);}
+@media (max-width:640px){.compare{grid-template-columns:1fr;}}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Diagram · Her-Bench</p>
+  <h1>出题逻辑与 Rubric 设计</h1>
+  <p class="sub">两件事：一道题从视频里怎么被找出来、写成什么样；判分的时候按什么标准打分。</p>
+</header>
+
+<!-- ============ PART 1: 出题 pipeline ============ -->
+<section>
+  <p class="eyebrow">Part 1</p>
+  <h2>题从哪来</h2>
+  <p class="lede">锚点不是编的——每道题都对应视频里<span class="hl">真实发生</span>的一件事（一个谜题、一个卡关、一次操作失误），
+  由多个 agent 并行扫视频找出来，人再挑一遍、定档时间戳。</p>
+
+  <figure class="diagram">
+  <svg viewBox="0 0 800 190" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="出题 pipeline：原始视频到多 agent 并行扫描到候选锚点到精选到写成 task">
+    <defs>
+      <marker id="arrow1" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
+      </marker>
+    </defs>
+
+    <rect x="6" y="16" width="132" height="86" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="72" y="53" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">原始直播</text>
+    <text x="72" y="71" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">视频</text>
+
+    <line x1="138" y1="59" x2="176" y2="59" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow1)"/>
+
+    <rect x="180" y="6" width="180" height="106" rx="8" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="270" y="30" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--accent)">多 agent 并行扫描</text>
+    <text x="270" y="52" text-anchor="middle" font-size="11.5" fill="var(--ink)">分段各看一段</text>
+    <text x="270" y="70" text-anchor="middle" font-size="11.5" fill="var(--ink)">找谜题/卡关/操作点</text>
+    <text x="270" y="88" text-anchor="middle" font-size="11.5" fill="var(--ink)">标时间戳 + 现场描述</text>
+
+    <line x1="360" y1="59" x2="398" y2="59" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow1)"/>
+
+    <rect x="402" y="16" width="150" height="86" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="477" y="46" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">候选锚点</text>
+    <text x="477" y="66" text-anchor="middle" font-size="11" fill="var(--muted)">带时间戳</text>
+    <text x="477" y="82" text-anchor="middle" font-size="11" fill="var(--muted)">带现场描述</text>
+
+    <line x1="552" y1="59" x2="590" y2="59" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow1)"/>
+
+    <rect x="594" y="16" width="100" height="86" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="644" y="53" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">人工</text>
+    <text x="644" y="71" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">精选</text>
+
+    <line x1="694" y1="59" x2="726" y2="59" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow1)"/>
+
+    <rect x="730" y="6" width="66" height="106" rx="8" fill="var(--accent)"/>
+    <text x="763" y="53" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-ink)">task</text>
+    <text x="763" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-ink)">JSON</text>
+
+    <text x="270" y="140" text-anchor="middle" font-size="11" fill="var(--muted)">e.g. Human Fall Flat：6 个真实关卡</text>
+    <text x="270" y="156" text-anchor="middle" font-size="11" fill="var(--muted)">（Mansion / Train / Demolition / Castle / Water / Power Plant）</text>
+    <text x="270" y="172" text-anchor="middle" font-size="11" fill="var(--muted)">每关的谜题点都单独核实过，不是笼统概括</text>
+  </svg>
+  </figure>
+  <figcaption class="cap">锚点固定的游戏（比如关卡制的 Human Fall Flat）额外的好处：关卡顺序是确定的，
+  资源可以按「当前锚点在哪一关」提前分好，不用等真被问到才现查。</figcaption>
+
+  <h3>光扫字幕不够，锚点必须截帧核对</h3>
+  <p style="font-size:13.5px; color:var(--ink); max-width:66ch; margin:0 0 12px;">「候选锚点」那一步如果只靠字幕转写文本来判断现场发生了什么，
+  会真的出错——不是小概率事件。给三条新视频写题时全量截帧核对了一遍候选锚点，命中率不算高：</p>
+
+  <div class="compare">
+    <div class="card">
+      <div class="k" style="color:var(--bad);">只信字幕，会理解反了</div>
+      <p>字幕：<span class="t">"there's a pop-up in front of your face, but nothing happens"</span></p>
+      <p style="color:var(--muted)">光看文字第一反应：某个 UI 提示弹出来但点了没反应，是个交互 bug——
+      写成了「他遇到卡 bug 的交互提示」这道题。</p>
+    </div>
+    <div class="card">
+      <div class="k" style="color:var(--ok);">截帧一看，是另一件事</div>
+      <p>那一秒的画面：反派角色贴脸闪现的 jump-scare 镜头。</p>
+      <p style="color:var(--muted)">"pop up in front of your face" 说的是反派贴脸出现，"nothing happens" 是指
+      吓一跳但没被抓——跟 UI 毫无关系，rubric 写反了方向，靠人工截帧核对才发现。</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <p>另一个更常踩的坑是<span class="hl">时间戳漂移</span>：把字幕里的 <span class="t">mm:ss</span> 心算转成
+    <span class="t">anchor_sec</span> 时，三条新视频里有小半数锚点跟实际画面差了 <span class="hl">25～50 秒</span>——
+    足够让画面从「正在发生」变成「已经翻篇」。现在的流程改成：候选锚点定完之后，每一个都用
+    <span class="t">ffmpeg -ss &lt;t&gt; -frames:v 1</span> 截一帧出来肉眼核对，不对就用转写里更精确的关键词重新定位，
+    再写进 <span class="t">scene</span> 字段——<span class="t">scene</span> 描述的应该是「这一帧画面上有什么」，
+    不是「转写文本大概讲了什么」。</p>
+  </div>
+
+  <h3>出题也要对抗验证：提出者和验证者分开</h3>
+  <p style="font-size:13.5px; color:var(--ink); max-width:66ch; margin:0 0 12px;">
+  截帧核对不能只由出题的人自己做——自己验自己会放水。实际跑法是分两段：
+  一批 agent 分段扫描提候选（每个都必须自己截帧），另一批 agent 拿到候选后<span class="hl">默认怀疑、独立重截</span>，
+  逐条查可答性、剧透、trivial、撞车、rubric 可判性、编造。26 条候选的判定结果：</p>
+
+  <div class="tablebox">
+  <table>
+    <tr><th>判定</th><th>条数</th><th>典型问题</th></tr>
+    <tr>
+      <td><span class="pill optional">CONFIRMED</span></td>
+      <td style="font-variant-numeric:tabular-nums;">5</td>
+      <td>直接通过</td>
+    </tr>
+    <tr>
+      <td><span class="pill" style="background:var(--warn-soft); color:var(--warn);">CORRECTED</span></td>
+      <td style="font-variant-numeric:tabular-nums;">17</td>
+      <td>时间戳漂移、<span class="hl">rubric 要求用锚点之后的画面推理</span>（等于要 agent 知道未来）、
+        rubric 点其实是字幕复读（白送分）、<span class="t">must_cite=true</span> 但所需资料压根没挂在这个 container 上、
+        断言视频从没交代过的因果</td>
+    </tr>
+    <tr>
+      <td><span class="pill forced">REJECTED</span></td>
+      <td style="font-variant-numeric:tabular-nums;">4</td>
+      <td>有硬伤，直接毙掉</td>
+    </tr>
+  </table>
+  </div>
+
+  <div class="callout warn">
+    <p><span class="hl">17/26 需要修正</span>——这个比例说明验证不是走过场。其中最隐蔽的一类是
+    「rubric 引用了锚点之后才出现的画面」：出题时看着合理，但 <span class="t">context_window_sec</span>
+    是 <span class="t">[0, anchor]</span>，agent 根本看不到那一帧，等于出了一道注定答不对的题。
+    验证者还会去核事实——有一道题断言画面上的柱状图不是真实票数，验证者专门拉了片尾转写，
+    确认真实票数是 13/30/30、跟画面上的 58/16/5/21 对不上，这条 rubric 才站得住。</p>
+  </div>
+</section>
+
+<!-- ============ PART 2: task 骨架 ============ -->
+<section>
+  <p class="eyebrow">Part 2</p>
+  <h2>一个 task 的骨架</h2>
+  <p class="lede">两种类型：<span class="tag q">query</span> 观众主动问，<span class="tag p">proactive</span> 该 agent 自己判断要不要开口。
+  两种都锚在同一条时间轴上，核心契约是<span class="hl">锚点之后的内容一律不可见</span>。</p>
+
+  <figure class="diagram">
+  <svg viewBox="0 0 800 180" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="时间轴：context_window_sec 从 0 到 anchor_sec，锚点之后是不可见区域，proactive 任务还有 response_window_sec">
+    <defs>
+      <marker id="arrow2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
+      </marker>
+    </defs>
+    <line x1="20" y1="60" x2="780" y2="60" stroke="var(--line)" stroke-width="1.5"/>
+
+    <rect x="20" y="46" width="430" height="28" fill="var(--ok-soft)"/>
+    <text x="235" y="40" text-anchor="middle" font-size="11.5" fill="var(--ok)" font-weight="600">context_window_sec：[0, anchor_sec] — agent 可见</text>
+
+    <rect x="450" y="46" width="330" height="28" fill="var(--bad-soft)"/>
+    <text x="615" y="40" text-anchor="middle" font-size="11.5" fill="var(--bad)" font-weight="600">锚点之后 — 严格不可见（剧透红线）</text>
+
+    <line x1="450" y1="30" x2="450" y2="140" stroke="var(--accent)" stroke-width="2"/>
+    <circle cx="450" cy="60" r="5" fill="var(--accent)"/>
+    <text x="450" y="98" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent)">anchor_sec</text>
+    <text x="450" y="114" text-anchor="middle" font-size="11" fill="var(--muted)">题目触发的那一刻</text>
+
+    <rect x="450" y="150" width="180" height="20" fill="var(--warn-soft)"/>
+    <text x="540" y="164" text-anchor="middle" font-size="10.5" fill="var(--warn)" font-weight="600">response_window_sec（仅 proactive）</text>
+    <text x="540" y="146" text-anchor="middle" font-size="10.5" fill="var(--muted)">要求在这段时间内自己开口，才算命中</text>
+  </svg>
+  </figure>
+
+  <div class="compare">
+    <div class="card">
+      <div class="k"><span class="tag q">query</span> 观众问</div>
+      <p>观众/主播真的开口问了一个问题，agent 要在提示分级允许的范围内答。</p>
+      <p style="color:var(--muted)">考的是：答得准不准、有没有剧透、该引用时有没有引用。</p>
+    </div>
+    <div class="card">
+      <div class="k"><span class="tag p">proactive</span> 该不该主动说</div>
+      <p>没人问，但画面里发生了值得提醒/安慰/庆祝的事，agent 要自己判断值不值得开口、什么时候开口。</p>
+      <p style="color:var(--muted)">考的是：开口时机对不对（<span class="t">response_window_sec</span> 内）、说了是不是真有用。</p>
+    </div>
+  </div>
+
+  <h3>hint_level：给多细</h3>
+  <div class="compare">
+    <div class="card">
+      <div class="k">direction_only</div>
+      <p>只给方向性提示——提醒该往哪想、该留意什么，<span class="hl">不给完整解法步骤</span>。</p>
+    </div>
+    <div class="card">
+      <div class="k">full</div>
+      <p>可以把原理、步骤、容易搞错的地方完整讲清楚。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 3: rubric ============ -->
+<section>
+  <p class="eyebrow">Part 3</p>
+  <h2>Rubric：按什么打分</h2>
+  <p class="lede">每道题的 <span class="t">grading</span> 字段有四块，各管一件事——内容对不对、有没有剧透、
+  该查证时有没有查证。</p>
+
+  <div class="rubric">
+    <div class="row">
+      <div class="field">rubric_points</div>
+      <div class="desc">一组要点 checklist，答案命中几条打几分——不是整体「像不像」的模糊判断。
+        <span class="ex">例：提到「两根杆同时前推直行」、「一前一后原地转向」各算一点</span></div>
+    </div>
+    <div class="row">
+      <div class="field">spoiler_blocklist</div>
+      <div class="desc">锚点之后才会出现的关键词/内容，一旦答案里出现直接扣分或判负。
+        <span class="ex">例：还没打到 Power Plant 关卡时，答案里不能出现该关卡的谜题细节</span></div>
+    </div>
+    <div class="row">
+      <div class="field">must_cite</div>
+      <div class="desc">为真时，这题不许 agent 凭记忆/直觉硬答——判分时看有没有真的调用查证工具、有没有给来源。</div>
+    </div>
+    <div class="row">
+      <div class="field">tool_fit</div>
+      <div class="desc">标记「这题适合用来考查证能力」——现场对话式模型几乎不会主动承认自己不确定，
+        所以 <span class="t">must_cite</span> / <span class="t">tool_fit</span> 为真的题在实现里是<span class="hl">强制</span>触发查证工具，不是靠它自觉。</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <p>判分设计上刻意分开「说得对不对」和「有没有查」——因为对话式模型很擅长把没查过的东西说得很像查过，
+      <span class="t">must_cite</span> 就是专门堵这个漏洞的。查证工具怎么接、怎么强制触发，见另一张图「陪看双引擎」。</p>
+  </div>
+</section>
+
+<!-- ============ Worked example ============ -->
+<section>
+  <p class="eyebrow">Worked Example</p>
+  <h2>一道真实的题</h2>
+  <p class="lede">Human Fall Flat 里，主播刚打到 Water 关卡的货船，还没碰到起重机吊集装箱的谜题——这道题就锚在这里。</p>
+
+  <pre>{
+  "task_id": "hff-p1-t04",
+  "type": "query",                       <span style="color:var(--muted)">// 观众主动问的</span>
+  "anchor_sec": 6510,                    <span style="color:var(--muted)">// 视频第 108 分钟：正在开货船</span>
+  "hint_level": "full",                  <span style="color:var(--muted)">// 操作类问题，可以讲全</span>
+  "question": "这个货船的两根操纵杆到底怎么用啊？",
+  "context_window_sec": [0, 6510],       <span style="color:var(--muted)">// 起重机吊集装箱谜题(更靠后)还不可见</span>
+  "grading": {
+    "rubric_points": [
+      "提到两根杆分别控制左右推进器，不是方向+油门",
+      "提到一前一后是原地转向，两杆同向是直行/倒退"
+    ],
+    "spoiler_blocklist": ["集装箱吊钩", "码头起重机怎么摆荡"],
+    "must_cite": false,
+    "tool_fit": true                     <span style="color:var(--muted)">// 细节题，适合考查证能力</span>
+  }
+}</pre>
+</section>
+
+</div>
