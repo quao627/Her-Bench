@@ -1,0 +1,384 @@
+<title>Her-Bench 设计草案</title>
+<style>
+:root{
+  --bg:#FAF7F4; --panel:#F1EAE5; --ink:#2B2422; --muted:#8A7F79;
+  --accent:#D94F3A; --accent-ink:#FFFFFF; --line:#E3DAD3; --code-bg:#F1EAE5;
+  --ok:#3D7A5C; --ok-soft:#E2EEE7; --warn:#B0762A; --bad:#B0393B; --bad-soft:#F5E3E3;
+  --blue:#3D6C9E; --blue-soft:#E3EAF2;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#201B19; --panel:#2B2522; --ink:#EDE6E1; --muted:#9C8F88;
+    --accent:#E8664F; --accent-ink:#FFFFFF; --line:#3A322E; --code-bg:#2B2522;
+    --ok:#6BBF97; --ok-soft:#233A30; --warn:#D9A25B; --bad:#DE7F81; --bad-soft:#3D2426;
+    --blue:#7CA6D6; --blue-soft:#232C38;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#201B19; --panel:#2B2522; --ink:#EDE6E1; --muted:#9C8F88;
+  --accent:#E8664F; --accent-ink:#FFFFFF; --line:#3A322E; --code-bg:#2B2522;
+  --ok:#6BBF97; --ok-soft:#233A30; --warn:#D9A25B; --bad:#DE7F81; --bad-soft:#3D2426;
+  --blue:#7CA6D6; --blue-soft:#232C38;
+}
+*{box-sizing:border-box;}
+body{
+  background:var(--bg); color:var(--ink); margin:0;
+  font-family:"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  line-height:1.75; font-size:15px;
+}
+.wrap{max-width:860px; margin:0 auto; padding:56px 24px 80px;}
+h1,h2,h3{font-family:"Songti SC","Noto Serif SC","STSong",serif; text-wrap:balance; line-height:1.3; font-weight:700;}
+h1{font-size:34px; margin:0 0 8px;}
+h2{font-size:22px; margin:0 0 12px;}
+h3{font-size:16px; margin:30px 0 8px;}
+.sub{color:var(--muted); margin:0; font-size:15px; max-width:62ch;}
+.eyebrow{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:600; margin:0 0 6px;}
+section{margin-top:56px;}
+p{margin:0 0 12px; max-width:66ch;}
+.hl{color:var(--accent); font-weight:600;}
+.t{font-family:"SF Mono",Menlo,monospace; font-size:11.5px; background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:0 5px; white-space:nowrap;}
+table{border-collapse:collapse; width:100%; font-size:13.5px;}
+th{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600; text-align:left;}
+th,td{padding:9px 12px 9px 0; border-bottom:1px solid var(--line); vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+.tablebox{overflow-x:auto; margin:14px 0 8px;}
+pre{background:var(--code-bg); border:1px solid var(--line); border-radius:8px; padding:16px 18px; overflow-x:auto; font-size:12.5px; line-height:1.65; margin:10px 0 0; font-family:"SF Mono",Menlo,monospace;}
+.diagram{margin:16px 0 4px; overflow-x:auto;}
+.diagram svg{display:block; min-width:680px; width:100%;}
+figure{margin:0;}
+figcaption.cap{font-size:12.5px; color:var(--muted); margin:8px 0 0; line-height:1.6; max-width:66ch;}
+a{color:var(--accent);}
+.cards{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0 4px;}
+.card{border:1px solid var(--line); border-radius:10px; background:var(--panel); padding:16px 18px;}
+.card .k{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:8px;}
+.card p{font-size:13.5px; margin:0 0 8px;}
+.card p:last-child{margin-bottom:0;}
+.card.g{border-left:3px solid var(--accent);}
+.card.s{border-left:3px solid var(--blue);}
+.pill{display:inline-block; font-size:10.5px; font-weight:700; padding:2px 9px; border-radius:99px; white-space:nowrap;}
+.pill.q{background:var(--accent); color:var(--accent-ink);}
+.pill.p{border:1.5px solid var(--accent); color:var(--accent);}
+.mono{font-family:"SF Mono",Menlo,monospace; font-size:11.5px;}
+@media (max-width:660px){.cards{grid-template-columns:1fr;}}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Design Draft · v0.4</p>
+  <h1>Her-Bench 设计草案</h1>
+  <p class="sub">评一个实时陪看 agent：一个人在做他不熟的事，agent 在旁边看着，在他需要的时候给恰好够用的帮助。</p>
+</header>
+
+<!-- ============ 1 ============ -->
+<section>
+  <p class="eyebrow">01</p>
+  <h2>要评的是什么</h2>
+  <p>一个人第一次玩某个游戏、或者第一次用某个软件，全程有人在旁边看着。他卡住了、问出声了、或者刚做成一件事，
+  旁边那个人要判断此刻该不该开口、说什么、说多少。这件事做得好不好，就是这个 benchmark 要测的。</p>
+
+  <p>难点不在于知识本身，而在于<span class="hl">分寸</span>。同一份正确答案，说早了毁掉探索的乐趣，
+  说晚了人已经自己弄明白了，说多了变成替他玩，说少了等于没说。所以这里的每个指标都是围绕分寸设计的，
+  而不是围绕正确率。</p>
+
+  <p>素材是真实的第一视角录像：主播首次盲玩、或者首次上手一个软件。用录像而不是真人实时，
+  是为了让同一条时间线能被反复评测、结果可比。</p>
+
+  <div class="tablebox">
+  <table>
+    <tr><th>当前规模</th><th></th></tr>
+    <tr><td>container</td><td>8 个，9 分钟到 5 小时不等</td></tr>
+    <tr><td>task</td><td>119 个（游戏 81 / 教学 38；问答 84 / 主动 35）</td></tr>
+    <tr><td>资料</td><td>39 篇 / 407KB，全部来自官方 wiki、官方文档、攻略视频字幕、社区讨论，每篇标来源 URL</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section>
+  <p class="eyebrow">02</p>
+  <h2>两种场景，帮助的边界不一样</h2>
+  <p>游戏和教学都是「一个人在做不熟的事」，但该给多少帮助的标准是<span class="hl">相反</span>的。
+  这是这套评测里最重要的一条区分，直接决定 rubric 怎么写。</p>
+
+  <div class="cards">
+    <div class="card g">
+      <div class="k">游戏</div>
+      <p><b>自己想出来才算数。</b>直接说出解法就毁掉了这件事本身的意义，所以默认只给方向，
+      并且严禁提到当前进度之后的内容。</p>
+      <p style="color:var(--muted)">Human Fall Flat、Portal、Minecraft、Slendytubbies、The Stanley Parable</p>
+    </div>
+    <div class="card s">
+      <div class="k">教学</div>
+      <p><b>学会才算数。</b>「这个按钮在哪」「这是干嘛的」直接答清楚就好，认识界面本身就是目标，
+      不是要他自己顿悟的谜题。</p>
+      <p style="color:var(--muted)">Blender 首次上手、Rust 直播编程</p>
+    </div>
+  </div>
+
+  <div class="tablebox">
+  <table>
+    <tr><th></th><th>游戏</th><th>教学</th></tr>
+    <tr>
+      <td>默认 <span class="t">hint_level</span></td>
+      <td><span class="t">direction_only</span> 偏多</td>
+      <td><span class="t">full</span> 偏多</td>
+    </tr>
+    <tr>
+      <td>剧透</td>
+      <td>硬红线。锚点之后的关卡、剧情、谜底一律不能提</td>
+      <td>基本不存在。教程内容本来就是公开的</td>
+    </tr>
+    <tr>
+      <td>沉默的价值</td>
+      <td>高。大部分时间他只是在正常玩，说话反而是打扰</td>
+      <td>低。卡在找菜单上时沉默没有任何意义</td>
+    </tr>
+    <tr>
+      <td>典型失败</td>
+      <td>手里有完整解法却没忍住</td>
+      <td>该讲清楚的地方含糊带过</td>
+    </tr>
+  </table>
+  </div>
+
+  <p>Stanley Parable 是这条边界最极端的例子。它的资料里<span class="hl">写了全部 24 个结局</span>的触发路径和内容，
+  但主播是首次盲玩，任何一条都不能说。资料不脱敏是刻意的：手里有答案却必须只给方向，才是真在考克制；
+  资料先删干净的话，防剧透类的题就变成白送分了。</p>
+</section>
+
+<!-- ============ 3 ============ -->
+<section>
+  <p class="eyebrow">03</p>
+  <h2>container 与 task</h2>
+  <p>一个视频一个 container，里面挂若干 task，共享同一份视频、资料和时间轴，各自锚在不同时间点。</p>
+
+  <figure class="diagram">
+  <svg viewBox="0 0 800 168" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="时间轴：0到anchor_sec可见，锚点之后不可见，proactive另有response_window_sec">
+    <line x1="20" y1="58" x2="780" y2="58" stroke="var(--line)" stroke-width="1.5"/>
+    <rect x="20" y="44" width="430" height="28" fill="var(--ok-soft)"/>
+    <text x="235" y="38" text-anchor="middle" font-size="11.5" fill="var(--ok)" font-weight="600">context_window_sec：[0, anchor_sec] 可见</text>
+    <rect x="450" y="44" width="330" height="28" fill="var(--bad-soft)"/>
+    <text x="615" y="38" text-anchor="middle" font-size="11.5" fill="var(--bad)" font-weight="600">锚点之后 严格不可见</text>
+    <line x1="450" y1="28" x2="450" y2="138" stroke="var(--accent)" stroke-width="2"/>
+    <circle cx="450" cy="58" r="5" fill="var(--accent)"/>
+    <text x="450" y="96" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent)">anchor_sec</text>
+    <rect x="450" y="148" width="184" height="18" fill="var(--panel)" stroke="var(--accent)"/>
+    <text x="542" y="161" text-anchor="middle" font-size="10.5" fill="var(--accent)" font-weight="600">response_window_sec（仅主动型）</text>
+    <text x="542" y="138" text-anchor="middle" font-size="10.5" fill="var(--muted)">要在这段时间内自己开口才算命中</text>
+  </svg>
+  </figure>
+
+  <div class="cards">
+    <div class="card">
+      <div class="k"><span class="pill q">query</span> 主播问</div>
+      <p>主播开口问了一个问题，用<span class="hl">他第一人称</span>写：「我现在抱着的这个大铁球是干嘛用的？」
+      agent 是他的搭子，不是向旁人转述他情况的解说。</p>
+    </div>
+    <div class="card">
+      <div class="k"><span class="pill p">proactive</span> 该不该说</div>
+      <p>没人问。四类时刻值得开口：卡住了、刚失败、刚做成一件事、场面滑稽。
+      考的是时机在不在窗口内，以及不该说的地方说了几次。</p>
+    </div>
+  </div>
+
+  <p><span class="t">context_window_sec</span> 是硬契约：agent 只能看到锚点之前。
+  所以锚点必须落在<span class="hl">证据已经出现</span>的那一刻。像「过关了」这种在没有结算画面的游戏里
+  只能靠场景切换判断的事，锚点要推到画面变化之后，否则这道题在自己的可见窗口里无解。</p>
+</section>
+
+<!-- ============ 4 ============ -->
+<section>
+  <p class="eyebrow">04</p>
+  <h2>task 怎么生成</h2>
+  <p>锚点全部对应视频里实际发生的事。出题分两段，提出和验证由不同的 agent 做，因为自己验自己会放水。</p>
+
+  <figure class="diagram">
+  <svg viewBox="0 0 800 120" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="出题流程：视频、分段扫描、独立验证、人工精选、task JSON">
+    <defs><marker id="a1" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/></marker></defs>
+    <rect x="6" y="26" width="104" height="60" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="58" y="52" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">原始视频</text>
+    <text x="58" y="70" text-anchor="middle" font-size="10.5" fill="var(--muted)">+ 字幕转写</text>
+    <line x1="110" y1="56" x2="142" y2="56" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#a1)"/>
+    <rect x="146" y="18" width="164" height="76" rx="8" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="228" y="42" text-anchor="middle" font-size="12" font-weight="600" fill="var(--accent)">分段扫描</text>
+    <text x="228" y="62" text-anchor="middle" font-size="10.5" fill="var(--ink)">找谜题 / 卡关 / 失误</text>
+    <text x="228" y="80" text-anchor="middle" font-size="10.5" fill="var(--ink)">每个候选自己截帧</text>
+    <line x1="310" y1="56" x2="342" y2="56" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#a1)"/>
+    <rect x="346" y="18" width="164" height="76" rx="8" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="428" y="42" text-anchor="middle" font-size="12" font-weight="600" fill="var(--accent)">独立验证</text>
+    <text x="428" y="62" text-anchor="middle" font-size="10.5" fill="var(--ink)">默认怀疑，重新截帧</text>
+    <text x="428" y="80" text-anchor="middle" font-size="10.5" fill="var(--ink)">六项检查逐条过</text>
+    <line x1="510" y1="56" x2="542" y2="56" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#a1)"/>
+    <rect x="546" y="26" width="90" height="60" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="591" y="61" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">人工精选</text>
+    <line x1="636" y1="56" x2="668" y2="56" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#a1)"/>
+    <rect x="672" y="18" width="64" height="76" rx="8" fill="var(--accent)"/>
+    <text x="704" y="50" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-ink)">task</text>
+    <text x="704" y="68" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-ink)">JSON</text>
+  </svg>
+  </figure>
+
+  <h3>锚点必须截帧核对</h3>
+  <p>只读字幕转写定锚点会出错。每个候选都要 <span class="t">ffmpeg -ss &lt;t&gt; -frames:v 1</span> 截一帧肉眼核对，
+  <span class="t">scene</span> 字段写的是这一帧画面上有什么，不是转写讲了什么。转写只用来定位大概位置。</p>
+
+  <h3>验证时过的六项</h3>
+  <div class="tablebox">
+  <table>
+    <tr><th>检查项</th><th>不通过的典型形态</th></tr>
+    <tr><td>可答性</td><td>rubric 引用了锚点之后才出现的画面，等于要 agent 知道未来</td></tr>
+    <tr><td>非 trivial</td><td>答案在转写里被主播自己说出来了，复读就得分</td></tr>
+    <tr><td>剧透</td><td>question 或 scene 本身泄露了锚点之后的剧情</td></tr>
+    <tr><td>撞车</td><td>与已有锚点间隔过近，或考的是同一件事</td></tr>
+    <tr><td>rubric 可判</td><td>写成「回答得体」这类无法客观勾选的描述</td></tr>
+    <tr><td>编造</td><td>要求 agent 说出视频没交代的具体原因。只给了结果时，rubric 必须要求它承认不确定</td></tr>
+  </table>
+  </div>
+
+  <h3>资料也要核</h3>
+  <p>资料是<span class="hl">整篇</span>拼进 prompt 的，写错就会直接进到回答里。所以每篇都必须标真实来源 URL，
+  查不到依据的写「未证实」，来源之间说法不一的把分歧写出来，不合并成单一说法。
+  一处实例：手写资料里「冲刺无耐力限制」这条查无出处，而它已经出现在 agent 的实际回答里。</p>
+</section>
+
+<!-- ============ 5 ============ -->
+<section>
+  <p class="eyebrow">05</p>
+  <h2>agent 方案</h2>
+  <p>两个引擎分工：<span class="hl">OpenAI Realtime API</span> 负责说话，听得到现场也能实时出声；
+  <span class="hl">codex CLI</span> 负责查证，能读资料也能搜网，但慢（7 到 40 秒）。
+  两者之间是一次 HTTP tool call。</p>
+
+  <figure class="diagram">
+  <svg viewBox="0 0 800 130" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="浏览器经WebRTC连Realtime API，Realtime调tool打到本地HTTP服务，起codex子进程，返回文本和引用">
+    <defs><marker id="a2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/></marker></defs>
+    <rect x="6" y="20" width="150" height="90" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="81" y="44" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">浏览器</text>
+    <text x="81" y="66" text-anchor="middle" font-size="10.5" fill="var(--ink)">🔊 直播原声</text>
+    <text x="81" y="86" text-anchor="middle" font-size="10.5" fill="var(--ink)">🖼 画面帧 每 5 秒</text>
+    <line x1="156" y1="56" x2="192" y2="56" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#a2)"/>
+    <text x="174" y="47" text-anchor="middle" font-size="9.5" fill="var(--muted)">WebRTC</text>
+    <rect x="196" y="20" width="172" height="90" rx="8" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="1.5"/>
+    <text x="282" y="44" text-anchor="middle" font-size="12" font-weight="700" fill="var(--blue)">Realtime API</text>
+    <text x="282" y="62" text-anchor="middle" font-size="10.5" fill="var(--muted)">gpt-realtime</text>
+    <text x="282" y="84" text-anchor="middle" font-size="10.5" fill="var(--ink)">听 · 看 · 判断要不要说</text>
+    <line x1="368" y1="46" x2="404" y2="46" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#a2)"/>
+    <text x="386" y="37" text-anchor="middle" font-size="9.5" fill="var(--accent)">tool</text>
+    <line x1="404" y1="74" x2="368" y2="74" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#a2)"/>
+    <rect x="408" y="20" width="176" height="90" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="496" y="44" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">agent_live.py</text>
+    <text x="496" y="64" text-anchor="middle" font-size="10.5" fill="var(--ink)">/answer · /lookup · /research</text>
+    <text x="496" y="84" text-anchor="middle" font-size="10.5" fill="var(--muted)">按进度挑资料拼 prompt</text>
+    <line x1="584" y1="46" x2="620" y2="46" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#a2)"/>
+    <line x1="620" y1="74" x2="584" y2="74" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#a2)"/>
+    <rect x="624" y="20" width="170" height="90" rx="8" fill="var(--accent)"/>
+    <text x="709" y="44" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-ink)">codex CLI</text>
+    <text x="709" y="64" text-anchor="middle" font-size="10.5" fill="var(--accent-ink)">读资料 + 截图，不够就搜网</text>
+    <text x="709" y="84" text-anchor="middle" font-size="10.5" fill="var(--accent-ink)">每 container 续用一条 thread</text>
+  </svg>
+  </figure>
+
+  <div class="tablebox">
+  <table>
+    <tr><th>端点</th><th>谁触发</th><th>产出</th></tr>
+    <tr><td><span class="t">/answer</span></td><td>视频经过锚点，POST 整个任务包</td><td>3-6 句直接念给主播，纯情绪的时刻一两句</td></tr>
+    <tr><td><span class="t">/lookup</span></td><td>Realtime 调 <span class="t">lookup_game_info</span> 工具</td><td>不限长度，由 Realtime 自己提炼成口语</td></tr>
+    <tr><td><span class="t">/research</span></td><td>播放中每 15 秒自己看一眼画面</td><td>判断值得才产出，直接喂给 Realtime</td></tr>
+  </table>
+  </div>
+
+  <h3>开口时机由 agent 自己决定</h3>
+  <p>Realtime API 不会自发说话：往对话里塞 item 不触发生成，只有显式发
+  <span class="t">response.create</span>、或者 VAD 判定人说完了才会。所以总得有东西扣扳机，问题是什么时候扣。</p>
+  <p><span class="t">/research</span> 一有产出就塞进上下文，紧接着问一次「现在要不要说」，
+  因为那正是它手上刚多了具体信息的时刻。判断本身是<span class="hl">纯文本响应</span>
+  （<span class="t">output_modalities: ["text"]</span>），用户听不到，所以决定不说时是真的安静，
+  不会冒出一句「我觉得没什么好说的」。只有回 <span class="t">SPEAK</span> 才发第二个语音响应。</p>
+  <p>打开这个模式后，主动型 task 的锚点<span class="hl">不再催它说话</span>，退化成评分窗口：
+  只记录它有没有在 <span class="t">response_window_sec</span> 内自己开口。</p>
+
+  <h3>主动型任务要给一条时间线</h3>
+  <p>值不值得开口的依据是时间性的：卡了多久、刚完成了什么。单张锚点帧承载不了，
+  比如通关那一帧是角色在云里下坠，跟掉出地图的画面几乎一样。
+  所以主动型的 payload 额外带锚点前 240/180/120/60/20 秒各一张缩图，按时间排在当前帧之前。</p>
+
+  <h3>强制查证</h3>
+  <p>现场对话式模型几乎不会承认自己不确定，很擅长把没查过的东西说得像查过。
+  所以 <span class="t">must_cite</span> 或 <span class="t">tool_fit</span> 为真的题，
+  用 per-response <span class="t">tool_choice</span> 覆盖，必须走一次查证，判分时再看引用里有没有东西。</p>
+
+  <h3>两条 codex thread</h3>
+  <p>每次都开新的 <span class="t">codex exec</span> 的话，五分钟前查过的东西下一次用不上，只能从头再搜。
+  改成 <span class="t">resume &lt;thread_id&gt;</span> 接着上一轮。每个 container 两条：
+  <span class="mono">fg</span> 服务 <span class="t">/answer</span> 和 <span class="t">/lookup</span>（有人在等），
+  <span class="mono">bg</span> 服务 <span class="t">/research</span>。分开是因为同一条 thread 只能串行 resume，
+  合在一起会让前台查证排在 20 秒的后台研究后面。</p>
+</section>
+
+<!-- ============ 6 ============ -->
+<section>
+  <p class="eyebrow">06</p>
+  <h2>判分</h2>
+  <p>核心是把<span class="hl">「说得对不对」和「说得合不合适」拆开算</span>。
+  两个回答可以检索到同一篇资料、要点全部命中、引用都有效，差别只在融合成回答时说了多少。
+  如果混进一个总分，这个差别就测不出来了。</p>
+
+  <div class="tablebox">
+  <table>
+    <tr><th>指标</th><th>测什么</th><th>怎么判</th></tr>
+    <tr><td class="mono">rubric_hit</td><td>预写要点的命中率</td><td>规则 + judge</td></tr>
+    <tr><td class="mono">grounding_acc</td><td>画面里的东西指认对没对</td><td>VLM judge</td></tr>
+    <tr><td class="mono">citation_valid</td><td>引用的来源真实存在且支撑答案</td><td>规则</td></tr>
+    <tr><td class="mono">spoiler_violation</td><td>泄露锚点之后的内容，或给出超过 hint_level 的解法</td><td>judge</td></tr>
+    <tr><td class="mono">window_hit</td><td>开口时刻落没落进窗口</td><td>规则</td></tr>
+    <tr><td class="mono">time_diff</td><td>开口时刻与理想时刻差多少秒</td><td>规则</td></tr>
+    <tr><td class="mono">over_trigger</td><td>不该开口的静默段里开了几次，逐次扣分</td><td>规则</td></tr>
+    <tr><td class="mono">latency</td><td>从触发到回应的真实耗时，含检索</td><td>规则</td></tr>
+  </table>
+  </div>
+
+  <p><span class="mono">over_trigger</span> 是必须的：只奖励 <span class="mono">window_hit</span> 的话，
+  「什么都插一嘴」就能刷满命中率。</p>
+
+<pre>{
+  "task_id": "hff-p1-t08",
+  "type": "query",
+  "anchor_sec": 7100,
+  "context_window_sec": [0, 7100],
+  "question": "我现在开着这艘大船，那两根杆子是怎么控制方向的？",
+  "hint_level": "full",
+  "scene": "Water 关：大轮船驾驶室，双手各拉一根油门操纵杆",
+  "resources": ["levels", "mechanics"],
+  "grading": {
+    "rubric_points": [
+      "两根杆分别控制两侧引擎（差速转向）",
+      "同时前推直行，只推一侧或一正一反就转向",
+      "结合他双手独立抓取的机制说明为何要两手各抓一根"
+    ],
+    "spoiler_blocklist": ["剧透靠岸后港口吊机谜题的解法"],
+    "must_cite": true
+  },
+  "tts": "/data/tts/hff-p1-t08.m4a"
+}</pre>
+</section>
+
+<!-- ============ 7 ============ -->
+<section>
+  <p class="eyebrow">07</p>
+  <h2>已知简化</h2>
+  <div class="tablebox">
+  <table>
+    <tr><td style="width:34%;">HTTP 模式仍靠锚点触发主动型任务</td><td>没有常驻连接，做不了定期自检。真正由 agent 自己决定时机只在 Realtime 那条路生效</td></tr>
+    <tr><td>判分目前是人工勾选 rubric</td><td>正式评测由规则脚本加 LLM/VLM judge 完成</td></tr>
+    <tr><td><span class="t">transcript_excerpt</span> 暂为空</td><td>跑完 ASR 后接入</td></tr>
+  </table>
+  </div>
+  <p style="font-size:13.5px; color:var(--muted); margin-top:18px;">
+  实现细节见 <a href="https://claude.ai/code/artifact/3c6c2c44-739e-45bb-ae33-a8a068fbea5b">出题与判分逻辑</a>
+  和 <a href="https://claude.ai/code/artifact/d6ff4c38-b5b5-4293-8e22-247e873fa856">陪看双引擎</a>。</p>
+</section>
+
+</div>
