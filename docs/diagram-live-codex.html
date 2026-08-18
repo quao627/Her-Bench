@@ -59,115 +59,144 @@ tr:last-child td{border-bottom:none;}
 <header>
   <p class="eyebrow">Diagram · Her-Bench</p>
   <h1>陪看双引擎：Realtime 与 codex</h1>
-  <p class="sub">OpenAI Realtime API 负责说话，codex CLI 负责查证，中间是一次 HTTP tool call。</p>
+  <p class="sub">Realtime 常驻在浏览器这端，听得到、看得到、负责说话；codex 负责查证，中间是一次 HTTP 调用。</p>
 </header>
 
 <!-- ============ PART 1 ============ -->
 <section>
   <p class="eyebrow">Part 1</p>
   <h2>核心 loop</h2>
-  <p class="lede">浏览器给 Realtime 两路输入：直播原声和画面帧。要不要开口、要不要查证由它自己判断，
-  需要查的时候发一个 HTTP 请求给本地的 codex 后端。</p>
+  <p class="lede">浏览器给 Realtime 两路连续输入：直播原声和画面帧，两路都只进上下文，不触发任何输出。
+  要不要开口、要不要查证由它自己在自检里决定，需要查的时候发一个 HTTP 请求给本地的 codex 后端。</p>
 
   <figure class="diagram">
-  <svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="浏览器经WebRTC连Realtime，Realtime调tool，HTTP打到agent_live.py，起codex子进程读按进度挑的资料，返回文本和引用">
+  <svg viewBox="0 0 860 306" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="浏览器经 WebRTC 连 Realtime，Realtime 调工具，HTTP 打到 agent_live.py，起 codex 子进程读按进度挑的资料，返回文本和引用">
     <defs>
       <marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
         <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
       </marker>
     </defs>
 
-    <rect x="6" y="20" width="170" height="130" rx="8" fill="var(--panel)" stroke="var(--line)"/>
-    <text x="91" y="46" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">浏览器</text>
-    <text x="91" y="72" text-anchor="middle" font-size="11" fill="var(--ink)">🔊 直播原声</text>
-    <text x="91" y="90" text-anchor="middle" font-size="10.5" fill="var(--muted)">WebAudio 混音，不开麦</text>
-    <text x="91" y="114" text-anchor="middle" font-size="11" fill="var(--ink)">🖼 画面帧 每 5 秒</text>
+    <rect x="6" y="20" width="184" height="146" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="98" y="44" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">浏览器</text>
+    <text x="20" y="68" font-size="10.5" fill="var(--ink)">直播原声（连续，不开麦）</text>
+    <text x="20" y="88" font-size="10.5" fill="var(--ink)">画面帧 每 <tspan font-family="Menlo,monospace" fill="var(--accent)">T_frame</tspan></text>
+    <text x="20" y="108" font-size="10.5" fill="var(--ink)">自检定时器 每 <tspan font-family="Menlo,monospace" fill="var(--accent)">T_tick</tspan></text>
+    <text x="20" y="128" font-size="10.5" fill="var(--ink)">备料定时器 每 <tspan font-family="Menlo,monospace" fill="var(--accent)">T_brief</tspan></text>
+    <text x="20" y="152" font-size="10.5" fill="var(--muted)">另留最近五分钟的帧备用</text>
 
-    <line x1="176" y1="70" x2="216" y2="70" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
-    <text x="196" y="60" text-anchor="middle" font-size="10" fill="var(--muted)">WebRTC</text>
+    <line x1="190" y1="80" x2="232" y2="80" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
+    <text x="211" y="70" text-anchor="middle" font-size="10" fill="var(--muted)">WebRTC</text>
 
-    <rect x="220" y="20" width="190" height="130" rx="8" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="1.5"/>
-    <text x="315" y="44" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--blue)">Realtime API</text>
-    <text x="315" y="62" text-anchor="middle" font-size="10.5" fill="var(--muted)">gpt-realtime · WebRTC</text>
-    <text x="315" y="88" text-anchor="middle" font-size="11" fill="var(--ink)">听 · 看 · 判断要不要说</text>
-    <text x="315" y="108" text-anchor="middle" font-size="11" fill="var(--ink)">must_cite 题强制查证</text>
-    <text x="315" y="132" text-anchor="middle" font-size="10.5" fill="var(--muted)">→ 语音直接说出来</text>
+    <rect x="238" y="20" width="184" height="146" rx="8" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="1.5"/>
+    <text x="330" y="44" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--blue)">Realtime API</text>
+    <text x="330" y="62" text-anchor="middle" font-size="10.5" fill="var(--muted)">gpt-realtime · WebRTC</text>
+    <text x="252" y="88" font-size="10.5" fill="var(--ink)">听 · 看 · 记得刚才聊过什么</text>
+    <text x="252" y="108" font-size="10.5" fill="var(--ink)">自检：结论走 <tspan font-family="Menlo,monospace">decide</tspan> 工具</text>
+    <text x="252" y="128" font-size="10.5" fill="var(--ink)">主播问出声：语音检测直接答</text>
+    <text x="252" y="152" font-size="10.5" fill="var(--muted)">要说的话由它自己念出来</text>
 
-    <line x1="410" y1="70" x2="450" y2="70" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#ar)"/>
-    <text x="430" y="60" text-anchor="middle" font-size="10" fill="var(--accent)">tool call</text>
-    <line x1="450" y1="100" x2="410" y2="100" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#ar)"/>
-    <text x="430" y="116" text-anchor="middle" font-size="10" fill="var(--muted)">text + 引用</text>
+    <line x1="422" y1="70" x2="470" y2="70" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#ar)"/>
+    <text x="449" y="60" text-anchor="middle" font-size="10" fill="var(--accent)">HTTP</text>
+    <line x1="470" y1="104" x2="422" y2="104" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#ar)"/>
+    <text x="449" y="120" text-anchor="middle" font-size="9.5" fill="var(--muted)">文字 + 引用</text>
 
-    <rect x="454" y="20" width="200" height="130" rx="8" fill="var(--panel)" stroke="var(--line)"/>
-    <text x="554" y="44" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">agent_live.py</text>
-    <text x="554" y="62" text-anchor="middle" font-size="10.5" fill="var(--muted)">ThreadingHTTPServer</text>
-    <text x="554" y="88" text-anchor="middle" font-size="11" fill="var(--ink)">/answer · /lookup · /research</text>
-    <text x="554" y="108" text-anchor="middle" font-size="11" fill="var(--ink)">拼 prompt：资料 + 帧 + 分级规则</text>
-    <text x="554" y="132" text-anchor="middle" font-size="10.5" fill="var(--muted)">三个端点并发不互相阻塞</text>
+    <rect x="476" y="20" width="184" height="146" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="568" y="44" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">agent_live.py</text>
+    <text x="568" y="62" text-anchor="middle" font-size="10.5" fill="var(--muted)">ThreadingHTTPServer</text>
+    <text x="490" y="88" font-size="10.5" font-family="Menlo,monospace" fill="var(--ink)">/answer /lookup /research</text>
+    <text x="490" y="106" font-size="10.5" font-family="Menlo,monospace" fill="var(--ink)">/cancel /progress</text>
+    <text x="490" y="128" font-size="10.5" fill="var(--ink)">拼 prompt：资料+帧+分级规则</text>
+    <text x="490" y="152" font-size="10.5" fill="var(--muted)">有人等的和没人等的分两条</text>
 
-    <line x1="654" y1="70" x2="694" y2="70" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
-    <text x="674" y="60" text-anchor="middle" font-size="10" fill="var(--muted)">subprocess</text>
-    <line x1="694" y1="100" x2="654" y2="100" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#ar)"/>
+    <line x1="660" y1="70" x2="702" y2="70" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
+    <text x="683" y="60" text-anchor="middle" font-size="10" fill="var(--muted)">子进程</text>
+    <line x1="702" y1="104" x2="660" y2="104" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#ar)"/>
 
-    <rect x="698" y="20" width="156" height="130" rx="8" fill="var(--accent)"/>
-    <text x="776" y="46" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--accent-ink)">codex CLI</text>
-    <text x="776" y="74" text-anchor="middle" font-size="10.5" fill="var(--accent-ink)">Read 资料 + 截图</text>
-    <text x="776" y="96" text-anchor="middle" font-size="10.5" fill="var(--accent-ink)">资料不够就 WebSearch</text>
-    <text x="776" y="122" text-anchor="middle" font-size="10.5" fill="var(--accent-ink)">每个 container 续用一条 thread</text>
+    <rect x="706" y="20" width="148" height="146" rx="8" fill="var(--accent)"/>
+    <text x="780" y="44" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--accent-ink)">codex CLI</text>
+    <text x="718" y="72" font-size="10.5" fill="var(--accent-ink)">Read 资料 + 截图</text>
+    <text x="718" y="92" font-size="10.5" fill="var(--accent-ink)">不够就 WebSearch</text>
+    <text x="718" y="112" font-size="10.5" fill="var(--accent-ink)">每个 container 两条会话</text>
+    <text x="718" y="140" font-size="10.5" fill="var(--accent-ink)">被 cancel 时整条 kill</text>
 
-    <rect x="6" y="200" width="848" height="80" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 4"/>
-    <text x="24" y="224" font-size="11" fill="var(--muted)" letter-spacing="1.5">资料从哪来</text>
-    <text x="24" y="250" font-size="11.5" fill="var(--ink)">data/resources/*.md，官方 wiki、官方文档、攻略视频字幕、社区讨论，每篇标来源 URL</text>
-    <text x="24" y="270" font-size="11.5" fill="var(--ink)">container.json 分两层：resources 常驻，chapter_resources 按当前进度挑</text>
+    <rect x="6" y="212" width="848" height="82" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 4"/>
+    <text x="24" y="236" font-size="11" fill="var(--muted)" letter-spacing="1.5">资料从哪来</text>
+    <text x="24" y="262" font-size="11.5" fill="var(--ink)">data/resources/*.md，官方 wiki、官方文档、攻略视频字幕、社区讨论，每篇标来源 URL</text>
+    <text x="24" y="282" font-size="11.5" fill="var(--ink)">container.json 分两层：resources 常驻，chapter_resources 按当前进度挑</text>
   </svg>
   </figure>
+
+  <p>它开口只有两个来路：自检判定要说，或者主播问出声。定时喂进来的画面、备料查回来的内容，
+  都只是让它手上多一些材料。</p>
 </section>
 
 <!-- ============ PART 2 ============ -->
 <section>
   <p class="eyebrow">Part 2</p>
   <h2>主要 API</h2>
-  <p class="lede">查看器对 agent 的全部要求就是这三个 HTTP 端点，换别的后端实现也能接。</p>
+  <p class="lede">查看器对后端的全部要求就是这几个 HTTP 端点，换别的后端实现也能接。</p>
 
   <div class="tablebox">
   <table>
-    <tr><th>端点</th><th>谁触发</th><th>强制？</th><th>内容形态</th></tr>
+    <tr><th>端点</th><th>谁触发</th><th>有人等吗</th><th>内容形态</th></tr>
     <tr>
       <td><span class="t">/answer</span></td>
       <td>视频经过锚点，POST 整个任务包</td>
-      <td><span class="pill optional">直接触发</span></td>
+      <td><span class="pill forced">有</span></td>
       <td>3-6 句给浏览器 TTS 念，纯情绪的时刻一两句</td>
     </tr>
     <tr>
       <td><span class="t">/lookup</span></td>
-      <td>Realtime 调 <span class="t">lookup_game_info</span></td>
-      <td><span class="pill forced">must_cite / tool_fit 题强制</span></td>
+      <td>Realtime 调 <span class="t">lookup_game_info</span>；自检提的查证也走这里，只多一个 <span class="t">background</span> 标志</td>
+      <td><span class="pill forced">主播问的有</span><br><span class="pill optional">自检提的没有</span></td>
       <td>不限长度，Realtime 自己提炼成语音</td>
     </tr>
     <tr>
       <td><span class="t">/research</span></td>
-      <td>播放中每 15 秒自己看一眼画面</td>
-      <td><span class="pill optional">不强制</span></td>
-      <td>判断值得才产出，直接喂给 Realtime</td>
+      <td>备料定时器，每 <span class="t">T_brief</span> 把最近 <span class="t">N_brief</span> 帧交过去</td>
+      <td><span class="pill optional">没有</span></td>
+      <td>只塞进上下文当储备，不触发自检</td>
+    </tr>
+    <tr>
+      <td><span class="t">/cancel</span></td>
+      <td>语音检测一响就发，主播问话优先</td>
+      <td>—</td>
+      <td>杀掉那条 codex 子进程，会话一并作废</td>
+    </tr>
+    <tr>
+      <td><span class="t">/progress</span></td>
+      <td>前端轮询</td>
+      <td>—</td>
+      <td>codex 事件流里读到的进度，供界面回显</td>
     </tr>
   </table>
   </div>
 
-<pre>POST /answer
+<pre>POST /lookup
 {
-  "task_id": "hff-p1-t04",  "type": "query" | "proactive",
-  "question": "我现在抱着的这个大铁球是干嘛用的？",   <span style="color:var(--muted)">// proactive 为 null</span>
-  "anchor_sec": 3130,       "hint_level": "direction_only" | "full",
-  "context_window_sec": [0, 3130],
-  "container_id": "hff-p1",                        <span style="color:var(--muted)">// 决定挂哪些资料</span>
-  "frame_jpeg_base64": "...",                      <span style="color:var(--muted)">// 锚点当前帧 640px</span>
-  "context_frames": [{"offset_sec": -240, "b64": "..."}, ...]   <span style="color:var(--muted)">// 只有 proactive</span>
+  "query": "货叉车怎么升起来",          <span style="color:var(--muted)">// 问题始终由前台 agent 提</span>
+  "container_id": "hff-p1",
+  "current_sec": 3130,                  <span style="color:var(--muted)">// 决定挂哪一段资料</span>
+  "background": true,                   <span style="color:var(--muted)">// true=自检提的，没人等；false=主播问的</span>
+  "frames": [{"offset_sec": -20, "b64": "..."}, ...],
+  "call_id": "c-8f2a"                   <span style="color:var(--muted)">// /progress 用它取进度</span>
 }
-  →  { "text": "...", "citations": ["..."], "latency_ms": 7300 }</pre>
+  →  { "text": "...", "citations": ["..."], "latency_ms": 16400 }</pre>
 
   <p style="font-size:13.5px; color:var(--muted); margin-top:14px;">
   回答最后单独一行 <span class="t">SOURCES: </span> 是约定格式，服务端用它抽出
   <span class="t">citations</span>，判分时看 <span class="t">must_cite</span> 的题有没有真的引用来源。</p>
+
+  <h3>Realtime 那一侧的两个工具</h3>
+  <p>一个给它主动查资料用，一个专门用来把自检的结论交回来。</p>
+<pre>lookup_game_info(query)          <span style="color:var(--muted)">// 主播问到具体事实时它自己调，转发到 /lookup</span>
+
+decide(speak, say, lookup, need_frame)   <span style="color:var(--muted)">// 自检专用，一次判断出两个结论</span>
+  speak      : boolean   <span style="color:var(--muted)">// 此刻要不要开口</span>
+  say        : string    <span style="color:var(--muted)">// 要说的话的要点，不说就传空</span>
+  lookup     : string    <span style="color:var(--muted)">// 想让后台查的问题，不查就传空</span>
+  need_frame : boolean   <span style="color:var(--muted)">// 这次查证要不要附画面</span></pre>
 </section>
 
 <!-- ============ PART 3 ============ -->
@@ -175,116 +204,182 @@ tr:last-child td{border-bottom:none;}
   <p class="eyebrow">Part 3</p>
   <h2>核心设计</h2>
 
-  <h3>一 · 自己决定什么时候开口</h3>
+  <h3>一 · 只有一个决策点</h3>
   <p>输入是流式的，但 Realtime API 不会自发说话：往对话里塞 item 不触发生成，
-  只有显式发 <span class="t">response.create</span>、或者 VAD 判定人说完了才会。
-  所以需要在合适的时刻显式发起一次生成，问题是怎么定这个时刻。</p>
+  只有显式发 <span class="t">response.create</span>、或者语音检测判定人说完了才会。
+  所以要定期让它自己判断一次，开口和查证在同一次判断里决定。</p>
 
   <figure class="diagram">
-  <svg viewBox="0 0 860 150" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="后台研究结果和画面帧进入上下文，每25秒触发纯文本判断，回SPEAK才发语音响应">
+  <svg viewBox="0 0 860 200" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="定时器和后台内容回来两个触发，经过四道闸进入自检，decide 工具返回 speak 和 lookup 两个结论，speak 走语音响应，lookup 走后台会话">
     <defs>
       <marker id="ar4" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
         <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
       </marker>
     </defs>
-    <rect x="6" y="10" width="152" height="40" rx="6" fill="var(--panel)" stroke="var(--line)"/>
-    <text x="82" y="28" text-anchor="middle" font-size="11" fill="var(--ink)">后台 /research 查到</text>
-    <text x="82" y="43" text-anchor="middle" font-size="10" fill="var(--muted)">[后台资料·12:34]</text>
-    <rect x="6" y="62" width="152" height="40" rx="6" fill="var(--panel)" stroke="var(--line)"/>
-    <text x="82" y="80" text-anchor="middle" font-size="11" fill="var(--ink)">画面帧 每 5 秒</text>
-    <text x="82" y="95" text-anchor="middle" font-size="10" fill="var(--muted)">不带 response.create</text>
 
-    <line x1="158" y1="30" x2="198" y2="50" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar4)"/>
-    <line x1="158" y1="82" x2="198" y2="62" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <text x="6" y="16" font-size="10.5" fill="var(--muted)" letter-spacing="1">两个触发</text>
+    <rect x="6" y="26" width="150" height="40" rx="6" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="81" y="44" text-anchor="middle" font-size="11" fill="var(--ink)">定时器 每 T_tick</text>
+    <text x="81" y="59" text-anchor="middle" font-size="10" fill="var(--muted)">视频暂停时不走</text>
+    <rect x="6" y="78" width="150" height="40" rx="6" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="81" y="96" text-anchor="middle" font-size="11" fill="var(--ink)">自己提的查证回来了</text>
+    <text x="81" y="111" text-anchor="middle" font-size="10" fill="var(--muted)">刚拿到具体信息</text>
 
-    <rect x="202" y="38" width="128" height="36" rx="6" fill="var(--blue-soft)" stroke="var(--blue)"/>
-    <text x="266" y="61" text-anchor="middle" font-size="11.5" fill="var(--blue)" font-weight="600">对话上下文</text>
+    <line x1="156" y1="46" x2="192" y2="60" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <line x1="156" y1="98" x2="192" y2="84" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar4)"/>
 
-    <line x1="330" y1="56" x2="370" y2="56" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#ar4)"/>
-    <text x="350" y="46" text-anchor="middle" font-size="9.5" fill="var(--accent)">查到就问</text>
+    <rect x="196" y="42" width="164" height="60" rx="6" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>
+    <text x="278" y="60" text-anchor="middle" font-size="10.5" font-weight="600" fill="var(--muted)">四道闸</text>
+    <text x="206" y="77" font-size="10" fill="var(--muted)">T_gap 最小间隔 · T_cool 冷却</text>
+    <text x="206" y="93" font-size="10" fill="var(--muted)">主播正在问 · 上一次还没回来</text>
 
-    <rect x="374" y="30" width="150" height="52" rx="6" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
-    <text x="449" y="50" text-anchor="middle" font-size="11" fill="var(--accent)" font-weight="600">纯文本判断</text>
-    <text x="449" y="66" text-anchor="middle" font-size="9.5" fill="var(--muted)">output_modalities: text</text>
+    <line x1="360" y1="72" x2="378" y2="72" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#ar4)"/>
 
-    <line x1="524" y1="46" x2="564" y2="34" stroke="var(--ok)" stroke-width="1.5" marker-end="url(#ar4)"/>
-    <line x1="524" y1="70" x2="564" y2="88" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <rect x="382" y="40" width="158" height="64" rx="6" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="461" y="60" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--accent)">自检 · 纯文本响应</text>
+    <text x="461" y="78" text-anchor="middle" font-size="9.5" font-family="Menlo,monospace" fill="var(--muted)">output_modalities: text</text>
+    <text x="461" y="95" text-anchor="middle" font-size="10" fill="var(--muted)">用户什么都听不到</text>
 
-    <rect x="568" y="14" width="110" height="38" rx="6" fill="var(--ok-soft)"/>
-    <text x="623" y="38" text-anchor="middle" font-size="11" fill="var(--ok)" font-weight="600">SPEAK: …</text>
-    <rect x="568" y="74" width="110" height="38" rx="6" fill="var(--bad-soft)"/>
-    <text x="623" y="98" text-anchor="middle" font-size="11" fill="var(--bad)" font-weight="600">SILENT</text>
-    <text x="623" y="126" text-anchor="middle" font-size="9.5" fill="var(--muted)">用户什么都听不到</text>
+    <line x1="540" y1="58" x2="576" y2="42" stroke="var(--ok)" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <line x1="540" y1="86" x2="576" y2="102" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <text x="558" y="76" text-anchor="middle" font-size="9.5" fill="var(--muted)">decide</text>
 
-    <line x1="678" y1="33" x2="716" y2="33" stroke="var(--ok)" stroke-width="1.5" marker-end="url(#ar4)"/>
-    <rect x="720" y="14" width="134" height="38" rx="6" fill="var(--accent)"/>
-    <text x="787" y="38" text-anchor="middle" font-size="11" fill="var(--accent-ink)" font-weight="700">语音响应</text>
+    <rect x="580" y="20" width="140" height="42" rx="6" fill="var(--ok-soft)"/>
+    <text x="650" y="39" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ok)">speak = true</text>
+    <text x="650" y="54" text-anchor="middle" font-size="9.5" fill="var(--ok)">say 是要说的要点</text>
+
+    <rect x="580" y="84" width="140" height="42" rx="6" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="650" y="103" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)">lookup 非空</text>
+    <text x="650" y="118" text-anchor="middle" font-size="9.5" fill="var(--muted)">问题由它自己出</text>
+
+    <line x1="720" y1="41" x2="754" y2="41" stroke="var(--ok)" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <rect x="758" y="22" width="96" height="38" rx="6" fill="var(--accent)"/>
+    <text x="806" y="46" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent-ink)">语音响应</text>
+
+    <line x1="720" y1="105" x2="754" y2="105" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <rect x="758" y="86" width="96" height="38" rx="6" fill="none" stroke="var(--accent)"/>
+    <text x="806" y="103" text-anchor="middle" font-size="10.5" fill="var(--accent)">后台会话</text>
+    <text x="806" y="117" text-anchor="middle" font-size="9.5" fill="var(--muted)">查完回到左下</text>
+
+    <path d="M806 124 L806 160 L81 160 L81 118" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar4)"/>
+    <text x="443" y="154" text-anchor="middle" font-size="10.5" fill="var(--accent)">查回来的标成「后台资料」塞进上下文，不出声，但立刻触发下一次自检</text>
+
+    <text x="6" y="186" font-size="10.5" fill="var(--muted)">两个触发共用同一道闸，所以同一时刻不会判两次；判定不说的时候不会产生任何声音。</text>
   </svg>
   </figure>
 
-  <p><b>触发条件是后台查到了新内容</b>。<span class="t">/research</span> 一有产出就塞进上下文，
-  紧接着问一次现在要不要说，此时它刚拿到具体信息。另外每 60 秒兜底问一次，避免长时间没有输出。
-  这次判断走纯文本响应，用户听不到，判定不说的时候不会产生任何声音。</p>
+  <h3>二 · 结论走工具调用</h3>
+  <p>Realtime 没有结构化输出的开关。在提示词里要求「只回一行 JSON」没有约束力，
+  实测它经常回一句人话，前端只能靠正则去猜，结果每次自检都解析失败。
+  改成用一次强制的 <span class="t">decide</span> 工具调用把结论交回来，参数由 API 按 schema 校验。
+  工具定义随这一轮响应一起发，不依赖 session 配置里已经有它。</p>
 
-  <p>在这个模式下，proactive 题的锚点不再触发它说话，只作为评分窗口：
-  只记录它有没有在 <span class="t">response_window_sec</span> 内自己开口。</p>
+  <h3>三 · 主播问话优先</h3>
+  <p>语音检测是最早的信号，比它自己调工具早十几秒。一响就把后台正在跑的那条掐掉：
+  浏览器 abort 请求，同时打一个 <span class="t">/cancel</span>，后端把 codex 子进程杀掉。
+  只 abort 请求不够，进程还在占着 CPU 和那条会话，前台的查证只会更慢。
+  被杀的会话一并作废，下次从干净的会话重开。这段时间也不自检、不备料。</p>
 
-  <h3>二 · proactive 带一条时间线</h3>
-  <p>值不值得开口，取决于这段时间发生了什么：卡了多久、刚完成了什么。单张锚点帧看不出这些，
-  比如通关那一帧是角色在云里下坠，跟掉出地图的画面几乎一样。</p>
+  <h3>四 · 喂料和开口分开</h3>
+  <p>备料通道由定时器驱动，每 <span class="t">T_brief</span> 把最近 <span class="t">N_brief</span> 帧交给 codex，
+  让它自己从画面里想一个问题去查。查回来的只塞进上下文，<b>不触发自检</b>；
+  只有 agent 自己在自检里提出的查证，回来时才会触发下一次。喂料可以定时做，
+  什么时候说话必须留在 agent 手里。这条通道可以整条关掉，用来对照它完全自力更生时的表现。</p>
+  <p>备料只备方向：整套通关步骤摆在它手上很容易提前说出去，所以备的是「这是什么、怎么回事」，
+  也不写当前进度之后的关卡和剧情。</p>
+  <p>另有一条地板保护：连续 <span class="t">K_force</span> 次自检都没提出要查的东西，下一次会要求它必须提一个。
+  要求的是提问，问题仍由它自己出。</p>
+
+  <h3>五 · 判断要看一段时间线</h3>
+  <p>值不值得开口，取决于这段时间发生了什么：卡了多久、刚完成了什么。单张画面看不出这些，
+  比如通关那一帧是角色在云里下坠，跟掉出地图的画面几乎一样。
+  所以浏览器一直留着最近五分钟的帧，取用时近处密、远处稀。</p>
 
   <figure class="diagram">
-  <svg viewBox="0 0 860 110" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="锚点前240到20秒共5张448px缩图加此刻640px帧，按时间排序">
-    <g font-size="10.5" fill="var(--ok)" text-anchor="middle">
-      <rect x="30" y="22" width="96" height="44" rx="5" fill="var(--ok-soft)"/><text x="78" y="48">-240s</text>
-      <rect x="136" y="22" width="96" height="44" rx="5" fill="var(--ok-soft)"/><text x="184" y="48">-180s</text>
-      <rect x="242" y="22" width="96" height="44" rx="5" fill="var(--ok-soft)"/><text x="290" y="48">-120s</text>
-      <rect x="348" y="22" width="96" height="44" rx="5" fill="var(--ok-soft)"/><text x="396" y="48">-60s</text>
-      <rect x="454" y="22" width="96" height="44" rx="5" fill="var(--ok-soft)"/><text x="502" y="48">-20s</text>
-      <rect x="566" y="16" width="110" height="56" rx="5" fill="var(--accent)"/>
-      <text x="621" y="40" fill="var(--accent-ink)" font-weight="700" font-size="12">此刻</text>
-      <text x="621" y="56" fill="var(--accent-ink)" font-size="9.5">640px</text>
+  <svg viewBox="0 0 860 150" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="备料取十帧、查证取六帧，都是最近二十秒内密集、往前逐渐拉开到四分钟">
+    <text x="6" y="18" font-size="10.5" fill="var(--muted)">备料 N_brief = 10 帧</text>
+    <g fill="var(--ok-soft)" stroke="var(--ok)">
+      <rect x="34" y="28" width="14" height="20" rx="2"/><rect x="384" y="28" width="14" height="20" rx="2"/>
+      <rect x="559" y="28" width="14" height="20" rx="2"/><rect x="602" y="28" width="14" height="20" rx="2"/>
+      <rect x="646" y="28" width="14" height="20" rx="2"/><rect x="675" y="28" width="14" height="20" rx="2"/>
+      <rect x="690" y="28" width="14" height="20" rx="2"/><rect x="704" y="28" width="14" height="20" rx="2"/>
+      <rect x="719" y="28" width="14" height="20" rx="2"/>
     </g>
-    <text x="290" y="86" text-anchor="middle" font-size="10.5" fill="var(--muted)">前 5 张 448px，够看出场景变化就行</text>
-    <text x="738" y="32" font-size="10.5" fill="var(--ink)">没变 = 卡住</text>
-    <text x="738" y="50" font-size="10.5" fill="var(--ink)">换场景 = 有进展</text>
-    <text x="738" y="68" font-size="10.5" fill="var(--ink)">回菜单 = 一局结束</text>
-    <line x1="686" y1="44" x2="716" y2="44" stroke="var(--muted)" stroke-width="1.5"/>
+    <rect x="734" y="24" width="18" height="28" rx="2" fill="var(--accent)"/>
+
+    <text x="6" y="80" font-size="10.5" fill="var(--muted)">查证 N_look = 6 帧</text>
+    <g fill="var(--blue-soft)" stroke="var(--blue)">
+      <rect x="267" y="86" width="14" height="20" rx="2"/><rect x="500" y="86" width="14" height="20" rx="2"/>
+      <rect x="617" y="86" width="14" height="20" rx="2"/><rect x="675" y="86" width="14" height="20" rx="2"/>
+      <rect x="704" y="86" width="14" height="20" rx="2"/>
+    </g>
+    <rect x="734" y="82" width="18" height="28" rx="2" fill="var(--accent)"/>
+
+    <line x1="20" y1="126" x2="752" y2="126" stroke="var(--line)" stroke-width="1.5"/>
+    <g font-size="10" fill="var(--muted)" text-anchor="middle">
+      <text x="40" y="142">-240s</text><text x="390" y="142">-120s</text>
+      <text x="652" y="142">-30s</text><text x="743" y="142">此刻</text>
+    </g>
+    <text x="770" y="42" font-size="10.5" fill="var(--ink)">最近二十秒密</text>
+    <text x="770" y="100" font-size="10.5" fill="var(--ink)">再往前拉开</text>
   </svg>
   </figure>
 
-  <p>HTTP 模式经过锚点时视频已经 pause，回溯 seek 抓帧再复位即可，不用改播放逻辑。
+  <p>刚做成一件事、刚摔下去、还是原地打转，都发生在最近十几秒里，那一段必须密；
+  再往前只是用来看这段时间有没有挪窝。</p>
+  <p>锚点触发的题走的是另一条路：那时视频已经暂停，回溯 seek 抓帧再复位即可，不用改播放逻辑。
   要回应的是此刻的处境；中间某一帧闪过的孤立事件已经过去，不必再提。</p>
 
-  <h3>三 · 强制查证</h3>
+  <h3>六 · 强制查证</h3>
   <p>对话式模型很少表示自己不确定，容易把没有查过的内容说得像查过一样。
   所以 <span class="t">must_cite</span> 或 <span class="t">tool_fit</span> 为真的题，
   用 per-response <span class="t">tool_choice</span> 覆盖，必须走一次
   <span class="t">/lookup</span>，判分时再看 <span class="t">citations</span> 里有没有内容。</p>
 
-  <h3>四 · 资料按进度挑</h3>
+  <h3>七 · 资料按进度挑</h3>
   <p>资料整篇拼进 prompt，所以资料一多每道题都要付这份成本。
   <span class="t">resources</span> 常驻，<span class="t">chapter_resources</span> 按
-  <span class="t">anchor_sec</span> 取当前和下一段。同时取下一段，是因为防剧透约束的是输出内容，而不是 agent 能看到多少；有经验的玩家本来也知道后面会发生什么。区间按哪道题需要哪篇倒推，不必照搬章节边界。
+  <span class="t">anchor_sec</span> 取当前和下一段。同时取下一段，是因为防剧透约束的是输出内容，
+  而不是 agent 能看到多少；有经验的玩家本来也知道后面会发生什么。区间按哪道题需要哪篇倒推，不必照搬章节边界。
   Stanley Parable 8 篇共 77KB，这样挑之后每次请求落在 13-26KB。</p>
 
-  <h3>五 · codex 会话续接</h3>
+  <h3>八 · codex 会话续接</h3>
   <p>每次都开新的 <span class="t">codex exec</span> 的话，五分钟前查过的东西下一次用不上，
-  只能从头再搜。改成 <span class="t">resume &lt;thread_id&gt;</span> 接着上一轮，每个 container 两条 thread。</p>
+  只能从头再搜。改成 <span class="t">resume &lt;thread_id&gt;</span> 接着上一轮，每个 container 两条会话。</p>
 
   <div class="tablebox">
   <table>
-    <tr><th>thread</th><th>谁在用</th><th>为什么分开</th></tr>
+    <tr><th>会话</th><th>谁在用</th><th>截止线</th><th>为什么分开</th></tr>
     <tr>
       <td class="mono">fg</td>
-      <td><span class="t">/answer</span> + <span class="t">/lookup</span></td>
+      <td>主播问出声的查证、锚点题</td>
+      <td class="mono">D_fg / D_anchor</td>
       <td>有人在等结果</td>
     </tr>
     <tr>
       <td class="mono">bg</td>
-      <td><span class="t">/research</span></td>
-      <td>同一 thread 只能串行 resume。合成一条的话，前台查证会排在 20 秒的后台研究后面</td>
+      <td>自检提的查证、备料</td>
+      <td class="mono">D_bg</td>
+      <td>同一条会话只能串行 resume。合成一条的话，有人等的查证会排在后台那条后面</td>
     </tr>
+  </table>
+  </div>
+
+  <p>codex 自己不会因为查得太久停手，只能从外面卡截止线，超时返回一句能直接用的话，
+  而不是让前台干等。前端另有一条稍宽的截止线，否则后端一挂，「正在查」的标志就永远落不下来。</p>
+
+  <h3>超参</h3>
+  <div class="tablebox">
+  <table>
+    <tr><th style="width:130px;">符号</th><th>是什么</th><th style="width:140px;">现在取</th></tr>
+    <tr><td class="mono">T_tick</td><td>两次自检之间的间隔，也就是主动开口最快能有多快</td><td>e.g. 5s</td></tr>
+    <tr><td class="mono">T_frame</td><td>喂给 Realtime 的画面间隔</td><td>e.g. 5s</td></tr>
+    <tr><td class="mono">T_gap</td><td>两次自检的最小间隔，定时和事件两个触发共用</td><td>e.g. 5s</td></tr>
+    <tr><td class="mono">T_cool</td><td>刚说完话之后的冷却，避免自己接自己的话</td><td>e.g. 20s</td></tr>
+    <tr><td class="mono">T_brief</td><td>备料间隔</td><td>e.g. 30s</td></tr>
+    <tr><td class="mono">N_brief / N_look</td><td>备料、查证各带几帧画面</td><td>e.g. 10 / 6</td></tr>
+    <tr><td class="mono">D_fg / D_bg / D_anchor</td><td>三条 codex 截止线</td><td>e.g. 40s / 90s / 120s</td></tr>
+    <tr><td class="mono">K_force</td><td>连续这么多次自检都没提出要查的东西，下一次强制它提一个</td><td>e.g. 3</td></tr>
   </table>
   </div>
 </section>
