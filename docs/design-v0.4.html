@@ -439,10 +439,16 @@ td,th{overflow-wrap:anywhere;}
   <p>资料同样要核。它是整篇拼进 prompt 的，写错会直接进到回答里，所以每篇都标出真实出处；查不到依据的写「未证实」，
   几个来源说法不一致的把分歧写出来，不合并成一种说法。</p>
 
+  <h3>问答型题怎么判</h3>
+  <p>答案对着预先写好的 rubric 一条条勾，命中几条算几条，不给整体印象分。除此之外还看三件事：
+  画面里指认的东西对不对，拿锚点那一帧核；标了必须引用的题有没有真的给出来源，而且来源确实支撑答案；
+  有没有说到锚点之后的内容，或者说得比这道题的 <span class="t">hint_level</span> 允许的更细。
+  前面图 3 那两个回答，rubric 和引用都是满分，差别全在最后一项上。</p>
+
   <h3>主动型题怎么判</h3>
   <p>看两件事：开口的时刻有没有落进标注的窗口，以及不该开口的地方开了几次。</p>
   <figure class="diagram">
-<svg viewBox="0 0 780 260" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="主动型 task 时间线：正常游玩段不该开口，卡关一段时间后进入响应窗口；校准的 agent 只在窗口内开口一次，抢话的 agent 多次在静默段开口被逐次扣分">
+<svg viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="主动型 task 时间线：正常游玩段不该开口，卡关一段时间后进入响应窗口；校准的 agent 只在窗口内开口一次，抢话的 agent 多次在静默段开口被逐次扣分">
     <!-- event band -->
     <text x="20" y="36" font-size="12" font-weight="600" fill="var(--muted)">事件</text>
     <rect x="90" y="24" width="300" height="18" rx="4" fill="var(--panel)" stroke="var(--line)"/>
@@ -477,7 +483,7 @@ td,th{overflow-wrap:anywhere;}
     <text x="340" y="200" font-size="10" fill="var(--bad)" text-anchor="middle">✗</text>
     <text x="430" y="200" font-size="10" fill="var(--bad)" text-anchor="middle">✗ 还没卡够久，剧透</text>
     <text x="340" y="246" font-size="11.5" fill="var(--bad)" text-anchor="middle">窗口也命中了，但静默段开口 4 次，逐次扣分</text>
-    <text x="340" y="263" font-size="10.5" fill="var(--bad)" text-anchor="middle" font-family="Menlo,monospace">window_hit ✓ · over_trigger 4</text>
+    <text x="340" y="266" font-size="10.5" fill="var(--bad)" text-anchor="middle" font-family="Menlo,monospace">window_hit ✓ · over_trigger 4</text>
   </svg>
   <figcaption class="cap">图 7 · 如果只奖励命中窗口、不惩罚多余的发言，一直插话就能拿到很高的命中率。图中两行 agent 的窗口得分相同，但加上多余发言之后评价完全不同。</figcaption>
   </figure>
