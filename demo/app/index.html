@@ -1378,6 +1378,7 @@ function zoomCenter(f){
 /* ════════════════ gpt-live (OpenAI Realtime, WebRTC) ════════════════ */
 const live = { connected: false, pc: null, dc: null, mic: null, pendingTask: null, respText: new Map(),
                decisionText: new Map(), lastSpokeAt: null, lastCheckAt: null, userTurn: false,
+               checkSentAt: null, speakStartedAt: null,
                checking: false,
                feedFrames: true, graph: null, dest: null, micSrc: null };
 // 默认走合成语音条件：主播原声不进模型，音频侧只有锚点上的 TTS 提问。
@@ -1618,6 +1619,11 @@ function handleLiveEvent(ev){
     // 一个语音响应只要顺带出了文本，那句真说出口的话就被吞进自检分支：日志里不显示、
     // lastSpokeAt 不更新、noteProactiveHit 不执行，window_hit 会永远记不上。
     if (spoken) {
+      // 决定开口 → 真的出声，加上上面那段就是主动开口的完整延迟
+      if (live.speakStartedAt) {
+        liveLine('sys', `⏱ 开口延迟：判断 ${live.checkSentAt && live.speakStartedAt ? live.speakStartedAt - live.checkSentAt : '?'}ms + 说话 ${Date.now() - live.speakStartedAt}ms`);
+        live.speakStartedAt = null;
+      }
       liveLine('ai', spoken, live.pendingTask);
       live.lastSpokeAt = Date.now();
       noteProactiveHit(video.currentTime);
@@ -1769,6 +1775,7 @@ function selfCheck(why){
   // 自检的响应要是丢了（断线/API 报错），checking 会永远卡住让 tick 彻底哑掉
   clearTimeout(live.checkGuard);
   live.checkGuard = setTimeout(() => { live.checking = false; }, 20000);
+  live.checkSentAt = Date.now();
   liveLine('sys', '💭 ' + (why || '例行') + '自检：说不说 / 查不查' + (force ? '（这次强制提一个查证）' : ''));
   // 结论必须走 decide 工具：Realtime 没有 response_format，光在 instructions 里写
   // 「只回一行 JSON」没有任何约束力，它经常回一句人话，于是每次自检都解析失败。
@@ -1816,7 +1823,10 @@ function onSelfCheckText(text){
 }
 
 function applyDecision(d){
-  liveLine('sys', `🧠 decide: speak=${!!d.speak} lookup=${d.lookup ? '「' + String(d.lookup).slice(0, 24) + '」' : '无'}`);
+  // 自检发出 → 结论回来，这段是"主动开口"比"被问就答"多付的全部延迟
+  const decideMs = live.checkSentAt ? Date.now() - live.checkSentAt : null;
+  liveLine('sys', `🧠 decide${decideMs !== null ? '(' + decideMs + 'ms)' : ''}: ` +
+    `speak=${!!d.speak} lookup=${d.lookup ? '「' + String(d.lookup).slice(0, 24) + '」' : '无'}`);
   const q = d.lookup == null ? '' : String(d.lookup).trim();
   if (q && q.toLowerCase() !== 'null') {
     noLookupTicks = 0;
@@ -1833,12 +1843,14 @@ function applyDecision(d){
   }
 
   if (!d.speak) { liveLine('sys', '💬 看了一眼，这会儿没什么要说的'); return; }
-  const point = String(d.say || '').trim();
-  liveLine('sys', '💬 它自己决定开口：' + point.slice(0, 60));
+  liveLine('sys', '💬 它自己决定开口：' + String(d.say || '').trim().slice(0, 60));
   if (!live.dc || live.dc.readyState !== 'open') return;
+  // 不把 say 再递回去。decide 的工具调用和返回本来就在对话历史里，它看得见自己刚写的要点；
+  // 把那句话重新塞给它、再叮嘱一句"别念出来"，等于先制造念稿压力再花一条规则去压。
+  // 稿子味的根源不是措辞不够口语，是"把一段现成文字交给它复述"这个动作本身。
+  live.speakStartedAt = Date.now();
   live.dc.send(JSON.stringify({type: 'response.create', response: {instructions:
-    `刚才自检你判断这会儿该开口，理由是：${point}\n` +
-    `现在直接对他说话。上面那句是给你自己看的，别把它念出来，也别复述一遍。\n` +
+    `刚才那次自检你已经判断这会儿该开口了——现在直接对他说话，不要复述你写下的要点。\n` +
     `语气自然、有起伏：该惊讶就真惊讶，该觉得好笑就笑出来，别一个调子念下去；` +
     `可以用"诶""哦""嗯"这类语气词起头，像刚反应过来才开口的。\n` +
     `不要"首先/另外/建议你/可以尝试"这类书面词，句子长了就断开，一句话说一件事。\n` +
