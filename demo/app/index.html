@@ -46,18 +46,19 @@ select.iconbtn{height:28px;}
    regardless of where the gear button sits in the header. */
 .settings-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:100;}
 .settings-backdrop.open{display:flex;}
-.settings-panel{width:340px; max-width:92vw; max-height:80vh; overflow-y:auto; background:var(--panel2); border:1px solid var(--line2); border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.5); padding:16px; display:flex; flex-direction:column; gap:12px;}
+.settings-panel{width:400px; max-width:92vw; max-height:82vh; overflow-y:auto; overflow-x:hidden; background:var(--panel2); border:1px solid var(--line2); border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.5); padding:18px 20px 20px; display:flex; flex-direction:column; gap:13px;}
 .settings-panel.open{display:flex;}
-.settings-panel .shead{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); font-weight:600; margin:2px 0 -2px;}
-.settings-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
-.settings-row .slabel{font-size:12.5px; color:var(--ink); flex-shrink:0;}
-.settings-row .ssub{display:block; font-size:10.5px; color:var(--dim); margin-top:1px; font-weight:400;}
-.settings-row .sctl{display:flex; align-items:center; gap:6px; flex-shrink:0;}
+.settings-panel .shead{font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--dim); font-weight:700; margin:6px 0 -3px;}
+.settings-row{display:flex; align-items:center; justify-content:space-between; gap:14px;}
+/* label 可收缩换行：之前 flex-shrink:0 会被长说明撑破，把右侧控件整个挤出面板 */
+.settings-row .slabel{font-size:12.5px; color:var(--ink); flex:1 1 auto; min-width:0;}
+.settings-row .ssub{display:block; font-size:10.5px; color:var(--dim); margin-top:2px; font-weight:400; line-height:1.5;}
+.settings-row .sctl{display:flex; align-items:center; gap:6px; flex:0 0 auto;}
 .settings-row select, .settings-row .iconbtn{white-space:nowrap;}
 .settings-panel input#agentUrl{width:100%; font-family:var(--mono); font-size:11px; padding:5px 8px; box-sizing:border-box;}
 .settings-panel .agent-row{flex-direction:column; align-items:stretch; gap:6px;}
 .settings-panel .agent-row .sctl{width:100%; justify-content:space-between;}
-hr.sdiv{border:none; border-top:1px solid var(--line); margin:0;}
+hr.sdiv{border:none; border-top:1px solid var(--line); margin:1px 0 0; opacity:.6;}
 
 /* ───── main split ───── */
 main{flex:1; display:flex; min-height:0;}
@@ -214,13 +215,13 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
     <button data-m="browse">浏览</button>
     <button data-m="agent" class="on">Agent 陪玩</button>
   </div>
-  <button class="iconbtn" id="liveBtn" title="gpt-live 实时语音陪看（需要服务端配置 OPENAI_API_KEY）">🎙 Live</button>
+  <button class="iconbtn" id="liveBtn" title="OpenAI Realtime API 实时语音陪看（需要服务端配置 OPENAI_API_KEY）">🎙 Live</button>
   <button class="iconbtn" id="settingsBtn" title="陪玩设置">⚙ 设置</button>
   <div class="settings-backdrop" id="settingsBackdrop">
     <div class="settings-panel" id="settingsPanel">
       <div class="settings-row" style="margin-bottom:2px;">
         <span class="slabel" style="font-weight:700; font-size:13.5px;">陪玩设置</span>
-        <button class="iconbtn" id="settingsClose">✕</button>
+        <button class="iconbtn" id="settingsClose" title="关闭" style="width:28px; padding:0; justify-content:center;">✕</button>
       </div>
       <hr class="sdiv">
       <div class="shead">语音 · 朗读</div>
@@ -229,7 +230,7 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
         <div class="sctl"><button class="iconbtn on" id="ttsBtn">🔊 开</button></div>
       </div>
       <hr class="sdiv">
-      <div class="shead">gpt-live 输入通道</div>
+      <div class="shead">Realtime 输入通道</div>
       <div class="settings-row">
         <span class="slabel">音频<span class="ssub">喂给模型听的声音来源</span></span>
         <div class="sctl">
@@ -888,7 +889,7 @@ function renderBackendPane(){
   }
   const kindMeta = {
     http: {tag: 'HTTP', label: 'HTTP · /answer', dest: 'agent_live.py'},
-    tool: {tag: 'TOOL', label: 'TOOL · lookup_game_info → /lookup', dest: 'codex（经 gpt-live 工具调用）'},
+    tool: {tag: 'TOOL', label: 'TOOL · lookup_game_info → /lookup', dest: 'codex（经 Realtime 工具调用）'},
     research: {tag: 'PRE', label: '🔮 自主预研 · /research', dest: 'codex（agent 自己看画面判断要不要查，不知道未来题目）'},
   };
   pane.innerHTML = backendLog.map(c => {
@@ -1359,7 +1360,7 @@ function liveLine(who, text, task){
   if (task) {
     const gr = document.createElement('span');
     gr.className = 'gr'; gr.textContent = '判分 →';
-    gr.onclick = () => openGrading(task, {who: 'gpt-live', answer: text, latency_ms: 0});
+    gr.onclick = () => openGrading(task, {who: 'realtime', answer: text, latency_ms: 0});
     div.appendChild(gr);
   }
   log.appendChild(div);
