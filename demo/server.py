@@ -42,6 +42,9 @@ REALTIME_MODEL = os.environ.get("OPENAI_REALTIME_MODEL", "gpt-realtime")
 # as robotic. Override with OPENAI_REALTIME_VOICE if you want to A/B it
 # (options: alloy/ash/ballad/coral/echo/sage/shimmer/verse/marin/cedar).
 REALTIME_VOICE = os.environ.get("OPENAI_REALTIME_VOICE", "cedar")
+# 语速。GA 的 session.audio.output.speed，实测 0.25-1.5 都收。略快一点更像
+# 随口说的，慢下来就有播报腔。（session 级的 temperature 在 GA 里已经不收了。）
+REALTIME_SPEED = float(os.environ.get("OPENAI_REALTIME_SPEED", "1.06"))
 
 
 def persona_for(container_id):
@@ -77,7 +80,7 @@ REALTIME_INSTRUCTIONS = (
 )
 
 
-def mint_realtime_token(container_id=None):
+def mint_realtime_token(container_id=None, voice=None, speed=None):
     """Create an ephemeral Realtime API client secret. Needs OPENAI_API_KEY."""
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
@@ -135,7 +138,8 @@ def mint_realtime_token(container_id=None):
             "type": "realtime",
             "model": REALTIME_MODEL,
             "instructions": instructions,
-            "audio": {"output": {"voice": REALTIME_VOICE}},
+            "audio": {"output": {"voice": voice or REALTIME_VOICE,
+                                 "speed": float(speed) if speed else REALTIME_SPEED}},
             "tools": [{
                 # 自检的结论走这个工具回来。Realtime 没有 response_format，
                 # 在 instructions 里要求「只回一行 JSON」没有任何约束力——它经常回一句人话，
@@ -149,7 +153,9 @@ def mint_realtime_token(container_id=None):
                     "type": "object",
                     "properties": {
                         "speak": {"type": "boolean", "description": "此刻要不要开口说话"},
-                        "say": {"type": "string", "description": "要说的话的要点；不说就传空字符串"},
+                        "say": {"type": "string",
+                                "description": "一句话说清现在为什么该开口。这是给你自己看的，"
+                                               "不是要照着念的稿子；不说就传空字符串"},
                         "lookup": {"type": "string",
                                    "description": "想让后台查的问题，中文、具体明确；不需要查就传空字符串"},
                         "need_frame": {"type": "boolean", "description": "这次查证要不要附上当前画面截图"}
@@ -203,7 +209,8 @@ class RangeHandler(SimpleHTTPRequestHandler):
                 req = json.loads(self.rfile.read(length)) if length else {}
             except Exception:
                 req = {}
-            code, payload = mint_realtime_token(req.get("container_id"))
+            code, payload = mint_realtime_token(req.get("container_id"),
+                                                req.get("voice"), req.get("speed"))
             body = json.dumps(payload, ensure_ascii=False).encode()
             self.send_response(code)
             self.send_header("Content-Type", "application/json; charset=utf-8")
