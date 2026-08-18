@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>陪看双引擎</title>
 <style>
 :root{
@@ -57,19 +58,19 @@ tr:last-child td{border-bottom:none;}
 
 <header>
   <p class="eyebrow">Diagram · Her-Bench</p>
-  <h1>陪看双引擎：live agent × codex</h1>
-  <p class="sub">gpt-live 负责说话，codex 负责查证，中间是一次 HTTP tool call。</p>
+  <h1>陪看双引擎：Realtime × codex</h1>
+  <p class="sub">OpenAI Realtime API 负责说话，codex CLI 负责查证，中间是一次 HTTP tool call。</p>
 </header>
 
 <!-- ============ PART 1 ============ -->
 <section>
   <p class="eyebrow">Part 1</p>
   <h2>核心 loop</h2>
-  <p class="lede">浏览器给 gpt-live 两路输入：直播原声和画面帧。要不要开口、要不要查证由它自己判断，
+  <p class="lede">浏览器给 Realtime 两路输入：直播原声和画面帧。要不要开口、要不要查证由它自己判断，
   需要查的时候发一个 HTTP 请求给本地的 codex 后端。</p>
 
   <figure class="diagram">
-  <svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="浏览器经WebRTC连gpt-live，gpt-live调tool，HTTP打到agent_live.py，起codex子进程读按进度挑的资料，返回文本和引用">
+  <svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="浏览器经WebRTC连Realtime，Realtime调tool，HTTP打到agent_live.py，起codex子进程读按进度挑的资料，返回文本和引用">
     <defs>
       <marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
         <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
@@ -86,8 +87,8 @@ tr:last-child td{border-bottom:none;}
     <text x="196" y="60" text-anchor="middle" font-size="10" fill="var(--muted)">WebRTC</text>
 
     <rect x="220" y="20" width="190" height="130" rx="8" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="1.5"/>
-    <text x="315" y="44" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--blue)">gpt-live</text>
-    <text x="315" y="62" text-anchor="middle" font-size="10.5" fill="var(--ink)">OpenAI Realtime API</text>
+    <text x="315" y="44" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--blue)">Realtime API</text>
+    <text x="315" y="62" text-anchor="middle" font-size="10.5" fill="var(--muted)">gpt-realtime · WebRTC</text>
     <text x="315" y="88" text-anchor="middle" font-size="11" fill="var(--ink)">听 · 看 · 判断要不要说</text>
     <text x="315" y="108" text-anchor="middle" font-size="11" fill="var(--ink)">must_cite 题强制查证</text>
     <text x="315" y="132" text-anchor="middle" font-size="10.5" fill="var(--muted)">→ 语音直接说出来</text>
@@ -139,15 +140,15 @@ tr:last-child td{border-bottom:none;}
     </tr>
     <tr>
       <td><span class="t">/lookup</span></td>
-      <td>gpt-live 调 <span class="t">lookup_game_info</span></td>
+      <td>Realtime 调 <span class="t">lookup_game_info</span></td>
       <td><span class="pill forced">must_cite / tool_fit 题强制</span></td>
-      <td>不限长度，gpt-live 自己提炼成语音</td>
+      <td>不限长度，Realtime 自己提炼成语音</td>
     </tr>
     <tr>
       <td><span class="t">/research</span></td>
       <td>播放中每 15 秒自己看一眼画面</td>
       <td><span class="pill optional">不强制</span></td>
-      <td>判断值得才产出，直接喂给 gpt-live</td>
+      <td>判断值得才产出，直接喂给 Realtime</td>
     </tr>
   </table>
   </div>
