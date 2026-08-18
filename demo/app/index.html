@@ -255,14 +255,13 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
       <hr class="sdiv">
       <div class="shead">主动开口</div>
       <div class="settings-row">
-        <span class="slabel">自己判断什么时候说话<span class="ssub">定期看画面自己决定要不要开口，不靠题目锚点催</span></span>
+        <span class="slabel">自己判断什么时候说话<span class="ssub">画面变了/长时间没动/后台喂料时自己判断要不要开口，不靠锚点催</span></span>
         <div class="sctl">
           <button class="iconbtn on" id="autoProBtn">💬 开</button>
           <select id="autoProRate" style="background:var(--bg);">
-            <option value="15000">15s</option>
-            <option value="25000" selected>25s</option>
-            <option value="40000">40s</option>
-            <option value="60000">60s</option>
+            <option value="30000">兜底 30s</option>
+            <option value="60000" selected>兜底 60s</option>
+            <option value="120000">兜底 120s</option>
           </select>
         </div>
       </div>
@@ -1180,7 +1179,8 @@ function zoomCenter(f){
 
 /* ════════════════ gpt-live (OpenAI Realtime, WebRTC) ════════════════ */
 const live = { connected: false, pc: null, dc: null, mic: null, pendingTask: null, respText: new Map(),
-               decisionText: new Map(), lastSpokeAt: null,
+               decisionText: new Map(), lastSpokeAt: null, lastCheckAt: null,
+               checking: false,
                feedFrames: true, graph: null, dest: null, micSrc: null };
 let audioIn = 'stream';   // 'stream' 原声 | 'tts' 合成任务语音 | 'off' 静音
 $('#audioIn').onchange = e => { audioIn = e.target.value; syncLiveGain(); };
@@ -1221,6 +1221,17 @@ function sendLiveFrame(){
   framesSent++;
   updateFrameBtn();
 }
+
+/* 输入是流式的，但 Realtime API 不会自发说话：往对话里塞 item 不触发生成，
+   只有显式 response.create、或者 VAD 判定人说完了才会。所以总得有东西扣扳机。
+   扳机有两个：后台查到新东西的时候（手上刚多了具体信息，最该判断说不说），
+   以及一个兜底定时器。
+
+   试过用帧差当第三个扳机（画面突变=有进展、长时间不变=卡住），实测不成立：
+   Human Fall Flat 是自由视角，人站着不动镜头也在晃，卡关 60 秒的帧差(54.9)
+   比真实换关(45.8)还大。帧差量的是镜头运动，跟有没有进展无关，已去掉。
+   判断卡没卡这件事本来就该由那次「看一眼」的视觉判断来做，不需要先用一个
+   便宜但不准的信号去筛。 */
 let frameTimer = setInterval(() => { if (!video.paused) sendLiveFrame(); }, 5000);
 $('#frameRate').onchange = e => {
   clearInterval(frameTimer);
@@ -1231,10 +1242,11 @@ $('#researchRate').onchange = e => {
   clearInterval(researchTimer);
   researchTimer = setInterval(() => { if (researchOn && !video.paused) runIdleResearch(); }, +e.target.value);
 };
-let autoProTimer = setInterval(proactiveCheck, 25000);
+// 定时器只是兜底：万一画面既不变也不静止（缓慢平移之类），别让它彻底哑掉
+let autoProTimer = setInterval(() => proactiveCheck('隔了一阵没动静'), 60000);
 $('#autoProRate').onchange = e => {
   clearInterval(autoProTimer);
-  autoProTimer = setInterval(proactiveCheck, +e.target.value);
+  autoProTimer = setInterval(() => proactiveCheck('隔了一阵没动静'), +e.target.value);
 };
 $('#autoProBtn').onclick = () => {
   autoProactive = !autoProactive;
@@ -1448,6 +1460,7 @@ function pushResearchToLive(j){
       `（这条只是先放你手上，不用现在回应。等你觉得他真需要、或者他问起来的时候再用。）`
     }]}}));
   liveLine('sys', '📥 后台喂了一条：' + (j.question || '').slice(0, 40));
+  proactiveCheck('后台刚喂了料');   // 手上刚多了具体信息，正是该判断说不说的时候
 }
 
 const PROACTIVE_CHECK = `现在没人问你话。看一眼刚才这些直播画面，再想想后台刚塞给你的资料，
@@ -1459,22 +1472,23 @@ const PROACTIVE_CHECK = `现在没人问你话。看一眼刚才这些直播画�
 要说就回 SPEAK: <一句话说明你打算讲什么>
 不说就只回 SILENT`;
 
-function proactiveCheck(){
+function proactiveCheck(why){
   if (!autoProactive || !live.connected || mode !== 'agent' || video.paused) return;
   if (!live.dc || live.dc.readyState !== 'open') return;
-  if (live.pendingTask) return;                                   // 正在处理锚点任务，别插嘴
-  if (video.currentTime - (live.lastSpokeAt ?? -99) < 20) return; // 刚说过就先歇会儿
-  const frame = captureFrame(512, 0.55);
-  if (frame) live.dc.send(JSON.stringify({type: 'conversation.item.create',
-    item: {type: 'message', role: 'user', content: [
-      {type: 'input_image', image_url: frame},
-      {type: 'input_text', text: `(直播画面 ${fmtShort(Math.floor(video.currentTime))})`}
-    ]}}));
+  if (live.pendingTask) return;                                    // 正在处理锚点任务，别插嘴
+  if (live.checking) return;                                       // 上一次判断还没回来
+  const now = video.currentTime;
+  if (now - (live.lastSpokeAt ?? -99) < 20) return;                // 刚说过就先歇会儿
+  if (now - (live.lastCheckAt ?? -99) < 12) return;                // 判断本身也别太密
+  live.checking = true;
+  live.lastCheckAt = now;
+  liveLine('sys', '💭 ' + (why || '例行') + '，看一眼要不要说');
   live.dc.send(JSON.stringify({type: 'response.create',
     response: {output_modalities: ['text'], instructions: PROACTIVE_CHECK}}));
 }
 
 function onProactiveDecision(text){
+  live.checking = false;
   const s = (text || '').trim();
   if (!/^SPEAK/i.test(s)) { liveLine('sys', '💬 看了一眼，这会儿没什么要说的'); return; }
   const point = s.replace(/^SPEAK[：:]\s*/i, '').trim();

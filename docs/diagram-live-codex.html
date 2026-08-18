@@ -175,9 +175,9 @@ tr:last-child td{border-bottom:none;}
   <h2>核心设计</h2>
 
   <h3>一 · 自己决定什么时候开口</h3>
-  <p>Realtime API 只在两种情况出声：显式发 <span class="t">response.create</span>，或者 VAD 听到有人说话。
-  画面帧只进上下文、不带 <span class="t">response.create</span>，所以光看画面它永远不会自己开口。
-  要让时机真的由它决定，靠两件事配合。</p>
+  <p>输入是流式的，但 Realtime API 不会自发说话：往对话里塞 item 不触发生成，
+  只有显式发 <span class="t">response.create</span>、或者 VAD 判定人说完了才会。
+  所以总得有东西扣扳机，问题是什么时候扣。</p>
 
   <figure class="diagram">
   <svg viewBox="0 0 860 150" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="后台研究结果和画面帧进入上下文，每25秒触发纯文本判断，回SPEAK才发语音响应">
@@ -200,7 +200,7 @@ tr:last-child td{border-bottom:none;}
     <text x="266" y="61" text-anchor="middle" font-size="11.5" fill="var(--blue)" font-weight="600">对话上下文</text>
 
     <line x1="330" y1="56" x2="370" y2="56" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#ar4)"/>
-    <text x="350" y="46" text-anchor="middle" font-size="9.5" fill="var(--accent)">每 25s</text>
+    <text x="350" y="46" text-anchor="middle" font-size="9.5" fill="var(--accent)">查到就问</text>
 
     <rect x="374" y="30" width="150" height="52" rx="6" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
     <text x="449" y="50" text-anchor="middle" font-size="11" fill="var(--accent)" font-weight="600">纯文本判断</text>
@@ -221,10 +221,13 @@ tr:last-child td{border-bottom:none;}
   </svg>
   </figure>
 
-  <p><b>后台持续喂料。</b><span class="t">/research</span> 查到东西立刻塞进它的上下文，
-  session instructions 里讲清楚这是先放它手上的储备，不用马上说。
-  <b>定期自己判断。</b>纯文本响应用户听不到，所以判断「不说」是真的安静，
-  不会冒出一句「我觉得没什么好说的」。</p>
+  <p><b>扳机是「后台查到了新东西」</b>，不是定时器。<span class="t">/research</span> 一有产出就塞进上下文，
+  紧接着问一次要不要说，因为那正是它手上刚多了具体信息的时刻。另有一个 60 秒兜底，免得彻底哑掉。
+  判断本身是纯文本响应，用户听不到，所以决定「不说」是真的安静。</p>
+
+  <p style="font-size:13.5px; color:var(--muted);">试过拿帧差当第三个扳机（画面突变=有进展、长时间不变=卡住），
+  实测不成立：Human Fall Flat 是自由视角，人站着不动镜头也在晃，卡关 60 秒的帧差 54.9 比真实换关的 45.8 还大。
+  帧差量的是镜头运动，跟有没有进展无关，已去掉。卡没卡本来就该由那次「看一眼」的视觉判断来做。</p>
 
   <p>这个模式下 proactive 题的锚点不再催它说话，退化成评分窗口：
   只记录它有没有在 <span class="t">response_window_sec</span> 内自己开口。</p>
