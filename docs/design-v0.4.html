@@ -382,8 +382,7 @@ td,th{overflow-wrap:anywhere;}
 <section>
   <p class="eyebrow">Part 3</p>
   <h2>题目里有什么，怎么做出来的</h2>
-  <p>一个视频一个 container，里面挂若干道题，共享同一份视频、资料和时间轴，各自锚在不同时间点。
-  这样评一个 container 只需要加载一次素材。</p>
+  <p>一个视频一个 container，挂若干道题，共享同一份视频、资料和时间轴，各自锚在不同时间点。</p>
 
   <figure class="diagram">
 <svg viewBox="0 0 780 330" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="container 的五个组成部分：视频素材、tasks、resources、harness 工具、grading">
@@ -420,7 +419,7 @@ td,th{overflow-wrap:anywhere;}
     <text x="544" y="264" font-size="12" fill="var(--ink)">规则判分脚本</text>
     <text x="544" y="286" font-size="12" fill="var(--ink)">LLM/VLM judge 配置</text>
   </svg>
-  <figcaption class="cap">图 6 · container 的五个部分。前三个是素材和题目，后两个是运行和判分需要的配置。</figcaption>
+  <figcaption class="cap">图 6 · container 的五个部分。</figcaption>
   </figure>
 
   <div class="tablebox"><table>
@@ -431,22 +430,27 @@ td,th{overflow-wrap:anywhere;}
   </table></div>
 
   <h3>出题流程</h3>
-  <p>每道题都对应视频里真实发生的一件事。出题分两段做，<b>提出和验证由不同的 agent 负责</b>，出题的 agent 不复核自己出的题。
-  一批 agent 分段扫视频提出候选，另一批重新截帧，逐条检查。</p>
-  <p>其中两条必须做到。一是<b>锚点要截帧核对</b>：转写用来定位大概位置，具体是哪一秒要看画面，题目里写的现场描述必须是这一帧上真有的东西。
-  二是<b>锚点要落在证据已经出现之后</b>。像「过关了」这种只能靠场景切换看出来的事，锚点要推到画面变化之后，
-  否则这道题在自己的可见范围里无解。</p>
-  <p>资料同样要核。它是整篇拼进 prompt 的，写错会直接进到回答里，所以每篇都标出真实出处；查不到依据的写「未证实」，
-  几个来源说法不一致的把分歧写出来，不合并成一种说法。</p>
+  <p>每道题都对应视频里真实发生的一件事。<b>提出和验证由不同的 agent 负责</b>：一批分段扫视频提候选，另一批重新截帧逐条检查。</p>
+  <p>两条必须做到。一是<b>锚点要截帧核对</b>，转写只能定位大概位置，题目里的现场描述必须是这一帧上真有的东西。
+  二是<b>锚点要落在证据出现之后</b>，像「过关了」这种要靠场景切换才看得出来的事，锚点得推到画面变化之后。</p>
+  <p>资料整篇拼进 prompt，写错会直接进到回答里，所以每篇标出处，查不到依据的写「未证实」，几个来源说法不一致就把分歧写出来。</p>
 
-  <h3>问答型题怎么判</h3>
-  <p>答案对着预先写好的 rubric 一条条勾，命中几条算几条，不给整体印象分。除此之外还看三件事：
-  画面里指认的东西对不对，拿锚点那一帧核；标了必须引用的题有没有真的给出来源，而且来源确实支撑答案；
-  有没有说到锚点之后的内容，或者说得比这道题的 <span class="t">hint_level</span> 允许的更细。
-  前面图 3 那两个回答，rubric 和引用都是满分，差别全在最后一项上。</p>
+  <h3>怎么判</h3>
+  <p>两类题都判说得对不对，主动型再多判一项时机。</p>
+  <div class="tablebox"><table>
+    <tr><th style="width:150px;">指标</th><th>量什么</th><th style="width:110px;">怎么判</th></tr>
+    <tr><td colspan="3" style="font-weight:600; color:var(--accent); font-size:12px; letter-spacing:.08em;">说得对不对（两类题都算）</td></tr>
+    <tr><td>rubric_hit</td><td>答案命中了几条预写的要点</td><td>规则 + judge</td></tr>
+    <tr><td>grounding_acc</td><td>画面里的东西指认对没对</td><td>VLM judge</td></tr>
+    <tr><td>citation_valid</td><td>引用的来源真实存在，而且确实支撑答案</td><td>规则</td></tr>
+    <tr><td>spoiler_violation</td><td>泄露了锚点之后的内容，或者说得比该说的细</td><td>judge</td></tr>
+    <tr><td colspan="3" style="font-weight:600; color:var(--accent); font-size:12px; letter-spacing:.08em;">时机（主动型题为主）</td></tr>
+    <tr><td>window_hit</td><td>开口时刻落没落进窗口</td><td>规则</td></tr>
+    <tr><td>time_diff</td><td>比理想时刻早了或晚了多少秒</td><td>规则</td></tr>
+    <tr><td>over_trigger</td><td>不该开口的地方开了几次，逐次扣分</td><td>规则</td></tr>
+    <tr><td>latency</td><td>从触发到回应的真实耗时，含查证</td><td>规则</td></tr>
+  </table></div>
 
-  <h3>主动型题怎么判</h3>
-  <p>看两件事：开口的时刻有没有落进标注的窗口，以及不该开口的地方开了几次。</p>
   <figure class="diagram">
 <svg viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="主动型 task 时间线：正常游玩段不该开口，卡关一段时间后进入响应窗口；校准的 agent 只在窗口内开口一次，抢话的 agent 多次在静默段开口被逐次扣分">
     <!-- event band -->
@@ -485,23 +489,8 @@ td,th{overflow-wrap:anywhere;}
     <text x="340" y="246" font-size="11.5" fill="var(--bad)" text-anchor="middle">窗口也命中了，但静默段开口 4 次，逐次扣分</text>
     <text x="340" y="266" font-size="10.5" fill="var(--bad)" text-anchor="middle" font-family="Menlo,monospace">window_hit ✓ · over_trigger 4</text>
   </svg>
-  <figcaption class="cap">图 7 · 如果只奖励命中窗口、不惩罚多余的发言，一直插话就能拿到很高的命中率。图中两行 agent 的窗口得分相同，但加上多余发言之后评价完全不同。</figcaption>
+  <figcaption class="cap">图 7 · 时机不能只看命中率。两行 agent 的 window_hit 一样，但一个静默段开口 0 次，一个 4 次。</figcaption>
   </figure>
-
-  <h3>指标</h3>
-  <div class="tablebox"><table>
-    <tr><th style="width:150px;">指标</th><th>量什么</th><th style="width:110px;">怎么判</th></tr>
-    <tr><td colspan="3" style="font-weight:600; color:var(--accent); font-size:12px; letter-spacing:.08em;">说得对不对（两类题都算）</td></tr>
-    <tr><td>rubric_hit</td><td>答案命中了几条预写的要点</td><td>规则 + judge</td></tr>
-    <tr><td>grounding_acc</td><td>画面里的东西指认对没对</td><td>VLM judge</td></tr>
-    <tr><td>citation_valid</td><td>引用的来源真实存在，而且确实支撑答案</td><td>规则</td></tr>
-    <tr><td>spoiler_violation</td><td>泄露了锚点之后的内容，或者说得比该说的细</td><td>judge</td></tr>
-    <tr><td colspan="3" style="font-weight:600; color:var(--accent); font-size:12px; letter-spacing:.08em;">时机（主动型题为主）</td></tr>
-    <tr><td>window_hit</td><td>开口时刻落没落进窗口</td><td>规则</td></tr>
-    <tr><td>time_diff</td><td>比理想时刻早了或晚了多少秒</td><td>规则</td></tr>
-    <tr><td>over_trigger</td><td>不该开口的地方开了几次，逐次扣分</td><td>规则</td></tr>
-    <tr><td>latency</td><td>从触发到回应的真实耗时，含查证</td><td>规则</td></tr>
-  </table></div>
 
   <h3>一道题的文件</h3>
 <pre><code>{
@@ -524,7 +513,7 @@ td,th{overflow-wrap:anywhere;}
   }
 }</code></pre>
 
-  <div class="callout"><p><b>怎么汇总</b>：每道题输出两个数，一个是说得对不对，一个是时机准不准，不合成单一总分。这是两种不同的能力。</p></div>
+  <div class="callout"><p>每道题输出两个数：说得对不对，时机准不准。不合成单一总分，这是两种不同的能力。</p></div>
 </section>
 
 </div>
