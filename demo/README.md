@@ -43,52 +43,65 @@ python3 agent_live.py --backend codex   # 真 agent 后端（另开一个终端�
 | 浏览 | 自由播放，点时间轴上的 ◆/◇ 标记查看任务与判分配置，agent 不说话 |
 | Agent 陪玩 | 严格跟随视频时间轴：连着 gpt-live 时视频不暂停，陪玩边看边说（听得到直播原声）；否则经过锚点暂停，把任务包 POST 给 HTTP 后端（codex/claude）。往回拖进度条，锚点会重新武装再次触发 |
 
-## 后台面板 + 强制查证 + 自主预研
+## 后台面板 + 强制查证 + 自检 tick
 
 右侧「后台」tab 记录每一次发给 codex 的请求和它的原始返回（含它实际收到的完整
 prompt，可展开查看）：
 
 - **HTTP** — Agent 陪玩模式下经过锚点直接调用 `/answer`
-- **TOOL** — gpt-live 调用 `lookup_game_info` 走 `/lookup`。`grading.must_cite`
-  或 `tool_fit` 为真的 query 型任务，这个调用是**强制**的——用 Realtime API
-  的 per-response `tool_choice` 覆盖，不是靠它自己判断「够不够确定」（现场
-  对话式模型几乎不会主动承认不确定，所以这条规则是硬性的，不是建议）
-- **🔮 PRE（自主预研）** — 设置面板开关，默认开，每 15 秒（可调）自己看一眼
-  当前画面（`/research`），判断有没有什么值得顺手核实的具体事实，自己造问题去查，
-  **不会读到任何预先写好的题目文本**。查到的东西一方面存成「研究笔记」，
-  一方面立刻塞进 gpt-live 的对话上下文（见下面「主动开口」），让它手上随时有料。
-
-  这里有个设计上的教训：最早的版本是「播放到任务锚点前 150 秒，直接把
-  container.json 里那道题的原文提前发给 codex 查」，锚点触发时缓存命中显示
-  ~4ms——但那不是预测，是查看器偷看了未来的题目文本，违反了每个任务
-  `context_window_sec` 只能看到锚点之前内容的契约，而且会让延迟类指标
-  （`window_hit`/`time_diff`/`latency`）全部失真。现在的版本改成 agent
-  只能从自己看到的画面出发，自己决定查什么——实测在 Rust 视频某一帧，
-  我们预写的题目是关于 snake_case 警告的，但 agent 自己注意到的是画面里
-  完全不同的一条 `assertion failed` 报错信息，说明它真的是在自己观察，
-  不是在背题。
+- **TOOL** — gpt-live 调用 `lookup_game_info` 走 `/lookup`（前台，有人等）。
+  `grading.must_cite` 或 `tool_fit` 为真的 query 型任务，这个调用是**强制**的——
+  用 Realtime API 的 per-response `tool_choice` 覆盖，不是靠它自己判断「够不够确定」
+  （现场对话式模型几乎不会主动承认不确定，所以这条规则是硬性的，不是建议）
+- **🔮 BG** — 同一个 `/lookup`，带 `background: true`（后台，没人等）。问题是 gpt-live
+  在自检 tick 里**自己提的**，它不会读到任何预先写好的题目文本
 
 面板为空时会给一个「发个测试请求看看效果」按钮，不用真触发任务也能验证链路通。
 
-## 主动开口：agent 自己判断时机
+## 自检 tick：说什么、查什么都由它自己定
 
 Realtime API 只有两种情况会让模型出声：显式发 `response.create`，或者 VAD 听到有人说话。
 每 5 秒喂进去的画面帧只进上下文、不带 `response.create`，所以光看画面它永远不会自己开口——
 以前能触发它说话的只有主播出声、或者视频走到题目锚点，也就是说开口时机其实是 harness 决定的。
 
-现在改成两件事配合：
+现在只有一个扳机：**自检 tick**。视频播放中每 10 秒（可调）让它出一个纯文本响应
+（`output_modalities: ["text"]`，用户听不到），在这一轮里同时回答两件事：
 
-- **后台持续喂料**：`/research` 查到东西立刻塞进它的对话上下文，标成 `[后台资料·时间]`，
-  同样不带 `response.create`。session instructions 里一开始就讲清楚这套安排。
-- **查到就问一次**：`/research` 一有产出就紧接着问「现在要不要说」，因为那正是它手上刚多了
-  具体信息的时刻。另有 60 秒兜底定时器，免得彻底哑掉。判断本身是纯文本响应
-  （`output_modalities: ["text"]`），用户听不到，所以决定「不说」时是真的安静。
+```json
+{"speak": true, "say": "要说的话的要点", "lookup": "要查的问题或 null", "need_frame": false}
+```
 
-试过拿帧差当第三个扳机（画面突变=有进展、长时间不变=卡住），实测不成立：
+- `speak` 为真 → 再发一个语音响应把话说出来；判断「不说」时是真的安静，
+  不会冒出一句「我觉得没什么好说的」
+- `lookup` 非空 → POST `/lookup {background: true}`，走 bg thread，不阻塞。
+  结果以 `[后台资料·时间] Q: … A: …` 塞回它的上下文，**不触发回应**——
+  下一次 tick 它自然会看到
+
+**为什么把「查什么」也交给它。** 之前这里是一个独立的 `/research` 端点：查看器每 15 秒
+把当前帧丢给 codex，让 codex 自己看画面造问题去查。问题是那个节拍是 harness 定的，
+不是 agent 定的——等于我们替被评的 agent 行使自主性，`latency` 和开口时机这些指标测的
+就不再是它自己的节奏。跟更早那个「锚点前 150 秒把题目原文提前发给 codex 预热」是同一类
+越界（那次更严重：直接偷看了未来的题目文本，违反 `context_window_sec` 契约），只是弱一些。
+
+而且 gpt-live 本来就是唯一有连续流的一端：听得到主播原声、有对话记忆、看过每一帧。
+codex 只拿到一张断片画面，没有声音也没有上文。谁更该决定「这东西值得查一下」是明摆着的。
+现在 codex 退回纯工具，不做任何感知判断。
+
+**地板保护。** 全押它的自主性有个已知风险：对话式模型不肯承认自己不确定
+（`must_cite` 要用 `tool_choice` 硬覆盖就是因为这个）。所以连续 6 次 tick 一个问题都没提时，
+下一次 tick 会在 prompt 末尾追加一句「这次 `lookup` 不许为 null」——强制的是「你必须提问」，
+问题仍然由它自己出，不引入第二个感知系统。
+
+**画面环形 buffer。** live 模式视频在播，没法像 HTTP 模式那样暂停回溯 seek 抓历史帧，
+所以每 5 秒喂给 Realtime 的那张帧顺手留一份（最近 4 分钟）。只有它把 `need_frame` 标成
+真时，才从 buffer 里取 -180/-60/0 秒三张附给这次查证。这是补它上下文被截断的洞，
+不是再造一个眼睛。
+
+试过拿帧差当另一个扳机（画面突变=有进展、长时间不变=卡住），实测不成立：
 Human Fall Flat 是自由视角，人站着不动镜头也在晃，卡关 60 秒的帧差 54.9 比真实换关的 45.8 还大。
 帧差量的是镜头运动，跟进展无关，已去掉。
 
-打开这个模式后（设置面板「主动开口」，默认开），proactive 题的锚点不再强行催它说话，
+tick 打开时（设置面板「自检 tick」，默认开），proactive 题的锚点不再强行催它说话，
 退化成评分窗口：只记录它自己有没有在 `response_window_sec` 内开口。
 
 ## codex 会话续接
@@ -99,8 +112,8 @@ Human Fall Flat 是自由视角，人站着不动镜头也在晃，卡关 60 秒
 
 | thread | 谁在用 | 为什么分开 |
 |---|---|---|
-| `fg` | `/answer` + `/lookup` | 有人在等结果，多次查证之间能接上 |
-| `bg` | `/research` | 没人等。跟前台分开是因为同一 thread 只能串行 resume，合在一起会让前台排在 20 秒的后台研究后面 |
+| `fg` | `/answer` + `/lookup`（主播问到了） | 有人在等结果，多次查证之间能接上 |
+| `bg` | `/lookup {background: true}`（自检 tick 提的） | 没人等。跟前台分开是因为同一 thread 只能串行 resume，合在一起会让前台排在 20 秒的后台查证后面 |
 
 首次调用带 `--json`，从 `thread.started` 事件取 thread_id 存下来，之后走 resume。
 每条 thread 各自一把锁，并发 resume 同一 thread 会让两个 codex 进程写同一份会话文件。
@@ -113,6 +126,15 @@ Human Fall Flat 是自由视角，人站着不动镜头也在晃，卡关 60 秒
 POST { task_id, type, question, anchor_sec, hint_level,
        context_window_sec, frame_jpeg_base64, transcript_excerpt,
        context_frames? }          // 仅 proactive：[{offset_sec, b64}, ...]
+  →  { text, citations[], latency_ms }
+```
+
+`/lookup` 是另一个端点，前台后台共用：
+
+```
+POST { query, game, container_id, current_sec,
+       background?,               // true = 自检 tick 提的，没人等，走 bg thread
+       frames? }                  // 仅 need_frame 时：[{offset_sec, b64}, ...]
   →  { text, citations[], latency_ms }
 ```
 
@@ -165,7 +187,7 @@ Realtime API 本身没有语速/语气的直接参数，只能靠 instructions �
 （已经在里面加了"像真人反应、别一个调子念稿"的要求），效果有限时换 voice 是更直接的杠杆。
 注意：codex CLI 本身没有语音模式（纯文本 coding agent），语音这层只能走 Realtime API。
 
-**关于信息量**：codex 的输出（`/lookup`、`/research`）现在故意不限制长度——具体步骤、数值、
+**关于信息量**：codex 的输出（`/lookup`，前台后台都算）现在故意不限制长度——具体步骤、数值、
 常见坑都会写全，因为这段内容是喂给 gpt-live 当"备好的干货"，由它自己在说话时提炼压缩成
 口语，而不是从源头就把信息掐死成两三句话。`/answer`（HTTP 模式的最终回答，直接给浏览器
 TTS 朗读）适度放宽到 3-6 句，避免真变成一堵墙。
@@ -176,7 +198,7 @@ TTS 朗读）适度放宽到 3-6 句，避免真变成一堵墙。
 demo/
   server.py                    静态服务器（HTTP Range + /api/realtime/token）
   agent_stub.py                罐头回答端点示例
-  agent_live.py                真 agent 后端（codex/claude），/answer + /lookup
+  agent_live.py                真 agent 后端（codex/claude），/answer + /lookup（fg/bg 两种）
   app/index.html               整个查看器（单文件，无依赖）
   data/containers/index.json   container 列表
   data/containers/*.json       每个 container：视频、章节、任务、判分、资源索引
@@ -207,7 +229,7 @@ demo/
 ## 已知简化（demo ≠ 正式 harness）
 
 - HTTP 模式（不连 gpt-live）下主动型任务仍在响应窗口起点直接触发，只是拿到了
-  `context_frames` 时间线；真正由 agent 自己决定时机只在 gpt-live 那条路上生效，
-  因为 HTTP 模式没有常驻连接，做不了定期自检；
+  `context_frames` 时间线；真正由 agent 自己决定时机（和自己决定查什么）只在 gpt-live
+  那条路上生效，因为 HTTP 模式没有常驻连接，做不了定期自检；
 - 判分是人工勾选 rubric，正式评测由规则脚本 + LLM/VLM judge 完成；
 - `transcript_excerpt` 暂为空，跑完 ASR 后接入。

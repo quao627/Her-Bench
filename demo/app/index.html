@@ -169,7 +169,7 @@ video{width:100%; height:100%; object-fit:contain; background:#000;}
 .bcall .bh .bkind{font-weight:700; padding:1px 7px; border-radius:99px; font-size:9.5px; letter-spacing:.04em;}
 .bcall .bh .bkind.http{color:var(--q); border:1px solid var(--q);}
 .bcall .bh .bkind.tool{color:var(--p); border:1px solid var(--p);}
-.bcall .bh .bkind.research{color:var(--ok); border:1px solid var(--ok);}
+.bcall .bh .bkind.bg{color:var(--ok); border:1px solid var(--ok);}
 .bcall .bh .bstate{margin-left:auto;}
 .bcall .bstate.pending{color:var(--warn);}
 .bcall .bstate.ok{color:var(--ok);}
@@ -254,30 +254,16 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
         </div>
       </div>
       <hr class="sdiv">
-      <div class="shead">主动开口</div>
+      <div class="shead">自检 tick</div>
       <div class="settings-row">
-        <span class="slabel">自己判断什么时候说话<span class="ssub">画面变了/长时间没动/后台喂料时自己判断要不要开口，不靠锚点催</span></span>
+        <span class="slabel">自己决定说什么、查什么<span class="ssub">每隔一会儿做一次纯文本自检（用户听不到）：要不要开口、要不要后台查证——问题由它自己提，不偷看题目</span></span>
         <div class="sctl">
-          <button class="iconbtn on" id="autoProBtn">💬 开</button>
-          <select id="autoProRate" style="background:var(--bg);">
-            <option value="30000">兜底 30s</option>
-            <option value="60000" selected>兜底 60s</option>
-            <option value="120000">兜底 120s</option>
-          </select>
-        </div>
-      </div>
-      <hr class="sdiv">
-      <div class="shead">自主预研</div>
-      <div class="settings-row">
-        <span class="slabel">播放中自主查证<span class="ssub">自己看画面判断要不要顺手查，不偷看题目</span></span>
-        <div class="sctl">
-          <button class="iconbtn on" id="researchBtn">🔮 开</button>
-          <select id="researchRate" style="background:var(--bg);">
-            <option value="10000">10s</option>
-            <option value="15000" selected>15s</option>
+          <button class="iconbtn on" id="tickBtn">💭 开</button>
+          <select id="tickRate" style="background:var(--bg);">
+            <option value="10000" selected>10s</option>
+            <option value="15000">15s</option>
+            <option value="20000">20s</option>
             <option value="30000">30s</option>
-            <option value="60000">60s</option>
-            <option value="90000">90s</option>
           </select>
         </div>
       </div>
@@ -359,43 +345,77 @@ let hitboxes = [];            // marker hit regions {x,y,w,h,task}
 let hoverTask = null;
 let ttsOn = true;
 let lastT = 0;
-let backendLog = [];   // {id, kind:'http'|'tool'|'research', at, task_id, request, state, response, latency_ms}
+let backendLog = [];   // {id, kind:'http'|'tool'|'bg', at, task_id, request, state, response, latency_ms}
 let bcallSeq = 0;
 
-/* ════════════════ 自主预研（真预判，不偷看未来题目） ════════════════
-   agent 定期看当前画面，自己判断有没有什么值得顺手核实的具体事实，自己造问题去查。
-   查到的东西存成"研究笔记"，真有人问起来时作为可选参考——不是按 task_id 精确命中
-   的假缓存，模型自己判断笔记用不用得上，命不中就照常真查，延迟是真实的。 */
+/* ════════════════ 自检 tick（唯一的自主决策点） ════════════════
+   之前这里是两套并行的东西：一个定时器每 15 秒逼 codex 看一眼画面、自己造问题去查
+   （/research），另一个定时器让 Realtime 判断要不要开口。问题是前者等于 harness 替
+   agent 行使自主性——查证的节拍是我们定的，不是它定的，而这套 benchmark 想测的恰恰
+   是它自己的节奏（跟"提前把题目发给 codex 预热"是同一类越界，只是弱一些）。而且两个
+   扳机各自都能触发开口判断，同一时刻可能判断两次，over_trigger 白挨罚。
+
+   现在只剩一个决策点：每 tick 让 Realtime 出一个纯文本响应（用户听不到），同时回答
+   「要不要开口」和「要不要后台查」。它是唯一有连续流的一端——听得到主播原声、有对话
+   记忆、看过每一帧，本来就该由它决定查什么。codex 退回纯工具，不再自己做感知判断。 */
 function needsLookup(task){
   return task.type === 'query' && (task.tool_fit || (task.grading && task.grading.must_cite));
 }
-let autoProactive = true;  // 默认开：让它自己判断什么时候开口，而不是等锚点催
-let researchOn = true;   // 默认开：让 codex 提前收集信息，真触发时直接用现成笔记而不是现查
-let researchBusy = false;
-let researchNotes = [];   // 最近的 noteworthy 笔记，最多留 8 条，作为可选上下文
+let tickOn = true;         // 默认开：开口时机和查证时机都交给它自己
+let bgNotes = [];          // 后台查回来的笔记，最多留 8 条，作为可选上下文
+let bgBusy = false;        // 后台 codex 一次 15-20 秒且串行，别堆队列
+let noLookupTicks = 0;     // 连续多少次 tick 一个问题都没提
+const FORCE_LOOKUP_AFTER = 6;   // 地板保护：连续这么多次不提问，下一次强制它提一个
+                                // （对话式模型不肯承认自己不确定，跟 must_cite 要用
+                                //  tool_choice 硬覆盖是同一个毛病）
 
-async function runIdleResearch(){
-  if (researchBusy || !C) return;
-  researchBusy = true;
-  const frame = captureFrame(640, 0.7);
-  const payload = {frame_jpeg_base64: frame ? frame.split(',')[1] : null, game: C.title, container_id: C.container_id, current_sec: Math.floor(video.currentTime)};
-  const bid = bcallStart('research', null, {...payload, frame_jpeg_base64: frame ? '(见下方缩略图)' : null, _frame_preview: frame});
+/* 画面环形 buffer：live 模式视频在播，没法像 HTTP 模式那样暂停回溯 seek 抓历史帧，
+   所以把每 5 秒喂给 Realtime 的那张顺手留一份。Realtime 自己的上下文会被截断，
+   这里是补它记忆的洞，不是再造一只眼睛——只在它说这次查证需要看图时才用。 */
+let frameBuf = [];         // {t, dataurl}，只留最近 4 分钟
+function pushFrameBuf(t, dataurl){
+  frameBuf.push({t, dataurl});
+  while (frameBuf.length && frameBuf[0].t < t - 240) frameBuf.shift();
+}
+function framesAround(now){
+  const out = [];
+  for (const off of [-180, -60, 0]) {
+    let best = null;
+    for (const f of frameBuf)
+      if (best === null || Math.abs(f.t - (now + off)) < Math.abs(best.t - (now + off))) best = f;
+    if (best && !out.some(o => o.t === best.t)) out.push(best);
+  }
+  return out;
+}
+
+/* 它自己提的问题 → 后台 codex（bg thread，没人等着）。结果只塞进上下文、不触发回应：
+   扳机只有 tick 一个，多一个就会在同一时刻判断两次开口。 */
+async function runBackgroundLookup(query, needFrame){
+  if (bgBusy || !C || !query) return;
+  bgBusy = true;
+  const now = Math.floor(video.currentTime);
+  const frames = needFrame ? framesAround(now) : [];
+  const payload = {query, game: C.title, container_id: C.container_id, current_sec: now,
+                   background: true,
+                   frames: frames.map(f => ({offset_sec: Math.round(f.t - now), b64: f.dataurl.split(',')[1]}))};
+  const bid = bcallStart('bg', null, {...payload,
+    frames: frames.length ? `(${frames.length} 张: ${frames.map(f => Math.round(f.t - now) + 's').join(', ')})` : undefined,
+    _frame_preview: frames.length ? frames[frames.length - 1].dataurl : null});
   const t0 = Date.now();
   try {
     const base = $('#agentUrl').value.replace(/\/answer\/?$/, '');
-    const r = await fetch(base + '/research', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
+    const r = await fetch(base + '/lookup', {method: 'POST',
+      headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
     const j = await r.json();
     bcallEnd(bid, 'ok', j, Date.now() - t0);
-    if (j.noteworthy) {
-      researchNotes.unshift({question: j.question, text: j.text, citations: j.citations, at: video.currentTime});
-      researchNotes = researchNotes.slice(0, 8);
-      updateResearchBtn();
-      pushResearchToLive(j);   // 查到就立刻塞给前台，不等它被问起来
-    }
+    bgNotes.unshift({question: query, text: j.text, citations: j.citations, at: video.currentTime});
+    bgNotes = bgNotes.slice(0, 8);
+    updateTickBtn();
+    pushBgNoteToLive(query, j);
   } catch (e) {
     bcallEnd(bid, 'err', {error: e.message}, Date.now() - t0);
   } finally {
-    researchBusy = false;
+    bgBusy = false;
   }
 }
 
@@ -513,9 +533,9 @@ setInterval(() => {
       const trig = t.type === 'proactive' && t.response_window_sec ? t.response_window_sec[0] : t.anchor_sec;
       if (armed.has(t.task_id) && lastT < trig && cur >= trig && cur - lastT < 5) {
         armed.delete(t.task_id);
-        // 主动开口打开、且真连着 gpt-live 时，proactive 题不强行催它说话。
-        // 锚点在这种模式下只是评分窗口，开口时机交给它自己判断（见 proactiveCheck）。
-        if (t.type === 'proactive' && autoProactive && live.connected) break;
+        // 自检 tick 打开、且真连着 gpt-live 时，proactive 题不强行催它说话。
+        // 锚点在这种模式下只是评分窗口，开口时机交给它自己判断（见 selfCheck）。
+        if (t.type === 'proactive' && tickOn && live.connected) break;
         triggerTask(t);
         break;
       }
@@ -626,8 +646,8 @@ async function runAgent(task){
   const frame = captureFrame();
   // 主动型任务额外带一条时间线：光看锚点这一帧分不出「通关」和「掉出地图」
   const contextFrames = task.type === 'proactive' ? await captureContextStrip(task.anchor_sec) : [];
-  // 之前自主预研攒的笔记，作为可选参考带上——agent 自己判断用不用得上，不是精确匹配的缓存
-  const recentResearch = researchNotes.slice(0, 4).map(n => ({question: n.question, text: n.text}));
+  // 它自己在自检里提问、后台查回来的笔记，作为可选参考带上——用不用得上它自己判断，不是精确匹配的缓存
+  const recentResearch = bgNotes.slice(0, 4).map(n => ({question: n.question, text: n.text}));
   const payload = {
     task_id: task.task_id, type: task.type, question: task.question || null,
     anchor_sec: task.anchor_sec, hint_level: task.hint_level,
@@ -869,7 +889,7 @@ function renderBackendPane(){
       <b style="color:var(--ink);">还没有后台调用记录。</b>三种方式触发一次看看：<br>
       ① 切到顶部「Agent 陪玩」模式 → 在「任务」tab 选一个任务 → 点「立即触发此任务」（会发给 codex，约 15-25 秒有回复）<br>
       ② 连上 🎙 Live 后播放视频，🔍 标记的任务会<b style="color:var(--p);">强制</b>调用 lookup_game_info（不是它自己判断"够不够确定"，而是这类任务硬性要求先查证）<br>
-      ③ 🔮 自主预研（默认开，与模式无关）：只要视频在播放，每隔一段时间就自己看一眼当前画面，自主判断有没有什么值得顺手查的（它不知道未来的题目，纯粹自己观察；切到「浏览」模式它照样在后台默默查，只是不会开口说出来）<br><br>
+      ③ 💭 自检 tick（默认开，需要连着 🎙 Live）：视频播放中每隔十几秒它自己做一次纯文本自检，同时决定要不要开口、要不要让后台查点东西——查什么由它自己提，它不知道未来的题目<br><br>
       <button class="jump" id="bpingBtn">发个测试请求看看效果 →</button>
     </div>`;
     const btn = $('#bpingBtn');
@@ -890,7 +910,7 @@ function renderBackendPane(){
   const kindMeta = {
     http: {tag: 'HTTP', label: 'HTTP · /answer', dest: 'agent_live.py'},
     tool: {tag: 'TOOL', label: 'TOOL · lookup_game_info → /lookup', dest: 'codex（经 Realtime 工具调用）'},
-    research: {tag: 'PRE', label: '🔮 自主预研 · /research', dest: 'codex（agent 自己看画面判断要不要查，不知道未来题目）'},
+    bg: {tag: 'BG', label: '🔮 后台查证 · /lookup (background)', dest: 'codex bg thread（问题是它在自检里自己提的，不知道未来题目）'},
   };
   pane.innerHTML = backendLog.map(c => {
     const km = kindMeta[c.kind] || kindMeta.http;
@@ -900,18 +920,12 @@ function renderBackendPane(){
       ? [['task_id', req.task_id], ['type', req.type], ['question', req.question], ['anchor_sec', req.anchor_sec],
          ['hint_level', req.hint_level], ['context_window_sec', JSON.stringify(req.context_window_sec)],
          ['game', req.game], ['transcript_excerpt', req.transcript_excerpt]]
-      : c.kind === 'research'
-      ? [['game', req.game], ['container_id', req.container_id], ['(输入)', '仅当前画面，无题目文本']]
-      : [['query', req.query], ['game', req.game], ['container_id', req.container_id]];
+      : [['query', req.query], ['game', req.game], ['container_id', req.container_id],
+         ['background', req.background ? 'true' : undefined], ['frames', req.frames]];
     const resHtml = (() => {
       if (c.state === 'pending') return '';
       if (c.response.error) return `<div class="btext">错误: ${escapeHtml(c.response.error)}</div>`;
-      if (c.kind === 'research' && c.response.noteworthy === false) {
-        return `<div class="btext" style="color:var(--dim);">这一帧判断没什么好查的，跳过（noteworthy: false）</div>`;
-      }
-      const text = c.kind === 'research'
-        ? `<span class="k">自己造的问题:</span> ${escapeHtml(c.response.question || '')}\n${escapeHtml(c.response.text || '')}`
-        : escapeHtml(c.response.text || '(空)');
+      const text = escapeHtml(c.response.text || '(空)');
       return `<div class="btext" style="white-space:pre-wrap;">${text}</div>
         ${c.response.citations && c.response.citations.length ? `<div class="bpayload" style="margin-top:6px;"><span class="k">citations:</span> ${escapeHtml(c.response.citations.join(', '))}</div>` : ''}`;
     })();
@@ -1214,6 +1228,7 @@ function sendLiveFrame(){
   const frame = captureFrame(512, 0.55);
   if (!frame) return;
   const t = Math.floor(video.currentTime);
+  pushFrameBuf(t, frame);          // 顺手留一份，后台查证需要看图时从这里取
   live.dc.send(JSON.stringify({type: 'conversation.item.create',
     item: {type: 'message', role: 'user', content: [
       {type: 'input_image', image_url: frame},
@@ -1224,11 +1239,10 @@ function sendLiveFrame(){
 }
 
 /* 输入是流式的，但 Realtime API 不会自发说话：往对话里塞 item 不触发生成，
-   只有显式 response.create、或者 VAD 判定人说完了才会。所以总得有东西扣扳机。
-   扳机有两个：后台查到新东西的时候（手上刚多了具体信息，最该判断说不说），
-   以及一个兜底定时器。
+   只有显式 response.create、或者 VAD 判定人说完了才会。所以总得有东西扣扳机，
+   现在扳机只有一个：下面的自检 tick（见 selfCheck）。
 
-   试过用帧差当第三个扳机（画面突变=有进展、长时间不变=卡住），实测不成立：
+   试过用帧差当另一个扳机（画面突变=有进展、长时间不变=卡住），实测不成立：
    Human Fall Flat 是自由视角，人站着不动镜头也在晃，卡关 60 秒的帧差(54.9)
    比真实换关(45.8)还大。帧差量的是镜头运动，跟有没有进展无关，已去掉。
    判断卡没卡这件事本来就该由那次「看一眼」的视觉判断来做，不需要先用一个
@@ -1238,31 +1252,20 @@ $('#frameRate').onchange = e => {
   clearInterval(frameTimer);
   frameTimer = setInterval(() => { if (!video.paused) sendLiveFrame(); }, +e.target.value);
 };
-let researchTimer = setInterval(() => { if (researchOn && !video.paused) runIdleResearch(); }, 15000);
-$('#researchRate').onchange = e => {
-  clearInterval(researchTimer);
-  researchTimer = setInterval(() => { if (researchOn && !video.paused) runIdleResearch(); }, +e.target.value);
+let tickTimer = setInterval(() => { if (tickOn && !video.paused) selfCheck('例行'); }, 10000);
+$('#tickRate').onchange = e => {
+  clearInterval(tickTimer);
+  tickTimer = setInterval(() => { if (tickOn && !video.paused) selfCheck('例行'); }, +e.target.value);
 };
-// 定时器只是兜底：万一画面既不变也不静止（缓慢平移之类），别让它彻底哑掉
-let autoProTimer = setInterval(() => proactiveCheck('隔了一阵没动静'), 60000);
-$('#autoProRate').onchange = e => {
-  clearInterval(autoProTimer);
-  autoProTimer = setInterval(() => proactiveCheck('隔了一阵没动静'), +e.target.value);
-};
-$('#autoProBtn').onclick = () => {
-  autoProactive = !autoProactive;
-  $('#autoProBtn').classList.toggle('on', autoProactive);
-  $('#autoProBtn').textContent = '💬 ' + (autoProactive ? '开' : '关');
-};
-function updateResearchBtn(){
-  $('#researchBtn').textContent = '🔮 ' + (researchOn ? '开' : '关') + (researchNotes.length ? '·' + researchNotes.length : '');
+function updateTickBtn(){
+  $('#tickBtn').textContent = '💭 ' + (tickOn ? '开' : '关') + (bgNotes.length ? '·' + bgNotes.length : '');
 }
-$('#researchBtn').onclick = () => {
-  researchOn = !researchOn;
-  $('#researchBtn').classList.toggle('on', researchOn);
-  updateResearchBtn();
+$('#tickBtn').onclick = () => {
+  tickOn = !tickOn;
+  $('#tickBtn').classList.toggle('on', tickOn);
+  updateTickBtn();
 };
-updateResearchBtn();
+updateTickBtn();
 video.addEventListener('play', () => setTimeout(sendLiveFrame, 300));
 video.addEventListener('seeked', () => { if (!video.paused) setTimeout(sendLiveFrame, 300); });
 
@@ -1373,7 +1376,7 @@ function handleLiveEvent(ev){
     const id = ev.response_id || 'r';
     live.respText.set(id, (live.respText.get(id) || '') + (ev.delta || ''));
   } else if (t === 'response.output_text.delta' || t === 'response.text.delta') {
-    // 纯文本响应 = 主动开口的自检（用户听不到）。用 delta 类型区分，不用状态标志，
+    // 纯文本响应 = 自检 tick（用户听不到）。用 delta 类型区分，不用状态标志，
     // 因为 VAD 触发的语音回答可能跟自检并发，靠标志会串。
     const id = ev.response_id || 'r';
     live.decisionText.set(id, (live.decisionText.get(id) || '') + (ev.delta || ''));
@@ -1382,7 +1385,7 @@ function handleLiveEvent(ev){
     if (live.decisionText.has(id)) {
       const dec = live.decisionText.get(id);
       live.decisionText.delete(id);
-      onProactiveDecision(dec);
+      onSelfCheckDecision(dec);
       return;
     }
     const text = live.respText.get(id) || '';
@@ -1439,69 +1442,95 @@ video.addEventListener('play', () => {
   }
 });
 
-/* ── 主动开口 ──────────────────────────────────────────────
-   之前只有两件事能让模型出声：VAD 听到主播说话，或者视频走到题目锚点时
-   sendLiveTask() 显式发 response.create。sendLiveFrame() 只往上下文里塞图、
-   从不发 response.create（那行提示词写的就是「不必回应」），所以纯看画面、
-   主播又不出声的时候，模型永远不会自己开口——开口时机实际上是被锚点决定的，
-   不是它自己判断的。
+/* ── 自检 tick：唯一的自主决策点 ────────────────────────────
+   Realtime 不会自发说话：往对话里塞 item 不触发生成，只有显式 response.create、
+   或者 VAD 判定人说完了才会。sendLiveFrame() 只塞图不发 response.create，所以
+   纯看画面、主播又不出声的时候它永远不会开口——不给它一个扳机，开口时机实际上
+   是被锚点决定的，不是它自己判断的。
 
-   这里补上真正的自主判断：定期让它先出一个「纯文本」响应做决定（用户听不到），
-   决定要说才发第二个语音响应。文本响应用 output_modalities 限定，所以判断
-   「不说」的时候是真的安静，不会冒出一句「我觉得没什么好说的」。 */
-/* 后台查到东西就立刻塞进前台的对话上下文（不触发回应，只是让它手上有料）。
-   这样它做开口判断时是「我手上有一条具体的、有用的信息」，而不是空着脑袋想说点什么。 */
-function pushResearchToLive(j){
+   扳机就是这个 tick：定期让它出一个「纯文本」响应（用户听不到），在这一轮里同时
+   决定要不要开口、要不要让后台去查东西。文本响应用 output_modalities 限定，所以
+   判断「不说」的时候是真的安静，不会冒出一句「我觉得没什么好说的」。
+   扳机只此一个：后台结果回来只塞上下文、不另外触发一次判断，否则同一时刻会判两次。 */
+
+/* 后台查回来的东西塞进对话上下文，不触发回应——下一次 tick 它自然会看到。 */
+function pushBgNoteToLive(question, j){
   if (!live.connected || !live.dc || live.dc.readyState !== 'open') return;
   const cites = (j.citations && j.citations.length) ? `（出处：${j.citations.join('，')}）` : '';
   live.dc.send(JSON.stringify({type: 'conversation.item.create',
     item: {type: 'message', role: 'user', content: [{type: 'input_text', text:
-      `[后台资料·${fmtShort(Math.floor(video.currentTime))}] 我刚顺手查了一下画面里的东西：\n` +
-      `Q: ${j.question}\nA: ${j.text}${cites}\n` +
-      `（这条只是先放你手上，不用现在回应。等你觉得他真需要、或者他问起来的时候再用。）`
+      `[后台资料·${fmtShort(Math.floor(video.currentTime))}] 你刚才要查的东西回来了：\n` +
+      `Q: ${question}\nA: ${j.text}${cites}\n` +
+      `（不用现在回应，先放你手上；下一次自检你会看到它。）`
     }]}}));
-  liveLine('sys', '📥 后台喂了一条：' + (j.question || '').slice(0, 40));
-  proactiveCheck('后台刚喂了料');   // 手上刚多了具体信息，正是该判断说不说的时候
+  liveLine('sys', '📥 后台回了一条：' + (question || '').slice(0, 40));
 }
 
-const PROACTIVE_CHECK = `现在没人问你话。看一眼刚才这些直播画面，再想想后台刚塞给你的资料，
-自己判断此刻要不要开口。
-值得开口：他明显卡在同一个地方出不去、刚失败或摔惨了、刚做成一件事或者通关、
-画面里出现了他大概率会好奇的具体东西而你手上正好有相关资料、或者场面特别滑稽。
-不值得开口：只是正常推进、你要说的话没什么信息量、或者你刚说过差不多的话。
-只回一行，不要输出别的：
-要说就回 SPEAK: <一句话说明你打算讲什么>
-不说就只回 SILENT`;
+const TICK_PROMPT = `现在没人问你话，这是一次自检——用户听不到你这一轮的输出。
+看一眼刚才这些直播画面、你手上的后台资料和你们刚聊过的内容，同时决定两件事：
 
-function proactiveCheck(why){
-  if (!autoProactive || !live.connected || mode !== 'agent' || video.paused) return;
+一、此刻要不要开口。
+值得：他明显卡在同一个地方出不去、刚失败或摔惨了、刚做成一件事或者通关、画面里出现了
+他大概率会好奇的具体东西而你手上正好有相关资料、或者场面特别滑稽。
+不值得：只是正常推进、你要说的话没什么信息量、或者你刚说过差不多的话。
+
+二、要不要让后台去查点东西。后台查一次要 15-20 秒，所以查的是你现在还用不上、但接下来
+很可能派上用场的东西：画面里出现了具体的道具/机制/报错/界面元素，而你对它的准确细节
+（数值、规则、含义）其实没把握。不要查你随口就能答对的常识，也不要查画面上一眼能看见的事。
+你对这类细节的记忆本来就不可靠，「感觉大概知道」不算知道。
+
+只回一行 JSON，不要输出别的：
+{"speak": true/false, "say": "要说的话的要点，不说就空字符串", "lookup": "要查的问题，不查就 null", "need_frame": true/false}
+need_frame 表示这次查证得附上画面截图才问得清楚。`;
+
+const FORCE_LOOKUP_NOTE = `
+
+注意：你已经连续很多次没提出任何要查的东西了。「感觉不用查」通常不是真的不用查。
+这一次 lookup 不许为 null——从画面里挑一个你说不出准确细节的具体东西去查。`;
+
+function selfCheck(why){
+  if (!tickOn || !live.connected || mode !== 'agent' || video.paused) return;
   if (!live.dc || live.dc.readyState !== 'open') return;
   if (live.pendingTask) return;                                    // 正在处理锚点任务，别插嘴
-  if (live.checking) return;                                       // 上一次判断还没回来
+  if (live.checking) return;                                       // 上一次自检还没回来
   const now = video.currentTime;
   if (now - (live.lastSpokeAt ?? -99) < 20) return;                // 刚说过就先歇会儿
-  if (now - (live.lastCheckAt ?? -99) < 12) return;                // 判断本身也别太密
+  const force = noLookupTicks >= FORCE_LOOKUP_AFTER;
   live.checking = true;
   live.lastCheckAt = now;
-  liveLine('sys', '💭 ' + (why || '例行') + '，看一眼要不要说');
+  liveLine('sys', '💭 ' + (why || '例行') + '自检：说不说 / 查不查' + (force ? '（这次强制提一个查证）' : ''));
   live.dc.send(JSON.stringify({type: 'response.create',
-    response: {output_modalities: ['text'], instructions: PROACTIVE_CHECK}}));
+    response: {output_modalities: ['text'],
+               instructions: TICK_PROMPT + (force ? FORCE_LOOKUP_NOTE : '')}}));
 }
 
-function onProactiveDecision(text){
+function onSelfCheckDecision(text){
   live.checking = false;
-  const s = (text || '').trim();
-  if (!/^SPEAK/i.test(s)) { liveLine('sys', '💬 看了一眼，这会儿没什么要说的'); return; }
-  const point = s.replace(/^SPEAK[：:]\s*/i, '').trim();
+  let d = null;
+  const m = (text || '').match(/\{[\s\S]*\}/);
+  if (m) { try { d = JSON.parse(m[0]); } catch {} }
+  if (!d) { liveLine('sys', '💬 自检返回没解析出来，跳过：' + (text || '').trim().slice(0, 50)); return; }
+
+  const q = d.lookup && String(d.lookup).trim();
+  if (q && q.toLowerCase() !== 'null') {
+    noLookupTicks = 0;
+    if (bgBusy) liveLine('sys', '🔍 想查「' + q.slice(0, 30) + '」，但后台还在忙，这次跳过');
+    else { liveLine('sys', '🔍 它自己要查：' + q.slice(0, 50)); runBackgroundLookup(q, !!d.need_frame); }
+  } else {
+    noLookupTicks++;
+  }
+
+  if (!d.speak) { liveLine('sys', '💬 看了一眼，这会儿没什么要说的'); return; }
+  const point = String(d.say || '').trim();
   liveLine('sys', '💬 它自己决定开口：' + point.slice(0, 60));
   if (!live.dc || live.dc.readyState !== 'open') return;
   live.dc.send(JSON.stringify({type: 'response.create', response: {instructions:
     `你刚判断这一刻值得开口，要点是：${point}\n` +
     `现在用自然口语说出来。一两句就够，别念稿子，别把要点原样复述一遍。` +
-    `如果这需要具体事实（数值/机制/报错含义），先调 lookup_game_info 再说。`}}));
+    `如果这需要具体事实（数值/机制/报错含义）而你手上没有，先调 lookup_game_info 再说。`}}));
 }
 
-/* 主动开口打开时，proactive 题不再由锚点强行催它说话——锚点退化成「评分窗口」，
+/* 自检 tick 打开时，proactive 题不再由锚点强行催它说话——锚点退化成「评分窗口」，
    只记录它自己有没有在窗口内开口。这才是这道题本来要考的东西。 */
 let proWindows = [];   // {task_id, from, to, hit}
 function armProactiveWindows(){
@@ -1522,10 +1551,10 @@ function sendLiveTask(task){
   live.pendingTask = task;
   const isQ = task.type === 'query';
   const mustLookup = isQ && needsLookup(task);
-  // 自主预研攒的笔记：只是参考，不是精确匹配的答案缓存。有笔记时不强制再查一遍
+  // 它自己在自检里要求查过的笔记：只是参考，不是精确匹配的答案缓存。有笔记时不强制再查一遍
   // （让模型自己判断笔记够不够用，它仍然可以主动选择调用 lookup_game_info 复核）；
   // 完全没做过研究时才强制它先查，不许凭空猜。
-  const notes = researchNotes.slice(0, 4);
+  const notes = bgNotes.slice(0, 4);
   const hasNotes = notes.length > 0;
   const content = [];
   const frame = captureFrame();

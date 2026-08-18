@@ -11,6 +11,11 @@
 资料快照目录一起交给 CLI agent（claude -p / codex exec），拿回答案返回。
 agent 可以自己 Read 帧截图和 resources/ 里的攻略资料——这就是 benchmark
 里 "watch + search" 工具的最小等价物。
+
+这个后端不做任何感知判断：查什么、什么时候查，全部由前台那个常驻的 agent 决定
+（它在自检 tick 里自己提问题）。以前这里还有一个 /research 端点，由查看器每 15 秒
+定时驱动 codex 自己看画面造问题——那等于 harness 替 agent 行使自主性，节拍是我们
+定的不是它定的，已经去掉。
 """
 import argparse
 import base64
@@ -88,10 +93,11 @@ PROACTIVE_DESC = """这是主动介入场景: 没有人提问，要不要开口�
 只有第一类(确实卡住了)才需要给信息量。"""
 
 LOOKUP_TMPL = """你是游戏攻略资料检索员。前台的语音陪玩 agent 需要查一个游戏事实。
+问题是它自己提的（主播问到了、或者它自检时觉得这东西接下来可能用得上），你只管查准。
 
 游戏: {game}
 查询: {query}
-
+{image_note}
 下面是可查的全部资料，已经帮你准备好了，直接从里面找答案，不用自己找文件：
 ---
 {resource_docs}
@@ -103,34 +109,6 @@ LOOKUP_TMPL = """你是游戏攻略资料检索员。前台的语音陪玩 agent
 不要藏着掖着。这段内容会被前台的语音 agent 再提炼转述给主播，所以你不用担心啰嗦或语气生硬，
 把干货备齐就行，让它有真材实料可以提炼；不要铺垫，不需要用 ls/Read。
 最后单独一行 "SOURCES: " 加实际参考的资料标题或 URL。"""
-
-RESEARCH_TMPL = """你在陪看直播，正在利用画面停留/播放间隙主动做一点背景研究，
-这样等主播真的问起来时你已经查过、心里有数——但你不知道他接下来会问什么，
-只能凭这一帧画面自己判断有没有什么值得顺手核实的东西。
-
-直播: {game}
-
-{image_note}
-
-下面是可查的全部资料，已经帮你准备好了，不用自己找文件：
----
-{resource_docs}
----
-
-判断标准：画面里如果出现了具体的道具/机制/报错信息/界面元素等，主播很可能会好奇
-「这是什么」「这是怎么回事」——而且答案是具体、可验证、你自己记忆里没把握的那种
-（不是随口能答对的常识），就对照上面的资料核实一下；上面资料没覆盖到或写得太笼统，
-直接用 WebSearch 去查更具体的（官方 wiki、攻略站都行），别因为资料不够就将就编。
-如果画面很普通（过场、菜单、纯粹在走路/说话，没什么值得核实的具体东西），
-不要硬凑问题，直接只输出一个词: NOTHING
-
-如果决定要查，输出格式严格如下三行（不需要用任何工具，直接从上面资料里找）：
-QUESTION: <你猜主播可能会问的问题，用他第一人称的口吻写，一句话，中文>
-ANSWER: <把具体细节/原理/数值讲清楚，信息给够，不用刻意精简——这段会被前台语音 agent
-提炼后说给主播听，你这里备好干货就行，它自己会压成合适的口语长度>
-SOURCES: <实际参考的资料标题，逗号分隔，没查到具体来源就写 none>
-"""
-
 
 def _read_doc(entry):
     file_path = os.path.join(HERE, entry["file"].lstrip("/"))
@@ -255,8 +233,8 @@ def run_claude(prompt: str) -> str:
 # thread per container and reuse it. Two threads actually, split by how latency
 # sensitive the caller is:
 #
-#   fg  /answer + /lookup  — someone is waiting on this
-#   bg  /research          — nobody is waiting, fires on a timer
+#   fg  /answer + /lookup            — someone is waiting on this
+#   bg  /lookup {background: true}   — the live agent asked for it ahead of time
 #
 # They are kept apart on purpose. A single shared thread would need a single lock,
 # and a foreground lookup would then queue behind a 20s background research call,
@@ -372,7 +350,7 @@ def answer(payload: dict) -> dict:
     if notes:
         lines = "\n".join(f"- Q: {n.get('question','')} / A: {n.get('text','')}" for n in notes)
         research_context = (
-            "\n你之前趁播放间隙主动查过下面这些东西（不一定跟这题有关，自己判断能不能用，"
+            "\n你之前自己要求后台查过下面这些东西（不一定跟这题有关，自己判断能不能用，"
             f"不相关就忽略，别硬套）：\n{lines}\n"
         )
 
@@ -427,9 +405,6 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/lookup":
             self._handle_lookup(payload, t0)
             return
-        if path == "/research":
-            self._handle_research(payload, t0)
-            return
 
         tid = payload.get("task_id", "?")
         print(f"[{ARGS.backend}] task {tid} …", flush=True)
@@ -453,16 +428,34 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _handle_lookup(self, payload, t0):
-        """gpt-live 的 lookup_game_info 工具落到这里：codex/claude 翻资料回答。"""
+        """前台 agent 的查证请求都落到这里，两种来路只差一个 background 标志：
+
+        - 主播问到了 → lookup_game_info 工具调用 → 有人等 → fg thread
+        - 它自己在自检 tick 里提的 → background: true → 没人等 → bg thread
+
+        问题始终是前台 agent 提的。这个后端不做任何感知判断，只管把问题查准。
+        """
         query = payload.get("query", "")
         game = payload.get("game", "")
-        print(f"[{ARGS.backend}] lookup: {query}", flush=True)
+        background = bool(payload.get("background"))
+        kind = "bg" if background else "fg"
+        # 只有它明说这次要看图时才带帧（need_frame），多传图会让 codex 明显变慢
+        frame_paths, frame_labels = [], []
+        for fr in (payload.get("frames") or []):
+            b64 = fr.get("b64")
+            if not b64:
+                continue
+            frame_paths.append(_write_temp_jpeg(b64))
+            off = int(fr.get("offset_sec", 0))
+            frame_labels.append("此刻" if off == 0 else f"{abs(off)} 秒前")
+        print(f"[{ARGS.backend}] lookup ({kind}): {query}", flush=True)
         prompt = LOOKUP_TMPL.format(game=game or "见资料目录", query=query,
+                                    image_note=("\n" + image_note(frame_paths, frame_labels) + "\n") if frame_paths else "",
                                     resource_docs=get_resource_docs(payload.get("container_id"), payload.get("current_sec")))
         try:
             if ARGS.backend == "codex":
-                raw = run_codex(prompt, "",
-                                container_id=payload.get("container_id"), kind="fg")
+                raw = run_codex(prompt, frame_paths,
+                                container_id=payload.get("container_id"), kind=kind)
             else:
                 raw = run_claude(prompt)
             citations = []
@@ -475,54 +468,12 @@ class Handler(BaseHTTPRequestHandler):
             result = {"text": raw, "citations": citations, "debug_prompt": prompt}
         except Exception as e:
             result = {"text": f"没查到（后台出错: {e}）", "citations": []}
+        finally:
+            for fp in frame_paths:
+                if fp and os.path.exists(fp):
+                    os.unlink(fp)
         result["latency_ms"] = int((time.time() - t0) * 1000)
         print(f"[{ARGS.backend}] lookup done in {result['latency_ms']}ms", flush=True)
-        body = json.dumps(result, ensure_ascii=False).encode()
-        self.send_response(200)
-        self._cors()
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
-
-    def _handle_research(self, payload, t0):
-        """播放间隙的自主研究：agent 只看当前帧，自己判断值不值得查、查什么。
-        与 /lookup 的关键区别：query 是 agent 自己造的，不是我们预先写好的题目文本。"""
-        frame_path = ""
-        b64 = payload.get("frame_jpeg_base64")
-        if b64:
-            fd, frame_path = tempfile.mkstemp(suffix=".jpg")
-            with os.fdopen(fd, "wb") as f:
-                f.write(base64.b64decode(b64))
-        game = payload.get("game", "")
-        print(f"[{ARGS.backend}] idle research…", flush=True)
-        prompt = RESEARCH_TMPL.format(game=game or "见资料目录",
-                                      image_note=image_note([frame_path] if frame_path else [], ["此刻"]),
-                                      resource_docs=get_resource_docs(payload.get("container_id"), payload.get("current_sec")))
-        try:
-            raw = (run_codex(prompt, frame_path,
-                             container_id=payload.get("container_id"), kind="bg")
-                   if ARGS.backend == "codex" else run_claude(prompt)).strip()
-            if raw.upper().startswith("NOTHING"):
-                result = {"noteworthy": False, "debug_prompt": prompt}
-            else:
-                q = re.search(r"QUESTION:\s*(.+)", raw)
-                a = re.search(r"ANSWER:\s*(.+)", raw)
-                s = re.search(r"SOURCES:\s*(.+)", raw)
-                citations = []
-                if s and s.group(1).strip().lower() != "none":
-                    citations = [x.strip() for x in s.group(1).split(",") if x.strip()]
-                result = {"noteworthy": bool(q and a),
-                          "question": q.group(1).strip() if q else "",
-                          "text": a.group(1).strip() if a else raw,
-                          "citations": citations, "debug_prompt": prompt}
-        except Exception as e:
-            result = {"noteworthy": False, "error": str(e)}
-        finally:
-            if frame_path and os.path.exists(frame_path):
-                os.unlink(frame_path)
-        result["latency_ms"] = int((time.time() - t0) * 1000)
-        print(f"[{ARGS.backend}] research done in {result['latency_ms']}ms, noteworthy={result['noteworthy']}", flush=True)
         body = json.dumps(result, ensure_ascii=False).encode()
         self.send_response(200)
         self._cors()

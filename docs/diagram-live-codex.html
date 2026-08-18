@@ -58,7 +58,7 @@ tr:last-child td{border-bottom:none;}
 
 <header>
   <p class="eyebrow">Diagram · Her-Bench</p>
-  <h1>陪看双引擎：Realtime × codex</h1>
+  <h1>陪看双引擎：Realtime 与 codex</h1>
   <p class="sub">OpenAI Realtime API 负责说话，codex CLI 负责查证，中间是一次 HTTP tool call。</p>
 </header>
 
@@ -178,7 +178,7 @@ tr:last-child td{border-bottom:none;}
   <h3>一 · 自己决定什么时候开口</h3>
   <p>输入是流式的，但 Realtime API 不会自发说话：往对话里塞 item 不触发生成，
   只有显式发 <span class="t">response.create</span>、或者 VAD 判定人说完了才会。
-  所以总得有东西扣扳机，问题是什么时候扣。</p>
+  所以需要在合适的时刻显式发起一次生成，问题是怎么定这个时刻。</p>
 
   <figure class="diagram">
   <svg viewBox="0 0 860 150" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="后台研究结果和画面帧进入上下文，每25秒触发纯文本判断，回SPEAK才发语音响应">
@@ -222,19 +222,15 @@ tr:last-child td{border-bottom:none;}
   </svg>
   </figure>
 
-  <p><b>扳机是「后台查到了新东西」</b>，不是定时器。<span class="t">/research</span> 一有产出就塞进上下文，
-  紧接着问一次要不要说，因为那正是它手上刚多了具体信息的时刻。另有一个 60 秒兜底，免得彻底哑掉。
-  判断本身是纯文本响应，用户听不到，所以决定「不说」是真的安静。</p>
+  <p><b>触发条件是后台查到了新内容</b>。<span class="t">/research</span> 一有产出就塞进上下文，
+  紧接着问一次现在要不要说，此时它刚拿到具体信息。另外每 60 秒兜底问一次，避免长时间没有输出。
+  这次判断走纯文本响应，用户听不到，判定不说的时候不会产生任何声音。</p>
 
-  <p style="font-size:13.5px; color:var(--muted);">试过拿帧差当第三个扳机（画面突变=有进展、长时间不变=卡住），
-  实测不成立：Human Fall Flat 是自由视角，人站着不动镜头也在晃，卡关 60 秒的帧差 54.9 比真实换关的 45.8 还大。
-  帧差量的是镜头运动，跟有没有进展无关，已去掉。卡没卡本来就该由那次「看一眼」的视觉判断来做。</p>
-
-  <p>这个模式下 proactive 题的锚点不再催它说话，退化成评分窗口：
+  <p>在这个模式下，proactive 题的锚点不再触发它说话，只作为评分窗口：
   只记录它有没有在 <span class="t">response_window_sec</span> 内自己开口。</p>
 
   <h3>二 · proactive 带一条时间线</h3>
-  <p>值不值得开口的依据是时间性的：卡了多久、刚完成了什么。单张锚点帧承载不了，
+  <p>值不值得开口，取决于这段时间发生了什么：卡了多久、刚完成了什么。单张锚点帧看不出这些，
   比如通关那一帧是角色在云里下坠，跟掉出地图的画面几乎一样。</p>
 
   <figure class="diagram">
@@ -258,19 +254,18 @@ tr:last-child td{border-bottom:none;}
   </figure>
 
   <p>HTTP 模式经过锚点时视频已经 pause，回溯 seek 抓帧再复位即可，不用改播放逻辑。
-  落点是此刻的处境，中间某一帧闪过的孤立事件已经过去了，不该转头去说它。</p>
+  要回应的是此刻的处境；中间某一帧闪过的孤立事件已经过去，不必再提。</p>
 
   <h3>三 · 强制查证</h3>
-  <p>现场对话式模型几乎不会承认自己不确定，很擅长把没查过的东西说得像查过。
+  <p>对话式模型很少表示自己不确定，容易把没有查过的内容说得像查过一样。
   所以 <span class="t">must_cite</span> 或 <span class="t">tool_fit</span> 为真的题，
   用 per-response <span class="t">tool_choice</span> 覆盖，必须走一次
-  <span class="t">/lookup</span>，判分时再看 <span class="t">citations</span> 里有没有东西。</p>
+  <span class="t">/lookup</span>，判分时再看 <span class="t">citations</span> 里有没有内容。</p>
 
   <h3>四 · 资料按进度挑</h3>
   <p>资料整篇拼进 prompt，所以资料一多每道题都要付这份成本。
   <span class="t">resources</span> 常驻，<span class="t">chapter_resources</span> 按
-  <span class="t">anchor_sec</span> 取当前和下一段。预取下一段是有意的：老玩家本来就知道接下来会发生什么，
-  防剧透约束的是输出。区间按哪道题需要哪篇倒推，不必照搬章节边界。
+  <span class="t">anchor_sec</span> 取当前和下一段。同时取下一段，是因为防剧透约束的是输出内容，而不是 agent 能看到多少；有经验的玩家本来也知道后面会发生什么。区间按哪道题需要哪篇倒推，不必照搬章节边界。
   Stanley Parable 8 篇共 77KB，这样挑之后每次请求落在 13-26KB。</p>
 
   <h3>五 · codex 会话续接</h3>

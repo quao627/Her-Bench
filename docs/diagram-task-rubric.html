@@ -67,7 +67,7 @@ td.f{font-family:"SF Mono",Menlo,monospace; font-size:11.5px; color:var(--accent
 <!-- ============ PART 1 ============ -->
 <section>
   <p class="eyebrow">Part 1</p>
-  <h2>题从哪来</h2>
+  <h2>题目从哪里来</h2>
   <p class="lede">每道题都对应视频里实际发生的一件事：一个谜题、一次卡关、一次操作失误。
   多个 agent 分段扫视频找出候选，另一批 agent 独立复核，人再挑一遍。</p>
 
@@ -110,20 +110,20 @@ td.f{font-family:"SF Mono",Menlo,monospace; font-size:11.5px; color:var(--accent
   </svg>
   </figure>
 
-  <h3>锚点定档</h3>
+  <h3>锚点怎么定</h3>
   <p>每个候选锚点都要 <span class="t">ffmpeg -ss &lt;t&gt; -frames:v 1</span> 截一帧核对。
-  <span class="t">scene</span> 写的是这一帧画面上有什么，不是转写讲了什么；转写只能定位大概位置。</p>
+  <span class="t">scene</span> 写的是这一帧画面上有什么。转写用来定位大概位置，具体是哪一秒要看画面。</p>
   <p>锚点还要落在<span class="hl">证据已经出现</span>的那一刻。<span class="t">context_window_sec</span>
   只能看到锚点之前，所以「过关了」这种要靠场景切换才看得出来的事，锚点必须推到变化之后，
   否则这道题在自己的可见窗口里无解。</p>
 
-  <h3>验证时过的六项</h3>
-  <p style="font-size:13.5px; color:var(--muted);">提出者和验证者分开，自己验自己会放水。</p>
+  <h3>验证的六项检查</h3>
+  <p style="font-size:13.5px; color:var(--muted);">提出和验证由不同的 agent 做，出题的 agent 不复核自己出的题。</p>
   <div class="tablebox">
   <table>
     <tr><th>检查项</th><th>不通过的典型形态</th></tr>
-    <tr><td>可答性</td><td>rubric 引用了锚点之后才出现的画面，等于要 agent 知道未来</td></tr>
-    <tr><td>非 trivial</td><td>答案在转写里被主播自己说出来了，复读就得分</td></tr>
+    <tr><td>可答性</td><td>rubric 引用了锚点之后才出现的画面，相当于要求 agent 知道锚点之后的事</td></tr>
+    <tr><td>非 trivial</td><td>答案在转写里被主播自己说出来了，照着复述一遍就能得分</td></tr>
     <tr><td>剧透</td><td>question 或 scene 本身泄露了锚点之后的剧情</td></tr>
     <tr><td>撞车</td><td>与已有锚点间隔过近，或考的是同一件事</td></tr>
     <tr><td>rubric 可判</td><td>写成「回答得体」这类无法客观勾选的描述</td></tr>
@@ -157,11 +157,11 @@ td.f{font-family:"SF Mono",Menlo,monospace; font-size:11.5px; color:var(--accent
   <div class="compare">
     <div class="card">
       <div class="k"><span class="tag q">query</span> 主播问</div>
-      <p>主播开口问了一个问题，用他第一人称写。考的是答得准不准、有没有剧透、该引用时有没有引用。</p>
+      <p>主播开口问了一个问题，用他的第一人称写。评的是回答是否准确、有没有剧透、需要引用时有没有给出来源。</p>
     </div>
     <div class="card">
       <div class="k"><span class="tag p">proactive</span> 该不该说</div>
-      <p>没人问，但画面里发生了值得提醒、安慰或庆祝的事。考的是开口时机在不在窗口内，说的话是不是真有用。</p>
+      <p>没人问，但画面里发生了值得提醒、安慰或庆祝的事。评的是开口时机是否落在窗口内，以及说的内容是否有用。</p>
     </div>
   </div>
 
@@ -187,7 +187,7 @@ td.f{font-family:"SF Mono",Menlo,monospace; font-size:11.5px; color:var(--accent
     <tr><th style="width:150px;">字段</th><th>作用</th></tr>
     <tr>
       <td class="f">rubric_points</td>
-      <td>一组要点 checklist，命中几条打几分，不做整体像不像的模糊判断</td>
+      <td>一组要点 checklist，命中几条打几分，不对回答整体做模糊评价</td>
     </tr>
     <tr>
       <td class="f">spoiler_blocklist</td>
@@ -195,17 +195,17 @@ td.f{font-family:"SF Mono",Menlo,monospace; font-size:11.5px; color:var(--accent
     </tr>
     <tr>
       <td class="f">must_cite</td>
-      <td>为真时不许凭记忆硬答，判分看有没有真的调用查证工具并给出来源</td>
+      <td>为真时不允许只凭记忆回答，判分看有没有真的调用查证工具并给出来源</td>
     </tr>
     <tr>
       <td class="f">tool_fit</td>
-      <td>标记这题适合考查证能力。它和 <span class="t">must_cite</span> 为真的题是强制触发查证，不靠模型自觉</td>
+      <td>标记这题适合考查证能力。它和 <span class="t">must_cite</span> 为真的题会强制触发查证，不依赖模型自己决定</td>
     </tr>
   </table>
   </div>
 
-  <p style="margin-top:16px;">说得对不对和有没有查是分开判的。对话式模型很擅长把没查过的东西说得像查过，
-  <span class="t">must_cite</span> 就是用来堵这个的。查证怎么强制触发见另一张图
+  <p style="margin-top:16px;">回答是否正确和有没有真的查证是分开判的。对话式模型容易把没有查过的内容说得像查过一样，
+  <span class="t">must_cite</span> 就是针对这一点设的。查证怎么强制触发见另一张图
   <a href="https://claude.ai/code/artifact/d6ff4c38-b5b5-4293-8e22-247e873fa856">陪看双引擎</a>。</p>
 </section>
 
