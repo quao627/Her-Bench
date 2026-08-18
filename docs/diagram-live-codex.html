@@ -212,50 +212,65 @@ td.mono, .mono{font-family:"SF Mono",Menlo,monospace; font-size:11.5px;}
   <p class="eyebrow">Part 3</p>
   <h2>核心设计</h2>
 
-  <h3>一 · 自主预研</h3>
-  <p style="font-size:14px; max-width:66ch;">播放中每 15 秒，agent 看一眼当前帧，自己判断有没有值得顺手核实的东西。
-  它读不到任何预先写好的题目文本，只能从画面出发。查到的存成笔记，之后真被问到时作为可选参考带上，用不用得由它自己决定。</p>
+  <h3>一 · 自己决定什么时候开口</h3>
+  <p style="font-size:14px; max-width:66ch;">Realtime API 只有两种情况会让模型出声：显式发
+  <span class="t">response.create</span>，或者 VAD 听到有人说话。每 5 秒喂进去的画面帧只进上下文、不带
+  <span class="t">response.create</span>，所以光靠画面它永远不会自己开口。要让开口时机真的由它决定，需要两件事配合。</p>
+
+  <p style="font-size:14px; max-width:66ch;"><b>后台持续喂料。</b><span class="t">/research</span>
+  查到值得留意的东西，立刻塞进它的对话上下文，标成 <span class="t">[后台资料·时间]</span>，
+  同样不带 <span class="t">response.create</span>。session instructions 里一开始就讲清楚这套安排：
+  这些是先放你手上的储备，不用马上说，等他真需要或者问起来再用。</p>
+
+  <p style="font-size:14px; max-width:66ch;"><b>定期自己判断。</b>每 25 秒（可调）让它先出一个
+  <span class="hl">纯文本</span>响应做决定，用户听不到；决定要说才发第二个语音响应。
+  文本响应用 <span class="t">output_modalities: ["text"]</span> 限定，所以判断「不说」的时候是真的安静，
+  不会冒出一句「我觉得没什么好说的」。</p>
 
   <figure class="diagram">
-  <svg viewBox="0 0 860 130" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="每15秒看当前帧，自己造问题，判断NOTEWORTHY或NOTHING，存成研究笔记，之后可选参考">
+  <svg viewBox="0 0 860 150" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="后台研究结果与画面帧同时进入上下文，定期触发纯文本判断，回SPEAK才发语音响应">
     <defs>
-      <marker id="ar3" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <marker id="ar4" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
         <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
       </marker>
     </defs>
-    <rect x="6" y="20" width="130" height="86" rx="8" fill="var(--panel)" stroke="var(--line)"/>
-    <text x="71" y="58" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">每 15 秒</text>
-    <text x="71" y="76" text-anchor="middle" font-size="11" fill="var(--muted)">只看当前帧</text>
+    <rect x="6" y="10" width="150" height="40" rx="6" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="81" y="28" text-anchor="middle" font-size="11" fill="var(--ink)">后台 /research 查到</text>
+    <text x="81" y="43" text-anchor="middle" font-size="10" fill="var(--muted)">[后台资料·12:34]</text>
+    <rect x="6" y="62" width="150" height="40" rx="6" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="81" y="80" text-anchor="middle" font-size="11" fill="var(--ink)">画面帧 每 5 秒</text>
+    <text x="81" y="95" text-anchor="middle" font-size="10" fill="var(--muted)">(不必回应)</text>
 
-    <line x1="136" y1="63" x2="172" y2="63" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar3)"/>
+    <line x1="156" y1="30" x2="196" y2="50" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <line x1="156" y1="82" x2="196" y2="62" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar4)"/>
 
-    <rect x="176" y="20" width="150" height="86" rx="8" fill="var(--panel)" stroke="var(--line)"/>
-    <text x="251" y="52" text-anchor="middle" font-size="11.5" fill="var(--ink)">agent 自己造问题</text>
-    <text x="251" y="70" text-anchor="middle" font-size="10.5" fill="var(--muted)">（没有预写题目文本）</text>
-    <text x="251" y="88" text-anchor="middle" font-size="10.5" fill="var(--muted)">判断值不值得查</text>
+    <rect x="200" y="38" width="130" height="36" rx="6" fill="var(--blue-soft)" stroke="var(--blue)"/>
+    <text x="265" y="61" text-anchor="middle" font-size="11.5" fill="var(--blue)" font-weight="600">对话上下文</text>
 
-    <line x1="326" y1="63" x2="362" y2="63" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar3)"/>
+    <line x1="330" y1="56" x2="370" y2="56" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <text x="350" y="46" text-anchor="middle" font-size="9.5" fill="var(--accent)">每 25s</text>
 
-    <rect x="366" y="8" width="120" height="46" rx="6" fill="var(--ok-soft)"/>
-    <text x="426" y="35" text-anchor="middle" font-size="11.5" fill="var(--ok)" font-weight="600">NOTEWORTHY</text>
-    <rect x="366" y="76" width="120" height="46" rx="6" fill="var(--bad-soft)"/>
-    <text x="426" y="99" text-anchor="middle" font-size="11.5" fill="var(--bad)" font-weight="600">NOTHING</text>
-    <text x="426" y="113" text-anchor="middle" font-size="9.5" fill="var(--bad)">丢弃，等下一轮</text>
+    <rect x="374" y="30" width="150" height="52" rx="6" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="449" y="50" text-anchor="middle" font-size="11" fill="var(--accent)" font-weight="600">纯文本判断</text>
+    <text x="449" y="66" text-anchor="middle" font-size="9.5" fill="var(--muted)">output_modalities: text</text>
 
-    <line x1="486" y1="31" x2="522" y2="31" stroke="var(--ok)" stroke-width="1.5" marker-end="url(#ar3)"/>
+    <line x1="524" y1="46" x2="564" y2="34" stroke="var(--ok)" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <line x1="524" y1="70" x2="564" y2="88" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar4)"/>
 
-    <rect x="526" y="8" width="160" height="46" rx="6" fill="var(--panel)" stroke="var(--line)"/>
-    <text x="606" y="30" text-anchor="middle" font-size="11.5" fill="var(--ink)" font-weight="600">存成研究笔记</text>
-    <text x="606" y="46" text-anchor="middle" font-size="10" fill="var(--muted)">Q + A + 来源</text>
+    <rect x="568" y="14" width="110" height="38" rx="6" fill="var(--ok-soft)"/>
+    <text x="623" y="38" text-anchor="middle" font-size="11" fill="var(--ok)" font-weight="600">SPEAK: …</text>
+    <rect x="568" y="74" width="110" height="38" rx="6" fill="var(--bad-soft)"/>
+    <text x="623" y="98" text-anchor="middle" font-size="11" fill="var(--bad)" font-weight="600">SILENT</text>
+    <text x="623" y="126" text-anchor="middle" font-size="9.5" fill="var(--muted)">用户什么都听不到</text>
 
-    <line x1="686" y1="31" x2="722" y2="31" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar3)"/>
-
-    <rect x="726" y="8" width="128" height="46" rx="6" fill="var(--blue-soft)" stroke="var(--blue)"/>
-    <text x="790" y="26" text-anchor="middle" font-size="10.5" fill="var(--blue)" font-weight="700">之后真被问到</text>
-    <text x="790" y="42" text-anchor="middle" font-size="9.5" fill="var(--blue)">自己判断用不用得上</text>
+    <line x1="678" y1="33" x2="716" y2="33" stroke="var(--ok)" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <rect x="720" y="14" width="134" height="38" rx="6" fill="var(--accent)"/>
+    <text x="787" y="32" text-anchor="middle" font-size="11" fill="var(--accent-ink)" font-weight="700">语音响应</text>
+    <text x="787" y="46" text-anchor="middle" font-size="9.5" fill="var(--accent-ink)">自然说出来</text>
   </svg>
   </figure>
-  <figcaption class="cap">笔记只是可选参考，用不上就还是现查，延迟是真实的。所以延迟类指标不会被提前缓存影响。</figcaption>
+  <figcaption class="cap">打开这个模式后，proactive 题的锚点不再强行催它说话，退化成评分窗口：
+  只记录它自己有没有在 <span class="t">response_window_sec</span> 内开口。开口时机由它判断，我们只负责测。</figcaption>
 
   <h3>二 · proactive 的时间线</h3>
   <p style="font-size:14px; max-width:66ch;">
@@ -332,6 +347,32 @@ td.mono, .mono{font-family:"SF Mono",Menlo,monospace; font-size:11.5px;}
   区间不必照搬章节边界，按哪道题需要哪篇倒推更准。
   Stanley Parable 有 8 篇共 77KB，这样挑之后每次请求的资料落在 13-26KB，均值 21KB，
   省掉约 72%，每道题声明的资料依赖仍然都能拿到。</p>
+
+  <h3>五 · codex 会话续接</h3>
+  <p style="font-size:14px; max-width:66ch;">每次调用如果都是全新的 <span class="t">codex exec</span>，
+  五分钟前查过的东西下一次完全用不上，只能从头再搜一遍。改成用
+  <span class="t">codex exec resume &lt;thread_id&gt;</span> 接着上一轮，每个 container 维持自己的 thread。</p>
+
+  <div class="tablebox">
+  <table>
+    <tr><th>thread</th><th>谁在用</th><th>为什么分开</th></tr>
+    <tr>
+      <td class="mono">fg</td>
+      <td><span class="t">/answer</span> + <span class="t">/lookup</span></td>
+      <td>有人在等结果。多次查证之间能接上，不用重复搜</td>
+    </tr>
+    <tr>
+      <td class="mono">bg</td>
+      <td><span class="t">/research</span></td>
+      <td>没人等，按定时器跑。跟前台分开是因为同一个 thread 只能串行
+        <span class="t">resume</span>，合在一起的话一次前台查证会排在 20 秒的后台研究后面</td>
+    </tr>
+  </table>
+  </div>
+
+  <p style="font-size:13.5px; color:var(--muted); max-width:66ch;">
+  首次调用带 <span class="t">--json</span>，从 <span class="t">thread.started</span> 事件里取 thread_id 存下来；
+  之后都走 resume。每个 thread 各自一把锁，因为并发 resume 同一个 thread 会让两个 codex 进程写同一份会话文件。</p>
 </section>
 
 </div>

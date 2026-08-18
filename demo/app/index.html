@@ -253,6 +253,20 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
         </div>
       </div>
       <hr class="sdiv">
+      <div class="shead">主动开口</div>
+      <div class="settings-row">
+        <span class="slabel">自己判断什么时候说话<span class="ssub">定期看画面自己决定要不要开口，不靠题目锚点催</span></span>
+        <div class="sctl">
+          <button class="iconbtn on" id="autoProBtn">💬 开</button>
+          <select id="autoProRate" style="background:var(--bg);">
+            <option value="15000">15s</option>
+            <option value="25000" selected>25s</option>
+            <option value="40000">40s</option>
+            <option value="60000">60s</option>
+          </select>
+        </div>
+      </div>
+      <hr class="sdiv">
       <div class="shead">自主预研</div>
       <div class="settings-row">
         <span class="slabel">播放中自主查证<span class="ssub">自己看画面判断要不要顺手查，不偷看题目</span></span>
@@ -355,6 +369,7 @@ let bcallSeq = 0;
 function needsLookup(task){
   return task.type === 'query' && (task.tool_fit || (task.grading && task.grading.must_cite));
 }
+let autoProactive = true;  // 默认开：让它自己判断什么时候开口，而不是等锚点催
 let researchOn = true;   // 默认开：让 codex 提前收集信息，真触发时直接用现成笔记而不是现查
 let researchBusy = false;
 let researchNotes = [];   // 最近的 noteworthy 笔记，最多留 8 条，作为可选上下文
@@ -375,6 +390,7 @@ async function runIdleResearch(){
       researchNotes.unshift({question: j.question, text: j.text, citations: j.citations, at: video.currentTime});
       researchNotes = researchNotes.slice(0, 8);
       updateResearchBtn();
+      pushResearchToLive(j);   // 查到就立刻塞给前台，不等它被问起来
     }
   } catch (e) {
     bcallEnd(bid, 'err', {error: e.message}, Date.now() - t0);
@@ -427,6 +443,7 @@ const fmtShort = s => {
   }
   runs = JSON.parse(localStorage.getItem('herbench_runs_'+C.container_id) || '[]');
   C.tasks.forEach(t => armed.add(t.task_id));
+  armProactiveWindows();
   renderTaskPane(); renderResPane(); renderGradePane(); renderRunsPane(); renderBackendPane();
   selectTask(C.tasks[0], false);
   resize(); draw();
@@ -496,6 +513,9 @@ setInterval(() => {
       const trig = t.type === 'proactive' && t.response_window_sec ? t.response_window_sec[0] : t.anchor_sec;
       if (armed.has(t.task_id) && lastT < trig && cur >= trig && cur - lastT < 5) {
         armed.delete(t.task_id);
+        // 主动开口打开、且真连着 gpt-live 时，proactive 题不强行催它说话。
+        // 锚点在这种模式下只是评分窗口，开口时机交给它自己判断（见 proactiveCheck）。
+        if (t.type === 'proactive' && autoProactive && live.connected) break;
         triggerTask(t);
         break;
       }
@@ -513,6 +533,7 @@ function setMode(m){
   mode = m;
   document.querySelectorAll('#modes button').forEach(x => x.classList.toggle('on', x.dataset.m === m));
   C.tasks.forEach(t => armed.add(t.task_id));   // re-arm on mode switch
+  armProactiveWindows();
   renderTaskPane();
   syncLiveGain();
   if (m === 'browse' && live.connected && live.dc && live.dc.readyState === 'open') {
@@ -1159,6 +1180,7 @@ function zoomCenter(f){
 
 /* ════════════════ gpt-live (OpenAI Realtime, WebRTC) ════════════════ */
 const live = { connected: false, pc: null, dc: null, mic: null, pendingTask: null, respText: new Map(),
+               decisionText: new Map(), lastSpokeAt: null,
                feedFrames: true, graph: null, dest: null, micSrc: null };
 let audioIn = 'stream';   // 'stream' 原声 | 'tts' 合成任务语音 | 'off' 静音
 $('#audioIn').onchange = e => { audioIn = e.target.value; syncLiveGain(); };
@@ -1208,6 +1230,16 @@ let researchTimer = setInterval(() => { if (researchOn && !video.paused) runIdle
 $('#researchRate').onchange = e => {
   clearInterval(researchTimer);
   researchTimer = setInterval(() => { if (researchOn && !video.paused) runIdleResearch(); }, +e.target.value);
+};
+let autoProTimer = setInterval(proactiveCheck, 25000);
+$('#autoProRate').onchange = e => {
+  clearInterval(autoProTimer);
+  autoProTimer = setInterval(proactiveCheck, +e.target.value);
+};
+$('#autoProBtn').onclick = () => {
+  autoProactive = !autoProactive;
+  $('#autoProBtn').classList.toggle('on', autoProactive);
+  $('#autoProBtn').textContent = '💬 ' + (autoProactive ? '开' : '关');
 };
 function updateResearchBtn(){
   $('#researchBtn').textContent = '🔮 ' + (researchOn ? '开' : '关') + (researchNotes.length ? '·' + researchNotes.length : '');
@@ -1327,11 +1359,26 @@ function handleLiveEvent(ev){
   if (t === 'response.output_audio_transcript.delta' || t === 'response.audio_transcript.delta') {
     const id = ev.response_id || 'r';
     live.respText.set(id, (live.respText.get(id) || '') + (ev.delta || ''));
+  } else if (t === 'response.output_text.delta' || t === 'response.text.delta') {
+    // 纯文本响应 = 主动开口的自检（用户听不到）。用 delta 类型区分，不用状态标志，
+    // 因为 VAD 触发的语音回答可能跟自检并发，靠标志会串。
+    const id = ev.response_id || 'r';
+    live.decisionText.set(id, (live.decisionText.get(id) || '') + (ev.delta || ''));
   } else if (t === 'response.done') {
     const id = (ev.response && ev.response.id) || 'r';
+    if (live.decisionText.has(id)) {
+      const dec = live.decisionText.get(id);
+      live.decisionText.delete(id);
+      onProactiveDecision(dec);
+      return;
+    }
     const text = live.respText.get(id) || '';
     live.respText.delete(id);
-    if (text.trim()) liveLine('ai', text.trim(), live.pendingTask);
+    if (text.trim()) {
+      liveLine('ai', text.trim(), live.pendingTask);
+      live.lastSpokeAt = video.currentTime;
+      noteProactiveHit(video.currentTime);
+    }
     live.pendingTask = null;
   } else if (t === 'conversation.item.input_audio_transcription.completed') {
     if (ev.transcript && ev.transcript.trim()) liveLine('you', ev.transcript.trim());
@@ -1378,6 +1425,82 @@ video.addEventListener('play', () => {
     live.dc.send(JSON.stringify({type: 'response.create'}));
   }
 });
+
+/* ── 主动开口 ──────────────────────────────────────────────
+   之前只有两件事能让模型出声：VAD 听到主播说话，或者视频走到题目锚点时
+   sendLiveTask() 显式发 response.create。sendLiveFrame() 只往上下文里塞图、
+   从不发 response.create（那行提示词写的就是「不必回应」），所以纯看画面、
+   主播又不出声的时候，模型永远不会自己开口——开口时机实际上是被锚点决定的，
+   不是它自己判断的。
+
+   这里补上真正的自主判断：定期让它先出一个「纯文本」响应做决定（用户听不到），
+   决定要说才发第二个语音响应。文本响应用 output_modalities 限定，所以判断
+   「不说」的时候是真的安静，不会冒出一句「我觉得没什么好说的」。 */
+/* 后台查到东西就立刻塞进前台的对话上下文（不触发回应，只是让它手上有料）。
+   这样它做开口判断时是「我手上有一条具体的、有用的信息」，而不是空着脑袋想说点什么。 */
+function pushResearchToLive(j){
+  if (!live.connected || !live.dc || live.dc.readyState !== 'open') return;
+  const cites = (j.citations && j.citations.length) ? `（出处：${j.citations.join('，')}）` : '';
+  live.dc.send(JSON.stringify({type: 'conversation.item.create',
+    item: {type: 'message', role: 'user', content: [{type: 'input_text', text:
+      `[后台资料·${fmtShort(Math.floor(video.currentTime))}] 我刚顺手查了一下画面里的东西：\n` +
+      `Q: ${j.question}\nA: ${j.text}${cites}\n` +
+      `（这条只是先放你手上，不用现在回应。等你觉得他真需要、或者他问起来的时候再用。）`
+    }]}}));
+  liveLine('sys', '📥 后台喂了一条：' + (j.question || '').slice(0, 40));
+}
+
+const PROACTIVE_CHECK = `现在没人问你话。看一眼刚才这些直播画面，再想想后台刚塞给你的资料，
+自己判断此刻要不要开口。
+值得开口：他明显卡在同一个地方出不去、刚失败或摔惨了、刚做成一件事或者通关、
+画面里出现了他大概率会好奇的具体东西而你手上正好有相关资料、或者场面特别滑稽。
+不值得开口：只是正常推进、你要说的话没什么信息量、或者你刚说过差不多的话。
+只回一行，不要输出别的：
+要说就回 SPEAK: <一句话说明你打算讲什么>
+不说就只回 SILENT`;
+
+function proactiveCheck(){
+  if (!autoProactive || !live.connected || mode !== 'agent' || video.paused) return;
+  if (!live.dc || live.dc.readyState !== 'open') return;
+  if (live.pendingTask) return;                                   // 正在处理锚点任务，别插嘴
+  if (video.currentTime - (live.lastSpokeAt ?? -99) < 20) return; // 刚说过就先歇会儿
+  const frame = captureFrame(512, 0.55);
+  if (frame) live.dc.send(JSON.stringify({type: 'conversation.item.create',
+    item: {type: 'message', role: 'user', content: [
+      {type: 'input_image', image_url: frame},
+      {type: 'input_text', text: `(直播画面 ${fmtShort(Math.floor(video.currentTime))})`}
+    ]}}));
+  live.dc.send(JSON.stringify({type: 'response.create',
+    response: {output_modalities: ['text'], instructions: PROACTIVE_CHECK}}));
+}
+
+function onProactiveDecision(text){
+  const s = (text || '').trim();
+  if (!/^SPEAK/i.test(s)) { liveLine('sys', '💬 看了一眼，这会儿没什么要说的'); return; }
+  const point = s.replace(/^SPEAK[：:]\s*/i, '').trim();
+  liveLine('sys', '💬 它自己决定开口：' + point.slice(0, 60));
+  if (!live.dc || live.dc.readyState !== 'open') return;
+  live.dc.send(JSON.stringify({type: 'response.create', response: {instructions:
+    `你刚判断这一刻值得开口，要点是：${point}\n` +
+    `现在用自然口语说出来。一两句就够，别念稿子，别把要点原样复述一遍。` +
+    `如果这需要具体事实（数值/机制/报错含义），先调 lookup_game_info 再说。`}}));
+}
+
+/* 主动开口打开时，proactive 题不再由锚点强行催它说话——锚点退化成「评分窗口」，
+   只记录它自己有没有在窗口内开口。这才是这道题本来要考的东西。 */
+let proWindows = [];   // {task_id, from, to, hit}
+function armProactiveWindows(){
+  proWindows = (C && C.tasks || []).filter(t => t.type === 'proactive' && t.response_window_sec)
+    .map(t => ({task_id: t.task_id, from: t.response_window_sec[0], to: t.response_window_sec[1], hit: false}));
+}
+function noteProactiveHit(sec){
+  for (const w of proWindows) {
+    if (!w.hit && sec >= w.from && sec <= w.to) {
+      w.hit = true;
+      liveLine('sys', `✅ 落在 ${w.task_id} 的响应窗口内（${fmtShort(w.from)}-${fmtShort(w.to)}）`);
+    }
+  }
+}
 
 function sendLiveTask(task){
   if (!live.dc || live.dc.readyState !== 'open') return;

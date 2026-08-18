@@ -1,78 +1,127 @@
-# Human Fall Flat · Mansion（教学关）
+# Human Fall Flat · Mansion（第 1 关，教学关）
 
-> 资料快照 · 来源：
-> - https://humanfallflat.fandom.com/wiki/Mansion （官方向 wiki，本关最主要的参考，页面本身有反爬验证，内容通过搜索引擎摘录核实）
-> - https://walkthroughhumanfall.blogspot.com/2018/09/level-1-mansion.html
-> - https://segmentnext.com/human-fall-flat-walkthrough/
-> - https://steamcommunity.com/sharedfiles/filedetails/?id=1998827316 （Mansion and ice walkthrough）
-> - https://gameplay.tips/guides/1583-human-fall-flat.html
-> - https://www.trueachievements.com/game/Human-Fall-Flat/walkthrough/3 （Level 1 - Mansion，通过搜索摘录核实，原页面直接访问被拒绝）
-> - https://www.supercheats.com/ps4/human-fall-flat/3170/how-to-get-the-mind-the-gap-a/
-> - https://www.xboxachievements.com/game/human-fall-flat/achievement/132025-Mind-the-gap-.html
-> - https://www.cheats.co/game/human-fall-flat （彩蛋语音台词，通过搜索摘录核实）
+> 来源：
+> - https://humanfallflat.fandom.com/wiki/Mansion （fandom wiki 的 Mansion 页，本关场景描述的主要依据。网页直连返回 402，实际通过 `https://humanfallflat.fandom.com/api.php?action=parse&page=Mansion&prop=wikitext&format=json` 取到完整原文）
+> - https://steamcommunity.com/stats/477160/achievements/ （Steam 全球成就页，成就的官方英文名与描述）
+> - https://walkthroughhumanfall.blogspot.com/2018/09/level-1-mansion.html （逐关文字攻略，正文直接引用 TrueAchievements 的成就解锁率数据，可视为 TA 攻略的镜像。TA 本站 curl 与 WebFetch 都被 403/Cloudflare 拦住，取不到）
+> - https://gameplay.tips/guides/1583-human-fall-flat.html （单人 100% 成就攻略，Mansion 一节含 Mind the Gap!、Pigeon Simulator 的具体做法）
+> - https://steamcommunity.com/sharedfiles/filedetails/?id=1998827316 （Steam 指南 "Mansion and ice walkthrough"，作者 Alaskix）
+> - https://steamcommunity.com/sharedfiles/filedetails/?id=1605791801 （Steam 指南 "Hidden Messages"，作者 Frick，184 评分、1.1 万浏览；逐关列出隐藏语音彩蛋）
+> - https://www.speedrun.com/api/v1/games/hff/levels （speedrun.com 官方关卡表，确认 Mansion 是第 1 关）
 
-## 关卡概览
+---
 
-Mansion 是《Human: Fall Flat》的第一关，也是整个游戏的教学关（tutorial level）。玩家扮演的软乎乎的人偶角色 Bob 会先出生在一栋别墅的前廊，目标很简单：一路开门，最后走到出口摔下去，就算通关，紧接着进入下一关"Train"（火车关）。
+## 关卡定位
 
-这关不考验解谜脑力，主要是教会玩家这游戏最核心、也是贯穿全程的操作范式：
+Mansion 是主线第 1 关（speedrun.com 关卡表和 fandom wiki 都确认），也是**教学关**。fandom wiki 的原文：*"It is served as the tutorial level and is the first level from the base game. In the Mansion level, the player is taught how to use their arms, and how to reach and grab for objects, as the player must press buttons to open the various doors leading to the exit."*
 
-- 左右手分别独立控制（PC 上通常是鼠标左右键，手柄上是 LT/RT 或 L2/R2），两只手可以各自抓不同的东西；
-- 视角朝向决定手臂伸展的方向和高度，抬头手就往上伸，低头手就往下伸；
-- 角色物理引擎是"布娃娃"式的，走路、摆臂、抓握都有惯性和摇晃，不是精确对齐的动作游戏；
-- 很多机关（门）需要"用手按住按钮"，松手可能会让门重新关闭，有些门甚至需要两只手同时按住两个按钮才能打开——这是在为后面几十关里大量的"多按钮/多人协作"机关做铺垫。
+这关不考解谜脑力，只教一件事：**两只手是分开控制的，而且手的高度跟着视角走**。所有门都是"按住按钮"，其中两道要求两只手同时按住两个按钮——这是在为后面几十关的多按钮/多人协作机关铺垫。
 
-整体流程是线性的、几乎不会走错主路：前廊 → 主门厅 → （楼梯上二楼）红色按钮门 → 侧院 → 两个竖排按钮的门 → 石桥 → 花园（雕像+喷泉）→ 两个横排按钮的出口门 → 摔落通关。地图按 wiki 的说法分成 4 个区域：front porch（前廊）、main foyer（主门厅）、side yard（侧院）、garden（花园）。
+**地图分成 4 个区域**（fandom wiki 的划分）：front porch（前廊）、main foyer（主门厅）、side yard（侧院）、garden（花园）。
 
-## 核心机制与谜题点（按顺序）
+整体路线：前廊 → 主门厅 →（右侧大楼梯上二楼）红色按钮门 → 侧院 → 竖排双按钮门 → 石桥 → 花园（喷泉+雕像）→ 横排双按钮出口门 → 摔落通关。
 
-### 1. 出生点：前廊，熟悉双手操作
+---
 
-- **场景描述**：角色出生在一个不大的前廊平台上，白色柱子、护栏，一小段台阶通向一扇朴素的双开门。有攻略提到旁边能捡到一个黄色对讲机（walkie talkie），拿起来会有语音提示引导操作（这一点只在个别攻略里提到，不算游戏内一定会强调的核心机制，仅供参考）。
-- **方向性提示**：先别急着往前冲，试试左右手分别抓握东西的感觉——两只手是独立控制的。然后把面前的门推开走进去。
-- **完整解法**：用鼠标左右键（或手柄扳机键）分别控制左右手抓握。可以先随便抓一抓周围能抓的东西熟悉手感，然后走到双开门前，直接用身体顶开门（这扇门不需要按按钮，纯靠角色的物理碰撞就能推开），走进主门厅。
+## 逐段解法
 
-### 2. 主门厅 → 二楼红色按钮门
+### 1. 前廊（front porch）：熟悉双手
 
-- **场景描述**：穿过前廊的双开门后是一间开阔的主门厅，两侧有一排拱门造型。门厅右侧有一段较大的楼梯通往二楼。
-- **方向性提示**：往楼上走，留意二楼门边墙上有没有能按下去的东西。
-- **完整解法**：爬上门厅右侧的大楼梯到二楼，会看到一扇厚重的门，门的左侧墙上有一个红色按钮。伸手按住这个按钮，门就会打开；注意有些版本松手后门会有关闭的倾向，尽量按住按钮的同时让身体靠近门口，或者按开后立刻通过。
+- **场景**：一小块平地连着别墅前廊，白色柱子、护栏，一小段台阶通向一扇朴素的双开门，墙边种着一排尖顶树（wiki 称 spire trees）。
+- **地上那个黄色的东西**：**两份来源说法不一致。**
+  - fandom wiki 写的是 *"an orange-striped instruction manual, where the Creator will help you on how to progress"*（一本橙色条纹的说明书，"造物主"会通过它指导你）。wiki 的 Trivia 还补了一句 *"The Creator will talk throughout the level after you pass through a door"*（每过一道门造物主都会说话）。
+  - TA 系文字攻略写的是 *"You can pick up the yellow walkie talkie for a tutorial"*（可以捡起那个黄色对讲机看教程）。
+  - **两者多半指同一件黄/橙色的教学道具，只是叫法不同。** 无论叫什么，它的作用一致：捡起来会有教学提示，不捡也不影响通关。
+- **完整解法**：随便抓一抓周围能抓的东西熟悉手感，然后走到双开门前，**用身体直接顶开门**（这扇门不需要按钮，纯物理推开），进入主门厅。
+- **方向性提示**（不剧透版）：先别急着往前冲，试试两只手分别抓东西的感觉——它们是独立的两套键。
 
-### 3.（可选捷径）跳过缺口抄近道
+### 2. 主门厅（main foyer）→ 二楼红色按钮门
 
-- **场景描述**：从二楼楼梯出来附近能看到一段比较宽的缺口/断层，正常路线需要绕远路走完后面两道按钮门才能到对面。
-- **方向性提示**：如果手速可以，可以试着助跑起跳直接飞过这段缺口，不走正规路线也能到达后面的区域附近。
-- **完整解法**：站到缺口前的平台边缘，双臂举起，助跑到平台边缘最后一刻起跳（贴着边缘跳、别提前起跳），尽量朝对面探出双臂去抓边缘；抓住后视角向下看、同时按跳跃/上抬，可以更快把身体拉上去。也可以靠"兔跳"（连续小跳）攒速度后直接冲过缺口。这条路线能跳过侧院的按钮门机关，是速通/成就党常用的捷径，但对首次盲玩的新手来说不建议强求，走正常路线更稳。
+- **场景**：一间开阔的大厅，两侧是从头贯到尾的拱门造型。**右侧有一段大楼梯通往二楼。**
+- **完整解法**：上右侧大楼梯到二楼，会看到一扇厚重的门（wiki 里叫 *heavy* door），**门左侧墙上有一个红色按钮**。伸手按住这个按钮门就开。
+- **方向性提示**：往楼上走，留意二楼门边的墙上有没有能按下去的东西。
 
-### 4. 侧院（Side Yard）→ 两个竖排按钮的门
+### 3.（可选捷径）跳过缺口 —— `Mind the gap!`
 
-- **场景描述**：过了二楼的红色按钮门后进入侧院，这里有两层平台。上层是一条水泥走道，走道会分岔成两个方向：右边通往下层，左边通向一小段台阶，台阶上是一处高台，高台上是第二道厚重门，门上有两个按钮，是**上下竖着排列**的（不是左右并排）。侧院的木头顶梁和石柱看起来有点"没盖完"的感觉，属于场景美术设定。
-- **方向性提示**：这道门跟刚才那道不一样，得两只手一起用——找到两个上下排列的按钮，两只手一人负责一个，同时按住。
-- **完整解法**：走到侧院左边的高台前，一只手按住上面那个按钮，另一只手按住下面那个按钮，两个按钮**必须同时保持按住**，门才会持续打开，松开任意一个都可能导致门重新关闭。门开到位后从旁边走过去，别磨蹭。
+- **官方成就描述**：*"Take a big shortcut in the level 'Mansion'"*（在 Mansion 里抄一条大近道）。注意官方只说"抄近道"，没说具体位置；不过两份独立攻略描述的是同一个地方。
+- **场景**：从二楼楼梯上来之后附近有一段比较宽的缺口。正常路线要绕远走完侧院那道双按钮门才能到对面。
+- **完整解法**（gameplay.tips 的分步）：
+  1. 出生后径直穿过大门；
+  2. 上楼梯，然后停下；
+  3. 把自己和缺口对齐；
+  4. **张开双臂、往前走、在最后一刻起跳**（原文 "Extend both arms, walk forward and jump at the last second!"）；
+  5. 多试几次；
+  6. 抓住对面台沿后，**把鼠标往下移就能把自己拉上去**（原文 "Don't forget you can pull yourself up by moving the mouse down while grabbing a ledge."）。
+  - 加分技巧：*"Hold left **and** forward while slightly angled to get more distance!"*（稍微侧一点角度、同时按住左和前，能跳得更远。）
+- Alaskix 的 Steam 指南把这段浓缩成一句："First, go into the door. Go to the left and jump. What a big shortcut!"
+- **对首次盲玩的新手不建议强求**，走正常路线更稳，这条只是速通/成就党的捷径。
 
-### 5. 石桥 → 花园 → 雕像
+### 4. 侧院（side yard）→ 竖排双按钮门
 
-- **场景描述**：过了竖排按钮门之后，要走过一座窄石桥，跨越一道分隔花园和别墅其余部分的大缺口，才能进入 Mansion 的最后一个区域——花园。花园里有一座喷泉，喷泉台上蹲坐着一个"人形（Human）"雕像，弯腰弓背、双手捂着肚子，是这一关最标志性的视觉物件。
-- **方向性提示**：过桥的时候慢一点，桥比较窄，甩手臂容易带偏重心。到花园以后可以绕到雕像背后，看看有没有能爬上去的地方。
-- **完整解法**：小步通过石桥，别快跑或大幅度摆手，防止因为惯性偏移掉下缺口。到花园后，绕到雕像/喷泉后方，先爬旁边的围栏/栅栏，再借助围栏跳到雕像背后，最终可以站上雕像的头顶（这条路线对应游戏里的"Pigeon Simulator"成就）。另外，如果抓住/拽动雕像胯部区域，会触发一句隐藏语音"I'm only saying this because I love you"（多个玩家攻略提到这条彩蛋，但未能找到官方逐字确认，仅供参考，不影响主线流程）。
+- **场景**（fandom wiki 的描述）：进侧院要先走下一小段台阶。这里有**两层地面**。上层是一条水泥走道，走道分成两个方向：**右边通往下层，左边通向另一道厚重门**。石柱上架着木头顶梁，wiki 说这可能是在暗示侧院"还没盖完"。下层没什么装饰，只有两棵尖顶树和一处能望进虚空（the Void）的视角。这里还能找到第二本说明书。走道左侧尽头是一小段台阶，通向一处高台，门就在那儿。
+- **按钮排列**：wiki 原文 *"Two red buttons are placed vertically from each other."* —— **两个红色按钮是上下竖排的**（不是左右并排）。
+- **完整解法**：走到高台前，**一只手按住上面那个按钮，另一只手按住下面那个**，两个必须同时保持按住门才会持续开着，松开任意一个都可能导致门重新关上。门开到位后赶紧走过去。
+- **方向性提示**：这道门跟刚才那道不一样，得两只手一起用。
 
-### 6. 花园出口门（两个横排按钮，最终机关）
+### 5. 石桥 → 花园（garden）→ 雕像
 
-- **场景描述**：花园尽头是标有绿色 EXIT 出口标志的门，门上并排着两个按钮，是**左右横着排列**的（跟第 4 点竖排的那道门方向不同）。
-- **方向性提示**：这是本关最后一道门了，思路跟之前竖排按钮那道类似——两只手一边一个，同时按住两个按钮。
-- **完整解法**：站在两个按钮正中间，张开双臂，左右手分别按住左右两个横排按钮，保持同时按住直到门完全打开，然后往前走/滚过去。通过出口门后角色会直接摔落下去，这个摔落动作会自动结束本关（对应"Leap of Fail"成就），并进入下一关"Train"（火车关）。
+- **场景**：过了竖排按钮门要走过**一座窄石桥**，跨越一道把花园和别墅其余部分隔开的大缺口。花园是本关最后一个区域，标志性物件是**喷泉台上那尊"Human"雕像**。
+  - **雕像长什么样，两份来源的形容差别很大**：fandom wiki 写的是 *"hunched forward with its hands on its stomach"*（弯腰弓背、双手捂着肚子）；Steam 的彩蛋指南则直接称它为 *"the statue of the urinating Bob"*（撒尿的 Bob 雕像）。同一尊雕像，玩家和 wiki 编辑的解读不同。
+  - 雕像两侧各有一组台阶通向后面的高处，花园里还有更多尖顶树和石柱。
+- **完整解法**：小步通过石桥（别快跑或大幅甩手，惯性容易把你带下去）。到花园后走雕像任意一侧的台阶上去，**绕到雕像正后方，爬上它背后的围栏/护栏，从围栏上举起双臂朝雕像头顶跳过去，再把自己拉上来**，站到头顶即解锁 `Pigeon Simulator`。
+  - **官方成就描述是 "Stand on the head of the statue in the intro"**。gameplay.tips 特意警告：这指的是 Mansion 里的雕像，**联机大厅里那尊雕像不算数**。
+
+### 6. 出口门（横排双按钮）→ 通关
+
+- **场景**：花园尽头是带绿色 EXIT 标志的出口门。
+- **按钮排列**：wiki 原文 *"It can only be opened by pressing the buttons that are horizontally placed next to each other."* —— **两个按钮是左右横排的**，和第 4 点那道竖排的方向不同。
+- **完整解法**：站在两个按钮正中间，张开双臂，左右手分别按住左右两个按钮，保持同时按住直到门完全打开，然后走过去。**穿过出口门后角色会直接摔下去，这一摔就是通关**，解锁 `Leap of Fail`（官方描述："Complete 'Mansion'"），接着进入下一关 Train。
+
+---
+
+## 本关能拿到的成就
+
+| 成就 | 官方英文描述 | 说明 |
+|---|---|---|
+| `Leap of Fail` | Complete "Mansion" | 通关即得 |
+| `Mind the gap!` | Take a big shortcut in the level "Mansion" | 跳过二楼那道缺口 |
+| `Pigeon Simulator` | Stand on the head of the statue in the intro | 站上花园雕像头顶 |
+| `No escape` | Fall and respawn once | **描述是通用的**——任何地方摔落并重生一次都算，只是攻略习惯在 Mansion 开局刷 |
+| `Let it rain` | Respawn 100 times | **同样是通用成就**，累计重生 100 次。TA 系攻略建议的刷法是把镜头朝向地图边缘，用皮筋卡住手柄让角色反复走出去 |
+
+> **更正**：早先版本把 `No escape` 写成"故意在出生点走出地图边缘触发"、把 `Let it rain` 写成"在出生点反复摔死刷 100 次"，暗示它们是 Mansion 专属成就。查 Steam 官方成就页，两条的描述都不带关卡限定，是全局累计型成就。Mansion 只是最方便刷的地方。
+
+另外 Steam 成就列表里有一条 `Wrecking Crew`，描述是 "Destroy the statue"（毁掉那尊雕像）。**官方描述没有指明是哪一关的哪尊雕像**，本次也没找到可靠来源确认它就是 Mansion 花园里这尊，所以这里只记录它的存在，不做归属判断。
+
+---
+
+## 隐藏语音彩蛋
+
+Steam 指南《Hidden Messages》（作者 Frick）给出的 Mansion 触发方式：
+
+> 走到关卡末尾的雕像那里，**抓住雕像的胯部区域大约 20-30 秒**，就会听到一句隐藏语音。
+
+- **台词**：该指南记的原文是 **"I'm only doing this because I love you"**。
+- **更正**：这份资料早先版本写的是 "I'm only **saying** this because I love you"，与目前能查到的唯一一份逐关彩蛋指南的记载不符，已按来源改成 "doing"。**这句台词只有社区指南这一个来源，没有官方文本可对照，措辞可能有出入。**
+- Alaskix 的 Steam 指南也提到同一件事，只是说得更简略："you will earn an achievement by standing on the statue and the secret message by grabbing it."（站上雕像拿成就，抓住它拿隐藏语音。）
+
+顺带一提：同一份指南记录了另外几关的彩蛋台词（Train "It was dark, I couldn't see anything"、Carry "It was this one night when i found myself alone in the bush"、Mountain "What were you thinking buddy?"、Demolition "It was an accident!"、Castle "I'm a good driver"、Water "Bigger, better, and more powerful"、Power Plant "I'm not dead, I know i'm not dead!"）。Steam 讨论区里有玩家总结说 **"i managed to find one of those in all maps but mansion, train and aztec"** —— 也就是有一部分老玩家认为 Mansion 没有彩蛋语音，和上面这份指南的说法冲突。**记录这个分歧，不下结论。**
+
+---
 
 ## 新手常见卡点
 
-- **搞不清左右手是分开控制的**：很多第一次玩的人习惯了"一个交互键"的思路，抓东西时两只手同时乱抓或只用一只手，导致门按钮按不稳、抓握经常落空。提示玩家明确区分左右手对应的按键。
-- **不知道"两按钮门"要同时按住**：常见错误是先跑去按一个按钮，看到门开了一条缝就松手跑向另一个按钮，结果第一个按钮松开、门又关上，反复徒劳。需要提醒"两只手，一边一个，同时按住不放"。
-- **分不清按钮是竖排还是横排**：侧院那道门的按钮是上下竖排，花园出口门的按钮是左右横排，方位不同，新手容易套用错误的站位方式去够按钮。
-- **走位/摆臂导致意外掉落**：角色是布娃娃物理，跑动+挥手容易带偏身体重心，尤其是过石桥、爬雕像围栏、走侧院分叉高处走道时，容易一脚踩空掉下悬崖或喷泉里，需要重新爬回来或者从检查点重来。
-- **误把地图边缘走出去**：出生点前廊边缘、侧院分岔口边缘都比较空旷，探索欲强的新手容易不小心走出地图边界掉下去（其实这在游戏里也是个成就"No escape"，可以告诉新手掉下去不算失败，重来就好，这关是全游戏最安全、容错率最高的一关）。
-- **想找"解谜"却找不到"解谜"**：因为是教学关，机制非常直白（按按钮开门），有些新手会下意识地找更复杂的机关或隐藏路径而卡壳，其实这关本身没有真正的解谜难度，主要就是练手感。
+- **不知道左右手是分开控制的**。习惯了"一个交互键"的玩家会两只手乱抓或只用一只，导致按钮按不稳、抓握经常落空。
+- **不知道双按钮门要同时按住不放**。典型错误是先按一个、看到门开条缝就松手跑去按另一个，结果第一个一松门又关上，来回徒劳。
+- **分不清按钮是竖排还是横排**。侧院那道是上下竖排，花园出口那道是左右横排，站位方式不一样。
+- **走位/甩手导致意外掉落**。布娃娃物理下跑动加挥手很容易带偏重心，过石桥、爬雕像围栏、走侧院上层走道时尤其容易踩空。
+- **不小心走出地图边缘**。前廊边缘、侧院分岔口边缘都很空旷。**掉下去不算失败**——fandom wiki 在 Trivia 里明确写着 *"Even though it is the safest level in the game, you can still fall off the edge of the map and restart."*（就算是全游戏最安全的一关，你照样能从地图边缘掉出去然后重来。）
+- **想找"解谜"却找不到"解谜"**。这是教学关，机制直白到只有按按钮开门，有些新手会下意识去找更复杂的机关而卡壳。
 
-## 冷知识/彩蛋
+---
 
-- 花园喷泉上的雕像藏了一句隐藏语音彩蛋：抓/拽雕像胯部区域会触发一句台词"I'm only saying this because I love you"（来源：cheats.co 的 Human: Fall Flat 彩蛋列表，多篇玩家攻略也提到同一细节）。
-- 这一关虽然是教学关，却藏着好几个跟"失败"或"胡闹"相关的成就，比如故意在出生点走出地图边缘触发的"No escape"、在出生点反复摔死刷 100 次重生触发的"Let it rain"、跳过侧院缺口抄近道触发的"Mind the gap!"、爬上雕像头顶触发的"Pigeon Simulator"，以及通关摔落时触发的"Leap of Fail"。这些都不是必须完成的，纯粹是彩蛋性质的成就。
-- 因为地形相对简单、几乎没有会把人弹飞或压死的机关，Mansion 常被玩家认为是全游戏里最安全的一关——就算掉出地图，也只是回到最近的检查点重来，不会有实质性惩罚。
+## 冷知识
+
+- fandom wiki 的 Trivia 三条：这是游戏第一关；每过一道门"造物主"都会说话；就算它是全游戏最安全的一关，你依然能掉出地图然后重来。
+- 侧院下层的地面除了两棵树什么都没有，wiki 说它的作用就是"给你一个能望进虚空（the Void）的视角"——这关的地图是漂在虚空里的一块。
+- 这一关虽然是教学关，却挂着好几个跟"胡闹"有关的成就（Mind the gap!、Pigeon Simulator，加上顺手能刷的 No escape 和 Let it rain），密度并不低。

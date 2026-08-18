@@ -19,6 +19,7 @@ import os
 import re
 import subprocess
 import tempfile
+import threading
 import time
 import socketserver
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -245,18 +246,75 @@ def run_claude(prompt: str) -> str:
     return r.stdout.strip()
 
 
-def run_codex(prompt: str, frame_paths) -> str:
-    out_file = tempfile.mktemp(suffix=".txt")
-    cmd = ["codex", "exec", "--skip-git-repo-check", "--sandbox", "read-only",
-           "--output-last-message", out_file]
+# Every codex call used to be `codex exec`, i.e. a brand new process with no
+# memory of anything asked before. Two lookups about the same puzzle five minutes
+# apart would each start cold and re-search the web from scratch, which is most of
+# why the front end kept saying "我查查哈" and then coming back with nothing.
+#
+# `codex exec resume <thread_id>` continues an existing thread, so we keep one
+# thread per container and reuse it. Two threads actually, split by how latency
+# sensitive the caller is:
+#
+#   fg  /answer + /lookup  — someone is waiting on this
+#   bg  /research          — nobody is waiting, fires on a timer
+#
+# They are kept apart on purpose. A single shared thread would need a single lock,
+# and a foreground lookup would then queue behind a 20s background research call,
+# undoing the reason this server is threaded in the first place. Each thread still
+# needs its own lock, because concurrent `resume` on one thread means two codex
+# processes writing the same session file.
+_THREADS = {}            # key -> {"id": str|None, "lock": threading.Lock}
+_THREADS_GUARD = threading.Lock()
+
+
+def _thread_slot(container_id, kind):
+    key = f"{container_id or '_'}::{kind}"
+    with _THREADS_GUARD:
+        if key not in _THREADS:
+            _THREADS[key] = {"id": None, "lock": threading.Lock()}
+        return _THREADS[key]
+
+
+def _parse_thread_id(stdout: str):
+    for line in stdout.splitlines():
+        line = line.strip()
+        if not line.startswith("{"):
+            continue
+        try:
+            ev = json.loads(line)
+        except ValueError:
+            continue
+        if ev.get("type") == "thread.started" and ev.get("thread_id"):
+            return ev["thread_id"]
+    return None
+
+
+def run_codex(prompt: str, frame_paths, container_id=None, kind="fg") -> str:
+    slot = _thread_slot(container_id, kind)
     if isinstance(frame_paths, str):          # back-compat: single path
         frame_paths = [frame_paths] if frame_paths else []
-    for p in frame_paths:                     # -i is repeatable (`--image <FILE>...`)
-        cmd += ["-i", p]
-    # prompt goes via stdin: the server process has no tty, and codex prefers
-    # stdin over a positional arg when stdin is piped
-    r = subprocess.run(cmd, input=prompt, capture_output=True, text=True,
-                       timeout=ARGS.timeout, cwd=HERE)
+
+    with slot["lock"]:
+        out_file = tempfile.mktemp(suffix=".txt")
+        base = ["codex", "exec", "--skip-git-repo-check", "--sandbox", "read-only"]
+        if slot["id"]:
+            # resume takes the thread id as a subcommand arg; flags for `exec`
+            # itself have to come before the subcommand or the parser rejects them
+            cmd = base + ["resume", slot["id"], "--output-last-message", out_file]
+        else:
+            # --json so the first call can report its thread id back to us
+            cmd = base + ["--json", "--output-last-message", out_file]
+        for p in frame_paths:                 # -i is repeatable (`--image <FILE>...`)
+            cmd += ["-i", p]
+        # prompt goes via stdin: the server process has no tty, and codex prefers
+        # stdin over a positional arg when stdin is piped
+        r = subprocess.run(cmd, input=prompt, capture_output=True, text=True,
+                           timeout=ARGS.timeout, cwd=HERE)
+        if not slot["id"]:
+            tid = _parse_thread_id(r.stdout)
+            if tid:
+                slot["id"] = tid
+                print(f"[codex] thread started {container_id}/{kind} = {tid}", flush=True)
     if os.path.exists(out_file):
         with open(out_file) as f:
             text = f.read().strip()
@@ -265,6 +323,18 @@ def run_codex(prompt: str, frame_paths) -> str:
             return text
     if r.returncode != 0:
         raise RuntimeError(r.stderr.strip()[-400:] or "codex exited nonzero")
+    # fallback: --json runs emit JSONL on stdout, so pick the last agent_message
+    # out of the event stream rather than blindly taking the final line
+    for line in reversed(r.stdout.splitlines()):
+        line = line.strip()
+        if line.startswith("{"):
+            try:
+                ev = json.loads(line)
+            except ValueError:
+                continue
+            item = ev.get("item") or {}
+            if item.get("type") == "agent_message" and item.get("text"):
+                return item["text"].strip()
     return r.stdout.strip().split("\n")[-1]
 
 
@@ -318,7 +388,8 @@ def answer(payload: dict) -> dict:
 
     try:
         if ARGS.backend == "codex":
-            raw = run_codex(prompt, frame_paths)
+            raw = run_codex(prompt, frame_paths,
+                            container_id=payload.get("container_id"), kind="fg")
         else:
             raw = run_claude(prompt)
     finally:
@@ -390,7 +461,8 @@ class Handler(BaseHTTPRequestHandler):
                                     resource_docs=get_resource_docs(payload.get("container_id"), payload.get("current_sec")))
         try:
             if ARGS.backend == "codex":
-                raw = run_codex(prompt, "")
+                raw = run_codex(prompt, "",
+                                container_id=payload.get("container_id"), kind="fg")
             else:
                 raw = run_claude(prompt)
             citations = []
@@ -428,7 +500,9 @@ class Handler(BaseHTTPRequestHandler):
                                       image_note=image_note([frame_path] if frame_path else [], ["此刻"]),
                                       resource_docs=get_resource_docs(payload.get("container_id"), payload.get("current_sec")))
         try:
-            raw = (run_codex(prompt, frame_path) if ARGS.backend == "codex" else run_claude(prompt)).strip()
+            raw = (run_codex(prompt, frame_path,
+                             container_id=payload.get("container_id"), kind="bg")
+                   if ARGS.backend == "codex" else run_claude(prompt)).strip()
             if raw.upper().startswith("NOTHING"):
                 result = {"noteworthy": False, "debug_prompt": prompt}
             else:
