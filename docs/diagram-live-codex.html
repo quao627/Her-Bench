@@ -230,7 +230,7 @@ decide(speak, say, lookup, need_frame)   <span style="color:var(--muted)">// 自
 
     <rect x="196" y="42" width="164" height="60" rx="6" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>
     <text x="278" y="60" text-anchor="middle" font-size="10.5" font-weight="600" fill="var(--muted)">四道闸</text>
-    <text x="206" y="77" font-size="10" fill="var(--muted)">T_gap 最小间隔 · T_cool 冷却</text>
+    <text x="206" y="77" font-size="10" fill="var(--muted)">最小间隔 · 刚说完话的冷却</text>
     <text x="206" y="93" font-size="10" fill="var(--muted)">主播正在问 · 上一次还没回来</text>
 
     <line x1="360" y1="72" x2="378" y2="72" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#ar4)"/>
@@ -287,7 +287,7 @@ decide(speak, say, lookup, need_frame)   <span style="color:var(--muted)">// 自
   什么时候说话必须留在 agent 手里。这条通道可以整条关掉，用来对照它完全自力更生时的表现。</p>
   <p>备料只备方向：整套通关步骤摆在它手上很容易提前说出去，所以备的是「这是什么、怎么回事」，
   也不写当前进度之后的关卡和剧情。</p>
-  <p>另有一条地板保护：连续 <span class="t">K_force</span> 次自检都没提出要查的东西，下一次会要求它必须提一个。
+  <p>另有一条地板保护：连续几次自检都没提出要查的东西，下一次会要求它必须提一个。
   要求的是提问，问题仍由它自己出。</p>
 
   <h3>五 · 判断要看一段时间线</h3>
@@ -353,13 +353,13 @@ decide(speak, say, lookup, need_frame)   <span style="color:var(--muted)">// 自
     <tr>
       <td class="mono">fg</td>
       <td>主播问出声的查证、锚点题</td>
-      <td class="mono">D_fg / D_anchor</td>
+      <td>40s（锚点题 120s）</td>
       <td>有人在等结果</td>
     </tr>
     <tr>
       <td class="mono">bg</td>
       <td>自检提的查证、备料</td>
-      <td class="mono">D_bg</td>
+      <td>90s</td>
       <td>同一条会话只能串行 resume。合成一条的话，有人等的查证会排在后台那条后面</td>
     </tr>
   </table>
@@ -374,12 +374,8 @@ decide(speak, say, lookup, need_frame)   <span style="color:var(--muted)">// 自
     <tr><th style="width:130px;">符号</th><th>是什么</th><th style="width:140px;">现在取</th></tr>
     <tr><td class="mono">T_tick</td><td>两次自检之间的间隔，也就是主动开口最快能有多快</td><td>e.g. 5s</td></tr>
     <tr><td class="mono">T_frame</td><td>喂给 Realtime 的画面间隔</td><td>e.g. 5s</td></tr>
-    <tr><td class="mono">T_gap</td><td>两次自检的最小间隔，定时和事件两个触发共用</td><td>e.g. 5s</td></tr>
-    <tr><td class="mono">T_cool</td><td>刚说完话之后的冷却，避免自己接自己的话</td><td>e.g. 20s</td></tr>
     <tr><td class="mono">T_brief</td><td>备料间隔</td><td>e.g. 30s</td></tr>
     <tr><td class="mono">N_brief / N_look</td><td>备料、查证各带几帧画面</td><td>e.g. 10 / 6</td></tr>
-    <tr><td class="mono">D_fg / D_bg / D_anchor</td><td>三条 codex 截止线</td><td>e.g. 40s / 90s / 120s</td></tr>
-    <tr><td class="mono">K_force</td><td>连续这么多次自检都没提出要查的东西，下一次强制它提一个</td><td>e.g. 3</td></tr>
   </table>
   </div>
 </section>

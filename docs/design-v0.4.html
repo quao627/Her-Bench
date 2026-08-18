@@ -230,7 +230,7 @@ td,th{overflow-wrap:anywhere;}
 
     <rect x="552" y="88" width="220" height="54" rx="8" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
     <text x="566" y="106" font-size="11.5" font-weight="600" fill="var(--accent)">lookup → codex 后台会话</text>
-    <text x="566" y="122" font-size="10.5" fill="var(--muted)">问题由它自己提，截止线 <tspan font-family="Menlo,monospace">D_bg</tspan></text>
+    <text x="566" y="122" font-size="10.5" fill="var(--muted)">问题由它自己提，没人等着</text>
     <text x="566" y="136" font-size="10.5" fill="var(--muted)">带 <tspan font-family="Menlo,monospace">N_look</tspan> 帧画面一起给</text>
     <circle cx="756" cy="104" r="7.5" fill="var(--bad-soft)" stroke="var(--bad)"/>
     <text x="756" y="108" font-size="10" font-weight="700" text-anchor="middle" fill="var(--bad)">✕</text>
@@ -268,7 +268,7 @@ td,th{overflow-wrap:anywhere;}
 
     <rect x="552" y="220" width="220" height="52" rx="8" fill="none" stroke="var(--bad)" stroke-width="1.5"/>
     <text x="566" y="238" font-size="11.5" font-weight="600" fill="var(--bad)">换 codex 前台会话查</text>
-    <text x="566" y="254" font-size="10.5" fill="var(--muted)">有人在等，截止线 <tspan font-family="Menlo,monospace">D_fg</tspan></text>
+    <text x="566" y="254" font-size="10.5" fill="var(--muted)">有人在等，卡一条更短的截止线</text>
     <text x="566" y="268" font-size="10.5" fill="var(--muted)">标了 must_cite 的题强制走这一次</text>
 
     <rect x="552" y="280" width="220" height="34" rx="8" fill="none" stroke="var(--line)"/>
@@ -313,12 +313,8 @@ td,th{overflow-wrap:anywhere;}
     <tr><th style="width:110px;">符号</th><th>是什么</th><th style="width:150px;">现在取</th></tr>
     <tr><td><span class="t">T_tick</span></td><td>两次自检之间的间隔，也就是主动开口最快能有多快</td><td>e.g. 5s</td></tr>
     <tr><td><span class="t">T_frame</span></td><td>喂给 Realtime 的画面间隔</td><td>e.g. 5s</td></tr>
-    <tr><td><span class="t">T_gap</span></td><td>两次自检的最小间隔，定时和事件两个触发共用</td><td>e.g. 5s</td></tr>
-    <tr><td><span class="t">T_cool</span></td><td>刚说完话之后的冷却，避免自己接自己的话</td><td>e.g. 20s</td></tr>
     <tr><td><span class="t">T_brief</span></td><td>备料间隔</td><td>e.g. 30s</td></tr>
     <tr><td><span class="t">N_brief</span> / <span class="t">N_look</span></td><td>备料、查证各带几帧画面，近处密、最远拉到四分钟</td><td>e.g. 10 / 6</td></tr>
-    <tr><td><span class="t">D_fg</span> / <span class="t">D_bg</span></td><td>有人等的、没人等的两条 codex 截止线</td><td>e.g. 40s / 90s</td></tr>
-    <tr><td><span class="t">K_force</span></td><td>连续这么多次自检都没提出要查的东西，下一次强制它提一个</td><td>e.g. 3</td></tr>
   </table></div>
   <p><span class="t">T_tick</span> 定得比较小，是因为庆祝、惊吓这类情绪反应晚几秒说就没有意义了；
   卡关这种慢变化的时刻，粒度粗一些也够。代价是每次自检都要重读一遍不断变长的会话上下文。</p>
@@ -374,7 +370,7 @@ td,th{overflow-wrap:anywhere;}
   <h3>几个关键设计</h3>
   <div class="tablebox"><table>
     <tr><th style="width:160px;">设计</th><th>解决什么</th></tr>
-    <tr><td>只有一个决策点</td><td>Realtime 不会自发说话，只往对话里塞画面不会触发任何输出，所以要定期让它自己判断一次。开口和查证在同一次判断里决定，触发这次判断的有两处：<span class="t">T_tick</span> 的定时器，和后台内容回来的那一刻，两处共用一道 <span class="t">T_gap</span> 的最小间隔。判断走纯文本，用户听不到</td></tr>
+    <tr><td>只有一个决策点</td><td>Realtime 不会自发说话，只往对话里塞画面不会触发任何输出，所以要定期让它自己判断一次。开口和查证在同一次判断里决定，触发这次判断的有两处：<span class="t">T_tick</span> 的定时器，和后台内容回来的那一刻，两处共用一道最小间隔。判断走纯文本，用户听不到</td></tr>
     <tr><td>结论走工具调用</td><td>Realtime 没有结构化输出的开关，在提示词里要求「只回 JSON」没有约束力，实测它经常回一句人话，前端只能靠正则去猜。改成用一次强制的工具调用把结论交回来，参数由 API 按 schema 校验</td></tr>
     <tr><td>主播问话优先</td><td>主播一开口，后台正在跑的那条立刻让路：浏览器掐掉请求，后端把 codex 子进程杀掉，那条会话一并作废，下次从干净的会话重开。这段时间也不自检、不备料</td></tr>
     <tr><td>喂料和开口分开</td><td>备料是定时驱动的，它只把查到的内容塞进上下文；只有 agent 自己提出的查证，回来时才会触发下一次自检。什么时候说话必须留在 agent 手里，这条通道可以整条关掉做对照</td></tr>
