@@ -1816,8 +1816,9 @@ function applyDecision(d){
   if (!live.dc || live.dc.readyState !== 'open') return;
   live.dc.send(JSON.stringify({type: 'response.create', response: {instructions:
     `你刚判断这一刻值得开口，要点是：${point}\n` +
-    `现在用自然口语说出来，一两句就够。是"说"出来的不是"写"出来的：不要"首先/另外/建议你/` +
+    `现在用自然口语说出来，一两句。是"说"出来的不是"写"出来的：不要"首先/另外/建议你/` +
     `可以尝试"这类书面词，不要长句套长句，句子长了就断开。别念稿子，别把要点原样复述一遍。\n` +
+    `口语不等于说空话：把要点里真有用的那部分说出来（这是什么、怎么回事、他该往哪看），别只剩一句情绪。\n` +
     `如果这需要具体事实（数值/机制/报错含义）而你手上没有，先调 lookup_game_info 再说。`}}));
 }
 

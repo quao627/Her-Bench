@@ -207,7 +207,8 @@ decide(speak, say, lookup, need_frame)   <span style="color:var(--muted)">// 自
   <h3>一 · 只有一个决策点</h3>
   <p>输入是流式的，但 Realtime API 不会自发说话：往对话里塞 item 不触发生成，
   只有显式发 <span class="t">response.create</span>、或者语音检测判定人说完了才会。
-  所以要定期让它自己判断一次，开口和查证在同一次判断里决定。</p>
+  所以要定期让它自己判断一次，开口和查证在同一次判断里决定。
+  结论用一次强制的 <span class="t">decide</span> 工具调用交回来，参数由 API 按 schema 校验。</p>
 
   <figure class="diagram">
   <svg viewBox="0 0 860 200" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="定时器和后台内容回来两个触发，经过四道闸进入自检，decide 工具返回 speak 和 lookup 两个结论，speak 走语音响应，lookup 走后台会话">
@@ -268,19 +269,13 @@ decide(speak, say, lookup, need_frame)   <span style="color:var(--muted)">// 自
   </svg>
   </figure>
 
-  <h3>二 · 结论走工具调用</h3>
-  <p>Realtime 没有结构化输出的开关。在提示词里要求「只回一行 JSON」没有约束力，
-  实测它经常回一句人话，前端只能靠正则去猜，结果每次自检都解析失败。
-  改成用一次强制的 <span class="t">decide</span> 工具调用把结论交回来，参数由 API 按 schema 校验。
-  工具定义随这一轮响应一起发，不依赖 session 配置里已经有它。</p>
-
-  <h3>三 · 主播问话优先</h3>
+  <h3>二 · 主播问话优先</h3>
   <p>语音检测是最早的信号，比它自己调工具早十几秒。一响就把后台正在跑的那条掐掉：
   浏览器 abort 请求，同时打一个 <span class="t">/cancel</span>，后端把 codex 子进程杀掉。
   只 abort 请求不够，进程还在占着 CPU 和那条会话，前台的查证只会更慢。
   被杀的会话一并作废，下次从干净的会话重开。这段时间也不自检、不备料。</p>
 
-  <h3>四 · 喂料和开口分开</h3>
+  <h3>三 · 喂料和开口分开</h3>
   <p>备料通道由定时器驱动，每 <span class="t">T_brief</span> 把最近 <span class="t">N_brief</span> 帧交给 codex，
   让它自己从画面里想一个问题去查。查回来的只塞进上下文，<b>不触发自检</b>；
   只有 agent 自己在自检里提出的查证，回来时才会触发下一次。喂料可以定时做，
@@ -290,7 +285,7 @@ decide(speak, say, lookup, need_frame)   <span style="color:var(--muted)">// 自
   <p>另有一条地板保护：连续几次自检都没提出要查的东西，下一次会要求它必须提一个。
   要求的是提问，问题仍由它自己出。</p>
 
-  <h3>五 · 判断要看一段时间线</h3>
+  <h3>四 · 判断要看一段时间线</h3>
   <p>值不值得开口，取决于这段时间发生了什么：卡了多久、刚完成了什么。单张画面看不出这些，
   比如通关那一帧是角色在云里下坠，跟掉出地图的画面几乎一样。
   所以浏览器一直留着最近五分钟的帧，取用时近处密、远处稀。</p>
@@ -330,20 +325,20 @@ decide(speak, say, lookup, need_frame)   <span style="color:var(--muted)">// 自
   <p>锚点触发的题走的是另一条路：那时视频已经暂停，回溯 seek 抓帧再复位即可，不用改播放逻辑。
   要回应的是此刻的处境；中间某一帧闪过的孤立事件已经过去，不必再提。</p>
 
-  <h3>六 · 强制查证</h3>
+  <h3>五 · 强制查证</h3>
   <p>对话式模型很少表示自己不确定，容易把没有查过的内容说得像查过一样。
   所以 <span class="t">must_cite</span> 或 <span class="t">tool_fit</span> 为真的题，
   用 per-response <span class="t">tool_choice</span> 覆盖，必须走一次
   <span class="t">/lookup</span>，判分时再看 <span class="t">citations</span> 里有没有内容。</p>
 
-  <h3>七 · 资料按进度挑</h3>
+  <h3>六 · 资料按进度挑</h3>
   <p>资料整篇拼进 prompt，所以资料一多每道题都要付这份成本。
   <span class="t">resources</span> 常驻，<span class="t">chapter_resources</span> 按
   <span class="t">anchor_sec</span> 取当前和下一段。同时取下一段，是因为防剧透约束的是输出内容，
   而不是 agent 能看到多少；有经验的玩家本来也知道后面会发生什么。区间按哪道题需要哪篇倒推，不必照搬章节边界。
   Stanley Parable 8 篇共 77KB，这样挑之后每次请求落在 13-26KB。</p>
 
-  <h3>八 · codex 会话续接</h3>
+  <h3>七 · codex 会话续接</h3>
   <p>每次都开新的 <span class="t">codex exec</span> 的话，五分钟前查过的东西下一次用不上，
   只能从头再搜。改成 <span class="t">resume &lt;thread_id&gt;</span> 接着上一轮，每个 container 两条会话。</p>
 
