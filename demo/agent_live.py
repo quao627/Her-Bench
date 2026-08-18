@@ -12,10 +12,13 @@
 agent 可以自己 Read 帧截图和 resources/ 里的攻略资料——这就是 benchmark
 里 "watch + search" 工具的最小等价物。
 
-这个后端不做任何感知判断：查什么、什么时候查，全部由前台那个常驻的 agent 决定
-（它在自检 tick 里自己提问题）。以前这里还有一个 /research 端点，由查看器每 15 秒
-定时驱动 codex 自己看画面造问题——那等于 harness 替 agent 行使自主性，节拍是我们
-定的不是它定的，已经去掉。
+两条查证通道，区别只在问题是谁提的：
+  /lookup    问题由前台的语音 agent 提（主播问到了，或它自检时觉得接下来用得上）
+  /research  没人提问，这个后端从最近几帧画面里自己想一个——备料用
+
+实测前台 agent 几乎不会主动提出要查东西（对话式模型不肯承认自己不确定），
+所以 /research 这条备料通道是必需的。但它只往前台的上下文里塞储备，
+永远不会让它开口：开口时机始终只由前台自己的自检决定。
 """
 import argparse
 import base64
@@ -61,6 +64,10 @@ PROMPT_TMPL = """你是主播的游戏陪玩搭子，正陪他玩/看: {game}。
    有用的具体信息讲清楚（原理是什么、关键细节、容易搞错的地方），信息量优先于简短；
    direction_only 时"方向"也要给到位（比如具体该留意什么、试哪个思路），不要说了等于没说；
    不要列条目/编号，说人话。大概 3-6 句为宜，讲清楚比刻意精简更重要。
+   这段话会被念出来给他听，所以必须是"说"出来的，不是"写"出来的：不要出现"首先/其次/另外/
+   此外/需要注意的是/总的来说/建议你/可以尝试"这类词，不要长句套长句、一句里塞好几个"的"，
+   句子长了就断开。对照：『建议你优先尝试利用货叉的升降机制到达高处平台』是错的，
+   『那个叉车能升降嘛，你把它抬起来当电梯用，应该就上得去了』才对。
    例外：如果这一刻是纯情绪反应（庆祝通关/安慰失败/一起笑名场面），一两句真诚的话就够，
    不适用上面的长度要求——这种时候硬凑成 3-6 句、或者顺势讲攻略，反而是错的。
 4. 最后单独一行输出 "SOURCES: " 加你实际参考过的资料标题(逗号分隔), 上面资料里没有就写 SOURCES: none。
@@ -104,11 +111,44 @@ LOOKUP_TMPL = """你是游戏攻略资料检索员。前台的语音陪玩 agent
 ---
 上面资料如果不够具体/笼统，别硬答——直接用 WebSearch 搜更准确的信息（官方 wiki、
 攻略站、社区讨论都行），查证过的答案比翻资料摘要更可靠。
+但要有节制：最多两三次检索就收，前台有人在等。搜了还是没找准就直说「没查到」，
+把已经确定的部分讲清楚即可，不要为了凑一个答案一直查下去。
 
 输出要求: 把这件事讲透——具体原理/步骤/数值/容易搞错的地方都可以写清楚，信息尽量给够、
 不要藏着掖着。这段内容会被前台的语音 agent 再提炼转述给主播，所以你不用担心啰嗦或语气生硬，
 把干货备齐就行，让它有真材实料可以提炼；不要铺垫，不需要用 ls/Read。
 最后单独一行 "SOURCES: " 加实际参考的资料标题或 URL。"""
+
+RESEARCH_TMPL = """你在陪看直播，正利用播放间隙做一点背景研究，这样等主播真问起来时你已经查过、心里有数。
+你不知道他接下来会问什么，只能从下面这几帧画面自己判断有没有值得顺手核实的东西。
+
+直播: {game}
+
+{image_note}
+
+下面是可查的全部资料，已经帮你准备好了，不用自己找文件：
+---
+{resource_docs}
+---
+
+判断标准是**看画面里有什么**，不是问你自己有多确定：画面里如果出现了具体的道具、机制、
+界面元素、报错信息、地名、数值，主播很可能会好奇「这是什么」「这是怎么回事」，
+就对照上面的资料核实一下；资料没覆盖或写得太笼统，用 WebSearch 查更具体的（官方 wiki、
+攻略站都行）。查证要有节制：最多两三次检索就收，没查到就直说没查到。
+
+重要：备的是「这是什么 / 这是怎么回事」，**不要备完整通关步骤**。这段内容会进到前台
+agent 手上，它随时可能用出去；一整套解法摆在那里，很容易变成还没卡关就把答案说了。
+涉及解法的部分只写方向（该留意什么、往哪个思路想），也不要写主播当前进度之后的关卡、
+剧情或谜底——他现在在第 {anchor_min} 分钟左右。
+只有当这几帧确实没有任何具体元素（纯过场、纯黑屏、只是在走路说话）时，才输出一个词: NOTHING
+
+如果决定要查，严格输出三行：
+QUESTION: <你猜主播可能会问的问题，用他第一人称的口吻写，一句话，中文>
+ANSWER: <把具体细节/原理/数值讲清楚，信息给够，不用刻意精简——这段会被前台的语音 agent
+提炼后说给主播听，你这里备好干货就行>
+SOURCES: <实际参考的资料标题，逗号分隔，没查到具体来源就写 none>
+"""
+
 
 def _read_doc(entry):
     file_path = os.path.join(HERE, entry["file"].lstrip("/"))
@@ -215,10 +255,10 @@ def image_note(frame_paths, frame_labels):
     )
 
 
-def run_claude(prompt: str) -> str:
+def run_claude(prompt: str, timeout=None) -> str:
     cmd = ["claude", "-p", "--model", ARGS.model, "--allowedTools", "Read"]
     r = subprocess.run(cmd, input=prompt, capture_output=True, text=True,
-                       timeout=ARGS.timeout, cwd=HERE)
+                       timeout=timeout or ARGS.timeout, cwd=HERE)
     if r.returncode != 0:
         raise RuntimeError(r.stderr.strip()[-400:] or "claude exited nonzero")
     return r.stdout.strip()
@@ -244,6 +284,56 @@ def run_claude(prompt: str) -> str:
 _THREADS = {}            # key -> {"id": str|None, "lock": threading.Lock}
 _THREADS_GUARD = threading.Lock()
 
+# 正在跑的 codex 子进程，按 container::kind 索引。存它是为了能从外面打断：
+# 主播一开口，后台那条就该立刻让路——光在浏览器里 abort 掉 fetch 没用，
+# 子进程还在那儿占着 CPU 和这一轮的 codex 会话。
+_RUNS = {}               # key -> {"proc": Popen, "reason": None|"cancel"|"timeout"}
+_RUNS_GUARD = threading.Lock()
+
+# 每次调用的进度，供前端轮询。codex 的 --json 事件流里能看到它在读什么、搜什么，
+# 不转出来的话前端只能干等十几二十秒，什么都不知道。
+_PROGRESS = {}           # call_id -> {"lines": [...], "done": bool}
+_PROGRESS_GUARD = threading.Lock()
+
+
+class Cancelled(Exception):
+    """被 /cancel 打断，不是失败也不是超时"""
+
+
+def _progress(call_id, text):
+    if not call_id or not text:
+        return
+    with _PROGRESS_GUARD:
+        entry = _PROGRESS.setdefault(call_id, {"lines": [], "done": False})
+        entry["lines"].append(text)
+        if len(_PROGRESS) > 60:                      # 只留最近的，别无限长
+            for k in list(_PROGRESS)[:-60]:
+                _PROGRESS.pop(k, None)
+
+
+def _progress_done(call_id):
+    if not call_id:
+        return
+    with _PROGRESS_GUARD:
+        _PROGRESS.setdefault(call_id, {"lines": [], "done": False})["done"] = True
+
+
+def cancel_run(container_id, kind="bg"):
+    """打断某条正在跑的 codex。会话 id 一并作废：进程是被杀掉的，
+    会话文件可能写了一半，下次 resume 上去不如重开一条干净的。"""
+    key = f"{container_id or '_'}::{kind}"
+    with _RUNS_GUARD:
+        run = _RUNS.get(key)
+        if not run or run["proc"].poll() is not None:
+            return False
+        run["reason"] = "cancel"
+        try:
+            run["proc"].kill()
+        except Exception:
+            pass
+    _thread_slot(container_id, kind)["id"] = None
+    return True
+
 
 def _thread_slot(container_id, kind):
     key = f"{container_id or '_'}::{kind}"
@@ -267,53 +357,121 @@ def _parse_thread_id(stdout: str):
     return None
 
 
-def run_codex(prompt: str, frame_paths, container_id=None, kind="fg") -> str:
+# 每条路各有各的截止线。以前统一 180 秒：前台那条意味着模型说完「我查查哈」之后
+# 可能干等三分钟；后台那条会把 bg thread 和前端的 bgBusy 一起焊死三分钟，期间
+# 一条新的查证都发不出去。codex 自己不会因为「查得太久」停手，所以只能从外面卡。
+DEADLINES = {"fg": 40, "bg": 90, "answer": 120}
+
+
+def _event_summary(ev):
+    """把一条 --json 事件压成一句能显示的进度。实测事件流长这样：
+    thread.started → turn.started → item.completed(agent_message，它的口头计划)
+    → item.started/completed(command_execution，真正在读什么搜什么) → …
+    → item.completed(agent_message，最终答案) → turn.completed
+    最终答案是整条一次到位的，没有 token 级增量。所以能实时往前送的是「它在干什么」，
+    而不是「答案写了一半」——半截事实送到前台会被直接念出去。"""
+    if ev.get("type") not in ("item.started", "item.completed"):
+        return None
+    item = ev.get("item") or {}
+    t = item.get("type")
+    if t == "command_execution" and ev.get("type") == "item.started":
+        cmd = (item.get("command") or "").replace("/bin/bash -lc ", "").strip()
+        return "在查：" + cmd[:90]
+    if t == "web_search" and ev.get("type") == "item.started":
+        return "搜网：" + str(item.get("query") or "")[:90]
+    if t == "agent_message" and ev.get("type") == "item.completed":
+        return "阶段结论：" + (item.get("text") or "")[:90]
+    return None
+
+
+def run_codex(prompt: str, frame_paths, container_id=None, kind="fg", timeout=None,
+              call_id=None) -> str:
     slot = _thread_slot(container_id, kind)
+    key = f"{container_id or '_'}::{kind}"
     if isinstance(frame_paths, str):          # back-compat: single path
         frame_paths = [frame_paths] if frame_paths else []
+    deadline = timeout or DEADLINES.get(kind, ARGS.timeout)
 
     with slot["lock"]:
         out_file = tempfile.mktemp(suffix=".txt")
-        base = ["codex", "exec", "--skip-git-repo-check", "--sandbox", "read-only"]
+        # --json 现在每次都带：既拿 thread id，也拿进度事件
+        base = ["codex", "exec", "--json", "--skip-git-repo-check", "--sandbox", "read-only"]
         if slot["id"]:
             # resume takes the thread id as a subcommand arg; flags for `exec`
             # itself have to come before the subcommand or the parser rejects them
             cmd = base + ["resume", slot["id"], "--output-last-message", out_file]
         else:
-            # --json so the first call can report its thread id back to us
-            cmd = base + ["--json", "--output-last-message", out_file]
+            cmd = base + ["--output-last-message", out_file]
         for p in frame_paths:                 # -i is repeatable (`--image <FILE>...`)
             cmd += ["-i", p]
         # prompt goes via stdin: the server process has no tty, and codex prefers
         # stdin over a positional arg when stdin is piped
-        r = subprocess.run(cmd, input=prompt, capture_output=True, text=True,
-                           timeout=ARGS.timeout, cwd=HERE)
-        if not slot["id"]:
-            tid = _parse_thread_id(r.stdout)
-            if tid:
-                slot["id"] = tid
-                print(f"[codex] thread started {container_id}/{kind} = {tid}", flush=True)
+        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, text=True, cwd=HERE)
+        run = {"proc": proc, "reason": None}
+        with _RUNS_GUARD:
+            _RUNS[key] = run
+
+        def _kill_on_timeout():
+            if proc.poll() is None:
+                run["reason"] = run["reason"] or "timeout"
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
+        watchdog = threading.Timer(deadline, _kill_on_timeout)
+        watchdog.start()
+
+        last_msg, err_tail = None, ""
+        try:
+            proc.stdin.write(prompt)
+            proc.stdin.close()
+            for line in proc.stdout:          # 边跑边读，不等它结束
+                line = line.strip()
+                if not line.startswith("{"):
+                    continue
+                try:
+                    ev = json.loads(line)
+                except ValueError:
+                    continue
+                if ev.get("type") == "thread.started" and ev.get("thread_id") and not slot["id"]:
+                    slot["id"] = ev["thread_id"]
+                    print(f"[codex] thread started {container_id}/{kind} = {ev['thread_id']}", flush=True)
+                item = ev.get("item") or {}
+                if item.get("type") == "agent_message" and item.get("text"):
+                    last_msg = item["text"].strip()
+                summary = _event_summary(ev)
+                if summary:
+                    _progress(call_id, summary)
+            proc.wait()
+            try:
+                err_tail = (proc.stderr.read() or "").strip()[-400:]
+            except Exception:
+                err_tail = ""
+        finally:
+            watchdog.cancel()
+            with _RUNS_GUARD:
+                if _RUNS.get(key) is run:
+                    _RUNS.pop(key, None)
+
+    if run["reason"] in ("cancel", "timeout"):
+        if os.path.exists(out_file):
+            os.unlink(out_file)
+        if run["reason"] == "cancel":
+            raise Cancelled()
+        raise subprocess.TimeoutExpired(cmd="codex", timeout=deadline)
+
     if os.path.exists(out_file):
         with open(out_file) as f:
             text = f.read().strip()
         os.unlink(out_file)
         if text:
             return text
-    if r.returncode != 0:
-        raise RuntimeError(r.stderr.strip()[-400:] or "codex exited nonzero")
-    # fallback: --json runs emit JSONL on stdout, so pick the last agent_message
-    # out of the event stream rather than blindly taking the final line
-    for line in reversed(r.stdout.splitlines()):
-        line = line.strip()
-        if line.startswith("{"):
-            try:
-                ev = json.loads(line)
-            except ValueError:
-                continue
-            item = ev.get("item") or {}
-            if item.get("type") == "agent_message" and item.get("text"):
-                return item["text"].strip()
-    return r.stdout.strip().split("\n")[-1]
+    if last_msg:
+        return last_msg
+    if proc.returncode != 0:
+        raise RuntimeError(err_tail or "codex exited nonzero")
+    return ""
 
 
 def _write_temp_jpeg(b64: str) -> str:
@@ -367,9 +525,10 @@ def answer(payload: dict) -> dict:
     try:
         if ARGS.backend == "codex":
             raw = run_codex(prompt, frame_paths,
-                            container_id=payload.get("container_id"), kind="fg")
+                            container_id=payload.get("container_id"), kind="fg",
+                            timeout=DEADLINES["answer"], call_id=payload.get("call_id"))
         else:
-            raw = run_claude(prompt)
+            raw = run_claude(prompt, timeout=DEADLINES["answer"])
     finally:
         for p in frame_paths:
             if p and os.path.exists(p):
@@ -405,6 +564,21 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/lookup":
             self._handle_lookup(payload, t0)
             return
+        if path == "/research":
+            self._handle_research(payload, t0)
+            return
+        if path == "/cancel":
+            # 主播开口了：后台那条立刻让路，把 CPU 和会话让给「回答他」
+            killed = cancel_run(payload.get("container_id"), payload.get("kind", "bg"))
+            if killed:
+                print(f"[{ARGS.backend}] cancel {payload.get('kind','bg')} ← 主播提问优先", flush=True)
+            self._json({"cancelled": killed})
+            return
+        if path == "/progress":
+            with _PROGRESS_GUARD:
+                entry = _PROGRESS.get(payload.get("call_id") or "", {"lines": [], "done": False})
+                self._json({"lines": list(entry["lines"]), "done": entry["done"]})
+            return
 
         tid = payload.get("task_id", "?")
         print(f"[{ARGS.backend}] task {tid} …", flush=True)
@@ -421,6 +595,14 @@ class Handler(BaseHTTPRequestHandler):
             code = 200  # let the viewer display the error text
         print(f"[{ARGS.backend}] task {tid} done in {result['latency_ms']}ms", flush=True)
         body = json.dumps(result, ensure_ascii=False).encode()
+        self.send_response(code); self._cors()
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _json(self, obj, code=200):
+        body = json.dumps(obj, ensure_ascii=False).encode()
         self.send_response(code); self._cors()
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
@@ -452,12 +634,15 @@ class Handler(BaseHTTPRequestHandler):
         prompt = LOOKUP_TMPL.format(game=game or "见资料目录", query=query,
                                     image_note=("\n" + image_note(frame_paths, frame_labels) + "\n") if frame_paths else "",
                                     resource_docs=get_resource_docs(payload.get("container_id"), payload.get("current_sec")))
+        deadline = DEADLINES[kind]
+        call_id = payload.get("call_id")
         try:
             if ARGS.backend == "codex":
                 raw = run_codex(prompt, frame_paths,
-                                container_id=payload.get("container_id"), kind=kind)
+                                container_id=payload.get("container_id"), kind=kind,
+                                call_id=call_id)
             else:
-                raw = run_claude(prompt)
+                raw = run_claude(prompt, timeout=deadline)
             citations = []
             m = re.search(r"SOURCES:\s*(.+)", raw)
             if m:
@@ -466,9 +651,18 @@ class Handler(BaseHTTPRequestHandler):
                     citations = [s.strip() for s in srcs.split(",") if s.strip()]
                 raw = raw[:m.start()].strip()
             result = {"text": raw, "citations": citations, "debug_prompt": prompt}
+        except Cancelled:
+            print(f"[{ARGS.backend}] lookup ({kind}) 被打断", flush=True)
+            result = {"text": "", "citations": [], "cancelled": True}
+        except subprocess.TimeoutExpired:
+            print(f"[{ARGS.backend}] lookup ({kind}) 超时 {deadline}s，放弃", flush=True)
+            result = {"text": f"这个没查出来（{deadline} 秒还没结果，已放弃）。"
+                              f"别再等了，用你已经知道的说，不确定的地方直接说不确定。",
+                      "citations": [], "timeout": True}
         except Exception as e:
             result = {"text": f"没查到（后台出错: {e}）", "citations": []}
         finally:
+            _progress_done(call_id)
             for fp in frame_paths:
                 if fp and os.path.exists(fp):
                     os.unlink(fp)
@@ -477,6 +671,69 @@ class Handler(BaseHTTPRequestHandler):
         body = json.dumps(result, ensure_ascii=False).encode()
         self.send_response(200)
         self._cors()
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _handle_research(self, payload, t0):
+        """备料通道：没有人提问，也没有前台 agent 点题。给它最近几帧画面，
+        它自己判断值不值得查、查什么。
+
+        跟 /lookup {background} 的区别只在问题是谁提的：那条是前台 agent 在自检里
+        自己提的，这条是这个后端从画面里自己想的。产出同样只是塞进前台的上下文当储备，
+        不会让它开口——开口时机始终只由前台的自检决定。
+        """
+        frame_paths, frame_labels = [], []
+        for fr in (payload.get("frames") or []):
+            b64 = fr.get("b64")
+            if not b64:
+                continue
+            frame_paths.append(_write_temp_jpeg(b64))
+            off = int(fr.get("offset_sec", 0))
+            frame_labels.append("此刻" if off == 0 else f"{abs(off)} 秒前")
+        print(f"[{ARGS.backend}] research ({len(frame_paths)} 帧)…", flush=True)
+        prompt = RESEARCH_TMPL.format(
+            game=payload.get("game") or "见资料目录",
+            image_note=image_note(frame_paths, frame_labels),
+            anchor_min=round((payload.get("current_sec") or 0) / 60),
+            resource_docs=get_resource_docs(payload.get("container_id"), payload.get("current_sec")))
+        call_id = payload.get("call_id")
+        try:
+            raw = (run_codex(prompt, frame_paths, container_id=payload.get("container_id"),
+                             kind="bg", call_id=call_id)
+                   if ARGS.backend == "codex" else run_claude(prompt, timeout=DEADLINES["bg"])).strip()
+            if raw.upper().startswith("NOTHING"):
+                result = {"noteworthy": False, "debug_prompt": prompt}
+            else:
+                q = re.search(r"QUESTION:\s*(.+)", raw)
+                a = re.search(r"ANSWER:\s*([\s\S]+?)(?:\nSOURCES:|$)", raw)
+                src = re.search(r"SOURCES:\s*(.+)", raw)
+                citations = []
+                if src and src.group(1).strip().lower() != "none":
+                    citations = [x.strip() for x in src.group(1).split(",") if x.strip()]
+                result = {"noteworthy": bool(q and a),
+                          "question": q.group(1).strip() if q else "",
+                          "text": a.group(1).strip() if a else raw,
+                          "citations": citations, "debug_prompt": prompt}
+        except Cancelled:
+            print(f"[{ARGS.backend}] research 被打断 ← 主播提问优先", flush=True)
+            result = {"noteworthy": False, "cancelled": True}
+        except subprocess.TimeoutExpired:
+            print(f"[{ARGS.backend}] research 超时 {DEADLINES['bg']}s，放弃", flush=True)
+            result = {"noteworthy": False, "timeout": True}
+        except Exception as e:
+            result = {"noteworthy": False, "error": str(e)}
+        finally:
+            _progress_done(call_id)
+            for fp in frame_paths:
+                if fp and os.path.exists(fp):
+                    os.unlink(fp)
+        result["latency_ms"] = int((time.time() - t0) * 1000)
+        print(f"[{ARGS.backend}] research done in {result['latency_ms']}ms, "
+              f"noteworthy={result['noteworthy']}", flush=True)
+        body = json.dumps(result, ensure_ascii=False).encode()
+        self.send_response(200); self._cors()
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
@@ -492,7 +749,8 @@ if __name__ == "__main__":
     ap.add_argument("--model", default="sonnet",
                     help="claude 后端的模型 (sonnet/opus/haiku)；codex 用其默认")
     ap.add_argument("--port", type=int, default=8787)
-    ap.add_argument("--timeout", type=int, default=180)
+    ap.add_argument("--timeout", type=int, default=180,
+                    help="兜底超时；各条路实际用 DEADLINES 里的值（fg 40s / bg 90s / answer 120s）")
     ARGS = ap.parse_args()
     print(f"live agent backend [{ARGS.backend}] on http://localhost:{ARGS.port}")
 

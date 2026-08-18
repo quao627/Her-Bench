@@ -170,6 +170,7 @@ video{width:100%; height:100%; object-fit:contain; background:#000;}
 .bcall .bh .bkind.http{color:var(--q); border:1px solid var(--q);}
 .bcall .bh .bkind.tool{color:var(--p); border:1px solid var(--p);}
 .bcall .bh .bkind.bg{color:var(--ok); border:1px solid var(--ok);}
+.bcall .bh .bkind.pre{color:var(--p); border:1px solid var(--p);}
 .bcall .bh .bstate{margin-left:auto;}
 .bcall .bstate.pending{color:var(--warn);}
 .bcall .bstate.ok{color:var(--ok);}
@@ -235,8 +236,8 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
         <span class="slabel">音频<span class="ssub">喂给模型听的声音来源</span></span>
         <div class="sctl">
           <select id="audioIn" style="background:var(--bg);">
+            <option value="tts" selected>🗣 合成语音</option>
             <option value="stream">📺 原声</option>
-            <option value="tts">🗣 合成语音</option>
             <option value="off">🔇 静音</option>
           </select>
         </div>
@@ -256,14 +257,28 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
       <hr class="sdiv">
       <div class="shead">自检 tick</div>
       <div class="settings-row">
-        <span class="slabel">自己决定说什么、查什么<span class="ssub">每隔一会儿做一次纯文本自检（用户听不到）：要不要开口、要不要后台查证——问题由它自己提，不偷看题目</span></span>
+        <span class="slabel">自己决定说什么、查什么<span class="ssub">定期、以及后台资料一回来就做一次纯文本自检（用户听不到）：要不要开口、要不要后台查证——问题由它自己提，不偷看题目</span></span>
         <div class="sctl">
           <button class="iconbtn on" id="tickBtn">💭 开</button>
           <select id="tickRate" style="background:var(--bg);">
-            <option value="10000" selected>10s</option>
+            <option value="5000" selected>5s</option>
+            <option value="10000">10s</option>
             <option value="15000">15s</option>
-            <option value="20000">20s</option>
             <option value="30000">30s</option>
+          </select>
+        </div>
+      </div>
+      <hr class="sdiv">
+      <div class="shead">备料</div>
+      <div class="settings-row">
+        <span class="slabel">后台自己看画面备料<span class="ssub">定时把最近几帧交给 codex，它自己想一个问题去查。查到的只塞进上下文当储备，不会催前台开口</span></span>
+        <div class="sctl">
+          <button class="iconbtn on" id="preBtn">🔮 开</button>
+          <select id="preRate" style="background:var(--bg);">
+            <option value="20000">20s</option>
+            <option value="30000" selected>30s</option>
+            <option value="60000">60s</option>
+            <option value="90000">90s</option>
           </select>
         </div>
       </div>
@@ -365,46 +380,148 @@ let tickOn = true;         // 默认开：开口时机和查证时机都交给�
 let bgNotes = [];          // 后台查回来的笔记，最多留 8 条，作为可选上下文
 let bgBusy = false;        // 后台 codex 一次 15-20 秒且串行，别堆队列
 let noLookupTicks = 0;     // 连续多少次 tick 一个问题都没提
-const FORCE_LOOKUP_AFTER = 6;   // 地板保护：连续这么多次不提问，下一次强制它提一个
+const FORCE_LOOKUP_AFTER = 3;   // 地板保护：连续这么多次不提问，下一次强制它提一个
+const MIN_CHECK_GAP_MS = 5000;  // 两次自检之间的最小间隔：定时和事件两个来源共用这道闸，
+                                // 有了它多几个触发源也不会在同一时刻判两次
+const SPOKE_COOLDOWN_MS = 20000;// 刚说完话的冷却，别连着自己接自己的话
+const FG_LOOKUP_DEADLINE_MS = 50000;    // 有人在等的那条：模型已经说了「我查查哈」，不能让它干等
+const BG_LOOKUP_DEADLINE_MS = 100000;  // 后台查证的前端截止线，比后端的 90s 略宽一点。
+                                       // 没有它，后端一挂 bgBusy 就永远是 true，从此不再查任何东西
                                 // （对话式模型不肯承认自己不确定，跟 must_cite 要用
                                 //  tool_choice 硬覆盖是同一个毛病）
 
 /* 画面环形 buffer：live 模式视频在播，没法像 HTTP 模式那样暂停回溯 seek 抓历史帧，
    所以把每 5 秒喂给 Realtime 的那张顺手留一份。Realtime 自己的上下文会被截断，
    这里是补它记忆的洞，不是再造一只眼睛——只在它说这次查证需要看图时才用。 */
-let frameBuf = [];         // {t, dataurl}，只留最近 4 分钟
+let frameBuf = [];         // {t, dataurl}，只留最近 5 分钟
 function pushFrameBuf(t, dataurl){
   frameBuf.push({t, dataurl});
-  while (frameBuf.length && frameBuf[0].t < t - 240) frameBuf.shift();
-}
-function framesAround(now){
-  const out = [];
-  for (const off of [-180, -60, 0]) {
-    let best = null;
-    for (const f of frameBuf)
-      if (best === null || Math.abs(f.t - (now + off)) < Math.abs(best.t - (now + off))) best = f;
-    if (best && !out.some(o => o.t === best.t)) out.push(best);
-  }
-  return out;
+  while (frameBuf.length && frameBuf[0].t < t - 300) frameBuf.shift();
 }
 
-/* 它自己提的问题 → 后台 codex（bg thread，没人等着）。结果只塞进上下文、不触发回应：
-   扳机只有 tick 一个，多一个就会在同一时刻判断两次开口。 */
+/* 取帧的间隔：近处密、远处稀。隔一分钟才一帧看不出任何动态——刚做成一件事、
+   刚摔下去、还是原地转圈，都发生在最近这十几二十秒里。buffer 本身是 5 秒一帧，
+   所以近处能给到 10 秒粒度；远处几帧只是用来看「这段时间总体有没有挪窝」。 */
+// buffer 本身 5 秒一帧，所以最近这段能给到 5 秒粒度——刚做成一件事、刚摔下去、还是
+// 原地转圈，全都发生在最近十几秒里，那一段必须密；再往前只是用来看「这段时间有没有挪窝」。
+const STRIP_RESEARCH = [0, -5, -10, -15, -20, -30, -45, -60, -120, -240];  // 10 帧
+const STRIP_LOOKUP   = [0, -10, -20, -40, -80, -160];                      // 6 帧
+
+function framesAround(now, offsets){
+  const out = [];
+  for (const off of (offsets || STRIP_LOOKUP)) {
+    const target = now + off;
+    let best = null;
+    for (const f of frameBuf)
+      if (best === null || Math.abs(f.t - target) < Math.abs(best.t - target)) best = f;
+    // 差得太远的不要：buffer 里根本没有那个时段的画面时，硬凑会给出一张误导的图
+    if (best && Math.abs(best.t - target) <= 15 && !out.some(o => o.t === best.t)) out.push(best);
+  }
+  return out.sort((a, b) => a.t - b.t);
+}
+
+let pendingLookup = null;   // 后台忙的时候，它自己提的问题排一个，忙完立刻补上
+let bgAbort = null;         // 当前后台请求的 AbortController，让路时要能掐掉
+
+/* 主播开口 = 最高优先级。后台那条（备料 / 它自己提的查证）立刻让路：
+   浏览器这边 abort 掉 fetch，同时告诉后端把 codex 子进程杀掉——只 abort fetch
+   的话进程还在那儿跑，占着 CPU 和 codex 会话，前台那次查证只会更慢。 */
+async function yieldBgToUser(why){
+  pendingLookup = null;
+  const hadWork = bgBusy;
+  if (bgAbort) { try { bgAbort.abort(); } catch {} bgAbort = null; }
+  if (!hadWork || !C) return;
+  liveLine('sys', '⏸ ' + why + '，后台让路');
+  try {
+    const base = $('#agentUrl').value.replace(/\/answer\/?$/, '');
+    await fetch(base + '/cancel', {method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({container_id: C.container_id, kind: 'bg'})});
+  } catch {}
+}
+let researchOn = true;      // 备料通道：默认开
+
+/* 备料：没人提问，也没有前台点题，把最近几帧交给 codex 让它自己想一个问题去查。
+   为什么需要这条：实测前台的语音 agent 几乎不会主动说「我要查点东西」——对话式模型
+   不肯承认自己不确定，这也正是 must_cite 要用 tool_choice 硬覆盖的同一个毛病。
+   光靠自检那条路，后台会长时间一片空白，等主播真问起来又只能现查。
+
+   跟它自己提问的那条路有一个关键区别：备料查回来的东西**只塞进上下文，不触发自检**。
+   开口时机必须完全由 agent 自己决定，让一个我们定的定时器去催它说话，测出来的
+   就不是它的节奏了。 */
+async function runIdleResearch(){
+  if (!researchOn || bgBusy || pendingLookup || !C) return;
+  if (live.userTurn) return;        // 主播的问题优先，这会儿别去占后台
+  // 不要求连着 Live：笔记同样会作为 recent_research 带进 /answer，
+  // 没有语音引擎（比如 platform 账号没额度）时这条通道照样有用
+  if (video.paused) return;
+  bgBusy = true;
+  const now = Math.floor(video.currentTime);
+  const frames = framesAround(now, STRIP_RESEARCH);
+  if (!frames.length) { bgBusy = false; return; }
+  const payload = {game: C.title, container_id: C.container_id, current_sec: now,
+                   frames: frames.map(f => ({offset_sec: Math.round(f.t - now), b64: f.dataurl.split(',')[1]}))};
+  const bid = bcallStart('pre', null, {...payload,
+    frames: `(${frames.length} 张: ${frames.map(f => Math.round(f.t - now) + 's').join(', ')})`,
+    _frame_preview: frames[frames.length - 1].dataurl});
+  payload.call_id = 'pre-' + bid;
+  const t0 = Date.now();
+  const ac = new AbortController();
+  bgAbort = ac;
+  const stopPoll = pollProgress(payload.call_id, bid);
+  const killer = setTimeout(() => ac.abort(), BG_LOOKUP_DEADLINE_MS);
+  try {
+    const base = $('#agentUrl').value.replace(/\/answer\/?$/, '');
+    const r = await fetch(base + '/research', {method: 'POST', signal: ac.signal,
+      headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
+    const j = await r.json();
+    bcallEnd(bid, 'ok', j, Date.now() - t0);
+    if (j.noteworthy) {
+      bgNotes.unshift({question: j.question, text: j.text, citations: j.citations, at: video.currentTime});
+      bgNotes = bgNotes.slice(0, 8);
+      updateTickBtn();
+      pushBgNoteToLive(j.question, j, {silent: true});   // 只喂料，不催它说话（没连 Live 时它自己会跳过）
+    }
+  } catch (e) {
+    const msg = e.name === 'AbortError' ? '让路给主播的问题（或超时），这条作废' : e.message;
+    bcallEnd(bid, 'err', {error: msg}, Date.now() - t0);
+  } finally {
+    clearTimeout(killer); stopPoll();
+    if (bgAbort === ac) bgAbort = null;
+    bgBusy = false;
+    drainPendingLookup();
+  }
+}
+
+function drainPendingLookup(){
+  if (!pendingLookup || bgBusy) return;
+  const {q, needFrame} = pendingLookup;
+  pendingLookup = null;
+  liveLine('sys', '🔍 补上刚才排队的查证：' + q.slice(0, 40));
+  runBackgroundLookup(q, needFrame);
+}
+
+/* 它自己提的问题 → 后台 codex（bg thread，没人等着）。结果塞进上下文，
+   并紧接着自检一次——这条是 agent 自己要的，所以它触发开口判断是合理的。 */
 async function runBackgroundLookup(query, needFrame){
   if (bgBusy || !C || !query) return;
   bgBusy = true;
   const now = Math.floor(video.currentTime);
-  const frames = needFrame ? framesAround(now) : [];
+  const frames = needFrame ? framesAround(now, STRIP_LOOKUP) : [];
   const payload = {query, game: C.title, container_id: C.container_id, current_sec: now,
                    background: true,
                    frames: frames.map(f => ({offset_sec: Math.round(f.t - now), b64: f.dataurl.split(',')[1]}))};
   const bid = bcallStart('bg', null, {...payload,
     frames: frames.length ? `(${frames.length} 张: ${frames.map(f => Math.round(f.t - now) + 's').join(', ')})` : undefined,
     _frame_preview: frames.length ? frames[frames.length - 1].dataurl : null});
+  payload.call_id = 'bg-' + bid;
   const t0 = Date.now();
+  const ac = new AbortController();
+  bgAbort = ac;
+  const stopPoll = pollProgress(payload.call_id, bid);
+  const killer = setTimeout(() => ac.abort(), BG_LOOKUP_DEADLINE_MS);
   try {
     const base = $('#agentUrl').value.replace(/\/answer\/?$/, '');
-    const r = await fetch(base + '/lookup', {method: 'POST',
+    const r = await fetch(base + '/lookup', {method: 'POST', signal: ac.signal,
       headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
     const j = await r.json();
     bcallEnd(bid, 'ok', j, Date.now() - t0);
@@ -413,15 +530,46 @@ async function runBackgroundLookup(query, needFrame){
     updateTickBtn();
     pushBgNoteToLive(query, j);
   } catch (e) {
-    bcallEnd(bid, 'err', {error: e.message}, Date.now() - t0);
+    const msg = e.name === 'AbortError' ? '让路给主播的问题（或超时），这条作废' : e.message;
+    liveLine('sys', '⚠️ 后台查证：' + msg);
+    bcallEnd(bid, 'err', {error: msg}, Date.now() - t0);
   } finally {
+    clearTimeout(killer); stopPoll();
+    if (bgAbort === ac) bgAbort = null;
     bgBusy = false;
+    drainPendingLookup();
   }
 }
 
+/* codex 的 --json 事件流里能看到它在读什么、搜什么，后端按 call_id 攒着，这里轮询回显。
+   只送进度不送半截答案：最终答案在 codex 那边本来就是一次成型的，
+   而且半截事实一旦进了前台语音引擎的上下文，它可能直接念出去。 */
+function pollProgress(callId, bid){
+  let stopped = false;
+  const base = $('#agentUrl').value.replace(/\/answer\/?$/, '');
+  const tick = async () => {
+    if (stopped) return;
+    try {
+      const r = await fetch(base + '/progress', {method: 'POST',
+        headers: {'Content-Type': 'application/json'}, body: JSON.stringify({call_id: callId})});
+      const j = await r.json();
+      if (j.lines && j.lines.length) {
+        const call = backendLog.find(c => c.id === bid);
+        if (call && call.state === 'pending') { call.progress = j.lines; renderBackendPane(); }
+        const last = j.lines[j.lines.length - 1];
+        if (last !== lastProgressLine) { lastProgressLine = last; liveLine('sys', '⏳ ' + last.slice(0, 60)); }
+      }
+    } catch {}
+    if (!stopped) setTimeout(tick, 1500);
+  };
+  setTimeout(tick, 1200);
+  return () => { stopped = true; };
+}
+let lastProgressLine = '';
+
 function bcallStart(kind, task_id, request){
   const id = ++bcallSeq;
-  backendLog.unshift({id, kind, at: new Date().toISOString(), task_id, request, state: 'pending', response: null, latency_ms: null});
+  backendLog.unshift({id, kind, at: new Date().toISOString(), task_id, request, state: 'pending', response: null, latency_ms: null, progress: []});
   renderBackendPane();
   return id;
 }
@@ -889,7 +1037,8 @@ function renderBackendPane(){
       <b style="color:var(--ink);">还没有后台调用记录。</b>三种方式触发一次看看：<br>
       ① 切到顶部「Agent 陪玩」模式 → 在「任务」tab 选一个任务 → 点「立即触发此任务」（会发给 codex，约 15-25 秒有回复）<br>
       ② 连上 🎙 Live 后播放视频，🔍 标记的任务会<b style="color:var(--p);">强制</b>调用 lookup_game_info（不是它自己判断"够不够确定"，而是这类任务硬性要求先查证）<br>
-      ③ 💭 自检 tick（默认开，需要连着 🎙 Live）：视频播放中每隔十几秒它自己做一次纯文本自检，同时决定要不要开口、要不要让后台查点东西——查什么由它自己提，它不知道未来的题目<br><br>
+      ③ 💭 自检（默认开，需要连着 🎙 Live）：播放中每 5 秒它自己做一次纯文本自检，同时决定要不要开口、要不要让后台查点东西<br>
+      ④ 🔮 备料（默认开）：每 30 秒把最近几帧交给 codex，让它自己想一个问题去查，查到的只当储备喂给前台，不会催它开口<br><br>
       <button class="jump" id="bpingBtn">发个测试请求看看效果 →</button>
     </div>`;
     const btn = $('#bpingBtn');
@@ -910,22 +1059,33 @@ function renderBackendPane(){
   const kindMeta = {
     http: {tag: 'HTTP', label: 'HTTP · /answer', dest: 'agent_live.py'},
     tool: {tag: 'TOOL', label: 'TOOL · lookup_game_info → /lookup', dest: 'codex（经 Realtime 工具调用）'},
-    bg: {tag: 'BG', label: '🔮 后台查证 · /lookup (background)', dest: 'codex bg thread（问题是它在自检里自己提的，不知道未来题目）'},
+    bg: {tag: 'BG', label: '🔍 后台查证 · /lookup (background)', dest: 'codex bg thread（问题是前台 agent 在自检里自己提的）'},
+    pre: {tag: 'PRE', label: '🔮 备料 · /research', dest: 'codex bg thread（问题是 codex 从最近几帧画面里自己想的，不知道未来题目）'},
   };
   pane.innerHTML = backendLog.map(c => {
     const km = kindMeta[c.kind] || kindMeta.http;
-    const stateLabel = c.state === 'pending' ? '⏳ 等待中…' : c.state === 'ok' ? '✓ 完成 ' + c.latency_ms + 'ms' : '✗ 失败';
+    const stateLabel = c.state === 'pending'
+      ? '⏳ ' + (c.progress && c.progress.length ? c.progress[c.progress.length - 1].slice(0, 40) : '等待中…')
+      : c.state === 'ok' ? '✓ 完成 ' + c.latency_ms + 'ms' : '✗ 失败';
     const req = c.request;
     const reqFields = c.kind === 'http'
       ? [['task_id', req.task_id], ['type', req.type], ['question', req.question], ['anchor_sec', req.anchor_sec],
          ['hint_level', req.hint_level], ['context_window_sec', JSON.stringify(req.context_window_sec)],
          ['game', req.game], ['transcript_excerpt', req.transcript_excerpt]]
+      : c.kind === 'pre'
+      ? [['game', req.game], ['container_id', req.container_id], ['frames', req.frames],
+         ['(输入)', '只有画面，没有任何题目文本']]
       : [['query', req.query], ['game', req.game], ['container_id', req.container_id],
          ['background', req.background ? 'true' : undefined], ['frames', req.frames]];
     const resHtml = (() => {
       if (c.state === 'pending') return '';
       if (c.response.error) return `<div class="btext">错误: ${escapeHtml(c.response.error)}</div>`;
-      const text = escapeHtml(c.response.text || '(空)');
+      if (c.kind === 'pre' && c.response.noteworthy === false) {
+        return `<div class="btext" style="color:var(--dim);">这几帧没什么值得查的，跳过（noteworthy: false）</div>`;
+      }
+      const text = c.kind === 'pre'
+        ? `<span class="k">它自己想的问题:</span> ${escapeHtml(c.response.question || '')}\n${escapeHtml(c.response.text || '')}`
+        : escapeHtml(c.response.text || '(空)');
       return `<div class="btext" style="white-space:pre-wrap;">${text}</div>
         ${c.response.citations && c.response.citations.length ? `<div class="bpayload" style="margin-top:6px;"><span class="k">citations:</span> ${escapeHtml(c.response.citations.join(', '))}</div>` : ''}`;
     })();
@@ -937,6 +1097,8 @@ function renderBackendPane(){
         <div class="bpayload">${reqFields.filter(([,v])=>v!==undefined&&v!==null&&v!=='').map(([k,v])=>`<span class="bfield"><span class="k">${k}:</span> ${escapeHtml(String(v))}</span>`).join('\n')}</div>
         ${req._frame_preview ? `<img class="bimg" src="${req._frame_preview}">` : ''}
       </div>
+      ${c.progress && c.progress.length ? `<div class="bleg res"><div class="blabel">⏳ 过程（codex 事件流）</div>
+        <div class="bpayload" style="white-space:pre-wrap;">${escapeHtml(c.progress.join('\n'))}</div></div>` : ''}
       ${c.state !== 'pending' ? `<div class="bleg res"><div class="blabel">← 返回</div>
         ${resHtml}
         ${c.response.debug_prompt ? `<details style="margin-top:6px;"><summary style="cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--dim);">codex 实际收到的完整 prompt</summary><div class="bpayload" style="margin-top:5px;white-space:pre-wrap;">${escapeHtml(c.response.debug_prompt)}</div></details>` : ''}
@@ -1194,11 +1356,19 @@ function zoomCenter(f){
 
 /* ════════════════ gpt-live (OpenAI Realtime, WebRTC) ════════════════ */
 const live = { connected: false, pc: null, dc: null, mic: null, pendingTask: null, respText: new Map(),
-               decisionText: new Map(), lastSpokeAt: null, lastCheckAt: null,
+               decisionText: new Map(), lastSpokeAt: null, lastCheckAt: null, userTurn: false,
                checking: false,
                feedFrames: true, graph: null, dest: null, micSrc: null };
-let audioIn = 'stream';   // 'stream' 原声 | 'tts' 合成任务语音 | 'off' 静音
+// 默认走合成语音条件：主播原声不进模型，音频侧只有锚点上的 TTS 提问。
+// 原声那档留着当对照，但它会不停触发 VAD，把「什么时候开口」这件事糊掉。
+let audioIn = 'tts';      // 'tts' 合成任务语音（默认） | 'stream' 原声 | 'off' 静音
 $('#audioIn').onchange = e => { audioIn = e.target.value; syncLiveGain(); };
+// 以前默认就是原声，所以初始不同步也听不出问题；改成默认合成语音之后，
+// 不在这里同步一次的话，页面加载完视频照样在放主播原声——档位要等到切模式
+// 或者连上 Live 才第一次生效。另外软刷新时浏览器会恢复上次的 select 值，
+// 所以顺手把控件也拨回 JS 里的状态，两边不能各说各的。
+$('#audioIn').value = audioIn;
+syncLiveGain();
 
 /* 合成语音条件：主播原声不喂给模型，只在任务锚点播放预生成的 TTS 提问，
    人和模型都通过混流听到，模型靠 VAD 听完自动作答 */
@@ -1228,7 +1398,9 @@ function sendLiveFrame(){
   const frame = captureFrame(512, 0.55);
   if (!frame) return;
   const t = Math.floor(video.currentTime);
-  pushFrameBuf(t, frame);          // 顺手留一份，后台查证需要看图时从这里取
+  // buffer 里存小一号的：一次备料要带十张，384px 比 512px 省一半多的体积和 codex 的处理时间
+  const small = captureFrame(384, 0.5);
+  if (small) pushFrameBuf(t, small);
   live.dc.send(JSON.stringify({type: 'conversation.item.create',
     item: {type: 'message', role: 'user', content: [
       {type: 'input_image', image_url: frame},
@@ -1252,10 +1424,20 @@ $('#frameRate').onchange = e => {
   clearInterval(frameTimer);
   frameTimer = setInterval(() => { if (!video.paused) sendLiveFrame(); }, +e.target.value);
 };
-let tickTimer = setInterval(() => { if (tickOn && !video.paused) selfCheck('例行'); }, 10000);
+let tickTimer = setInterval(() => { if (tickOn && !video.paused) selfCheck('例行'); }, 5000);
 $('#tickRate').onchange = e => {
   clearInterval(tickTimer);
   tickTimer = setInterval(() => { if (tickOn && !video.paused) selfCheck('例行'); }, +e.target.value);
+};
+let preTimer = setInterval(runIdleResearch, 30000);
+$('#preRate').onchange = e => {
+  clearInterval(preTimer);
+  preTimer = setInterval(runIdleResearch, +e.target.value);
+};
+$('#preBtn').onclick = () => {
+  researchOn = !researchOn;
+  $('#preBtn').classList.toggle('on', researchOn);
+  $('#preBtn').textContent = '🔮 ' + (researchOn ? '开' : '关');
 };
 function updateTickBtn(){
   $('#tickBtn').textContent = '💭 ' + (tickOn ? '开' : '关') + (bgNotes.length ? '·' + bgNotes.length : '');
@@ -1319,7 +1501,20 @@ async function liveConnect(){
       headers: {'Authorization': 'Bearer ' + tj.value, 'Content-Type': 'application/sdp'},
       body: offer.sdp,
     });
-    if (!sdpResp.ok) throw new Error('SDP 交换失败 ' + sdpResp.status);
+    if (!sdpResp.ok) {
+      // 光报状态码没用：额度耗尽、key 失效、模型没权限都在这一步失败，
+      // 原因只在响应体里。ephemeral key 那一步是不查额度的，所以问题一定拖到这里才暴露。
+      let detail = '';
+      try {
+        const body = await sdpResp.text();
+        const j = JSON.parse(body);
+        detail = (j.error && (j.error.message || j.error.code)) || body.slice(0, 200);
+      } catch { detail = ''; }
+      if (sdpResp.status === 429) detail = 'OpenAI platform 账号额度用完了（' + detail + '）。' +
+        '注意 codex 那条路走的是 ChatGPT 登录，不受影响，后台查证照常。';
+      else if (sdpResp.status === 401) detail = 'OPENAI_API_KEY 无效或已撤销。' + detail;
+      throw new Error('SDP 交换失败 ' + sdpResp.status + '：' + detail);
+    }
     await pc.setRemoteDescription({type: 'answer', sdp: await sdpResp.text()});
 
     live.connected = true;
@@ -1327,13 +1522,13 @@ async function liveConnect(){
     btn.classList.add('on');
     $('#liveLog').classList.add('on');
     setMode('agent');   // 连上即进入陪玩模式：按播放它就开始
-    liveLine('sys', `已连接 ${tj.model}，已自动切到「Agent 陪玩」。音频通道两档：📺 原声 = 它全程听主播；🗣 合成语音 = 主播静音，只在任务锚点听到 TTS 提问。画面每 5 秒一帧（🖼 有计数）。暂停即静默。`);
+    liveLine('sys', `已连接 ${tj.model}，已自动切到「Agent 陪玩」。音频默认 🗣 合成语音：主播原声不进模型，只在任务锚点听到 TTS 提问；要它全程听现场就切 📺 原声。画面每 5 秒一帧（🖼 有计数）。暂停即静默。`);
     setTimeout(sendLiveFrame, 500);   // 立刻给它看一眼当前画面
   } catch (err) {
     btn.textContent = '🎙 Live';
     liveLine('sys', '连接失败：' + err.message);
     $('#liveLog').classList.add('on');
-    setTimeout(() => { if (!live.connected) $('#liveLog').classList.remove('on'); }, 6000);
+    setTimeout(() => { if (!live.connected) $('#liveLog').classList.remove('on'); }, 30000);   // 失败原因别一闪而过
     liveCleanup();
   }
 }
@@ -1347,6 +1542,8 @@ function liveDisconnect(){
   $('#liveLog').innerHTML = '';
 }
 function liveCleanup(){
+  live.checking = false;
+  clearTimeout(live.checkGuard);
   try { live.dc && live.dc.close(); } catch {}
   try { live.pc && live.pc.close(); } catch {}
   try { live.mic && live.mic.getTracks().forEach(t => t.stop()); } catch {}
@@ -1367,7 +1564,7 @@ function liveLine(who, text, task){
     div.appendChild(gr);
   }
   log.appendChild(div);
-  while (log.children.length > 4) log.removeChild(log.firstChild);
+  while (log.children.length > 8) log.removeChild(log.firstChild);
 }
 
 function handleLiveEvent(ev){
@@ -1376,26 +1573,44 @@ function handleLiveEvent(ev){
     const id = ev.response_id || 'r';
     live.respText.set(id, (live.respText.get(id) || '') + (ev.delta || ''));
   } else if (t === 'response.output_text.delta' || t === 'response.text.delta') {
-    // 纯文本响应 = 自检 tick（用户听不到）。用 delta 类型区分，不用状态标志，
-    // 因为 VAD 触发的语音回答可能跟自检并发，靠标志会串。
     const id = ev.response_id || 'r';
     live.decisionText.set(id, (live.decisionText.get(id) || '') + (ev.delta || ''));
   } else if (t === 'response.done') {
     const id = (ev.response && ev.response.id) || 'r';
-    if (live.decisionText.has(id)) {
-      const dec = live.decisionText.get(id);
-      live.decisionText.delete(id);
-      onSelfCheckDecision(dec);
+    const st = (ev.response && ev.response.status) || 'completed';
+    if (st !== 'completed') {
+      // 失败/被打断的响应以前是静悄悄的，自检卡在 checking 上等 20 秒守卫，
+      // 看起来就像「它什么都不说」
+      const d = (ev.response && ev.response.status_details) || {};
+      const why = (d.error && (d.error.message || d.error.code)) || d.reason || st;
+      liveLine('sys', '⚠️ 这一轮响应没完成（' + st + '）：' + why);
+      live.respText.delete(id); live.decisionText.delete(id);
+      if (live.checking) { live.checking = false; clearTimeout(live.checkGuard); }
+      live.pendingTask = null;
       return;
     }
-    const text = live.respText.get(id) || '';
-    live.respText.delete(id);
-    if (text.trim()) {
-      liveLine('ai', text.trim(), live.pendingTask);
-      live.lastSpokeAt = video.currentTime;
+    const spoken = (live.respText.get(id) || '').trim();
+    const plain  = (live.decisionText.get(id) || '').trim();
+    live.respText.delete(id); live.decisionText.delete(id);
+    // 「说没说」看有没有语音转写，不看有没有文本 delta。以前按 delta 类型区分自检和语音，
+    // 一个语音响应只要顺带出了文本，那句真说出口的话就被吞进自检分支：日志里不显示、
+    // lastSpokeAt 不更新、noteProactiveHit 不执行，window_hit 会永远记不上。
+    if (spoken) {
+      liveLine('ai', spoken, live.pendingTask);
+      live.lastSpokeAt = Date.now();
       noteProactiveHit(video.currentTime);
+      live.pendingTask = null;
+      live.userTurn = false;      // 答完了，后台可以继续干自己的活
+      return;
     }
+    if (plain) { onSelfCheckText(plain); return; }
     live.pendingTask = null;
+  } else if (t === 'input_audio_buffer.speech_started') {
+    // 最早能知道「有人在问我」的信号，比工具调用早十几秒
+    live.userTurn = true;
+    yieldBgToUser('主播开口了');
+  } else if (t === 'input_audio_buffer.speech_stopped') {
+    live.userTurn = true;      // 他说完了但还没答，仍然算他的回合
   } else if (t === 'conversation.item.input_audio_transcription.completed') {
     if (ev.transcript && ev.transcript.trim()) liveLine('you', ev.transcript.trim());
   } else if (t === 'response.output_item.done' && ev.item && ev.item.type === 'function_call') {
@@ -1407,17 +1622,24 @@ function handleLiveEvent(ev){
 
 /* gpt-live 的 lookup_game_info 工具 → 转给 codex 后端翻资料，结果回填后它继续用语音说 */
 async function handleToolCall(item){
+  if (item.name === 'decide') { handleDecideCall(item); return; }
   if (item.name !== 'lookup_game_info') return;
   let args = {};
   try { args = JSON.parse(item.arguments || '{}'); } catch {}
+  live.userTurn = true;
+  await yieldBgToUser('主播的问题要查证');   // 前台要用 codex，先把后台那条清掉
   liveLine('sys', '🔍 后台查询中（codex，约15-20秒）：' + (args.query || ''));
   const lookupPayload = {query: args.query || '', game: C.title, container_id: C.container_id, current_sec: Math.floor(video.currentTime)};
   const bid = bcallStart('tool', live.pendingTask ? live.pendingTask.task_id : null, lookupPayload);
+  lookupPayload.call_id = 'fg-' + bid;
+  const stopFgPoll = pollProgress(lookupPayload.call_id, bid);
   const t0 = Date.now();
+  const ac = new AbortController();
+  const killer = setTimeout(() => ac.abort(), FG_LOOKUP_DEADLINE_MS);
   let output;
   try {
     const base = $('#agentUrl').value.replace(/\/answer\/?$/, '');
-    const r = await fetch(base + '/lookup', {method: 'POST',
+    const r = await fetch(base + '/lookup', {method: 'POST', signal: ac.signal,
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(lookupPayload)});
     const j = await r.json();
@@ -1425,9 +1647,12 @@ async function handleToolCall(item){
     output = j.text + (j.citations && j.citations.length ? `（出处：${j.citations.join('，')}）` : '');
     liveLine('sys', '📄 查到（' + Math.round(j.latency_ms/1000) + 's）：' + (j.text || '').slice(0, 90));
   } catch (e) {
-    bcallEnd(bid, 'err', {error: e.message}, Date.now() - t0);
-    output = '后台查询失败：' + e.message + '。请基于你已知的信息谨慎回答，不确定就说不确定。';
-    liveLine('sys', '📄 查询失败：' + e.message);
+    const msg = e.name === 'AbortError' ? `超过 ${FG_LOOKUP_DEADLINE_MS / 1000}s 没回` : e.message;
+    bcallEnd(bid, 'err', {error: msg}, Date.now() - t0);
+    output = '后台查询失败：' + msg + '。别再等了，就用你已经知道的说，不确定的地方直接说不确定。';
+    liveLine('sys', '📄 查询失败：' + msg);
+  } finally {
+    clearTimeout(killer); stopFgPoll();
   }
   if (!live.dc || live.dc.readyState !== 'open') return;
   live.dc.send(JSON.stringify({type: 'conversation.item.create',
@@ -1451,10 +1676,13 @@ video.addEventListener('play', () => {
    扳机就是这个 tick：定期让它出一个「纯文本」响应（用户听不到），在这一轮里同时
    决定要不要开口、要不要让后台去查东西。文本响应用 output_modalities 限定，所以
    判断「不说」的时候是真的安静，不会冒出一句「我觉得没什么好说的」。
-   扳机只此一个：后台结果回来只塞上下文、不另外触发一次判断，否则同一时刻会判两次。 */
+   触发点有两个：定时器，和后台资料回来的那一刻（它手上刚多了具体信息）。两个共用
+   MIN_CHECK_GAP_MS 这道闸和 live.checking 标志，所以同一时刻不会判两次——多余发言
+   罚得最狠，宁可晚几秒也不能重复开口。 */
 
-/* 后台查回来的东西塞进对话上下文，不触发回应——下一次 tick 它自然会看到。 */
-function pushBgNoteToLive(question, j){
+/* 后台查回来的东西塞进对话上下文（不带 response.create，所以不会直接出声），
+   然后紧接着自检一次：它刚拿到具体信息，正是最该判断说不说的时候。 */
+function pushBgNoteToLive(question, j, opt){
   if (!live.connected || !live.dc || live.dc.readyState !== 'open') return;
   const cites = (j.citations && j.citations.length) ? `（出处：${j.citations.join('，')}）` : '';
   live.dc.send(JSON.stringify({type: 'conversation.item.create',
@@ -1463,7 +1691,9 @@ function pushBgNoteToLive(question, j){
       `Q: ${question}\nA: ${j.text}${cites}\n` +
       `（不用现在回应，先放你手上；下一次自检你会看到它。）`
     }]}}));
-  liveLine('sys', '📥 后台回了一条：' + (question || '').slice(0, 40));
+  liveLine('sys', (opt && opt.silent ? '🔮 备料：' : '📥 后台回了一条：') + (question || '').slice(0, 40));
+  // 它自己要的那条才触发自检；备料是我们定时喂的，让它去催开口就等于我们在定说话的节奏
+  if (!(opt && opt.silent)) selfCheck('后台刚回了料，');
 }
 
 const TICK_PROMPT = `现在没人问你话，这是一次自检——用户听不到你这一轮的输出。
@@ -1474,48 +1704,108 @@ const TICK_PROMPT = `现在没人问你话，这是一次自检——用户听�
 他大概率会好奇的具体东西而你手上正好有相关资料、或者场面特别滑稽。
 不值得：只是正常推进、你要说的话没什么信息量、或者你刚说过差不多的话。
 
-二、要不要让后台去查点东西。后台查一次要 15-20 秒，所以查的是你现在还用不上、但接下来
-很可能派上用场的东西：画面里出现了具体的道具/机制/报错/界面元素，而你对它的准确细节
-（数值、规则、含义）其实没把握。不要查你随口就能答对的常识，也不要查画面上一眼能看见的事。
-你对这类细节的记忆本来就不可靠，「感觉大概知道」不算知道。
+二、要不要让后台去查点东西。判据是**看画面里有什么**，不是问你自己有多确定——
+画面里只要出现了具体的名词性东西（道具、机关、界面元素、报错、地名、数值），
+就挑一个提出来查它的准确细节，因为主播十有八九会问「这是什么」「这怎么回事」。
+后台查一次 15-20 秒，查回来的东西是储备，现在用不上不要紧。
+只有当画面确实没有任何具体元素（纯过场、纯黑屏、单纯在走路说话）时才留空。
+别用「我大概知道」当作不查的理由：你对数值、规则细节、报错含义的记忆本来就不可靠。
 
-只回一行 JSON，不要输出别的：
-{"speak": true/false, "say": "要说的话的要点，不说就空字符串", "lookup": "要查的问题，不查就 null", "need_frame": true/false}
-need_frame 表示这次查证得附上画面截图才问得清楚。`;
+把结论通过 decide 工具交回来，这一轮不要用说话或写字的方式回答：
+speak = 现在要不要开口；say = 要说的话的要点（不说就空字符串）；
+lookup = 想让后台查的问题（不查就空字符串）；need_frame = 这次查证要不要附上画面截图。`;
 
 const FORCE_LOOKUP_NOTE = `
 
 注意：你已经连续很多次没提出任何要查的东西了。「感觉不用查」通常不是真的不用查。
-这一次 lookup 不许为 null——从画面里挑一个你说不出准确细节的具体东西去查。`;
+这一次 decide 的 lookup 不许为空——从画面里挑一个你说不出准确细节的具体东西去查。`;
+
+const DECIDE_TOOL = {
+  type: 'function', name: 'decide',
+  description: '自检专用：把这一轮的判断结果交回来。',
+  parameters: {type: 'object', properties: {
+    speak: {type: 'boolean', description: '此刻要不要开口说话'},
+    say: {type: 'string', description: '要说的话的要点；不说就传空字符串'},
+    lookup: {type: 'string', description: '想让后台查的问题；不需要查就传空字符串'},
+    need_frame: {type: 'boolean', description: '这次查证要不要附上当前画面截图'}},
+    required: ['speak', 'say', 'lookup', 'need_frame']}
+};
 
 function selfCheck(why){
   if (!tickOn || !live.connected || mode !== 'agent' || video.paused) return;
   if (!live.dc || live.dc.readyState !== 'open') return;
+  if (live.userTurn) return;                                       // 主播正在问，先答他
   if (live.pendingTask) return;                                    // 正在处理锚点任务，别插嘴
   if (live.checking) return;                                       // 上一次自检还没回来
-  const now = video.currentTime;
-  if (now - (live.lastSpokeAt ?? -99) < 20) return;                // 刚说过就先歇会儿
+  // 闸门都用挂钟时间：视频可以倍速也可以往回拖，用视频时间会算歪
+  const now = Date.now();
+  if (now - (live.lastSpokeAt ?? -1e12) < SPOKE_COOLDOWN_MS) return;   // 刚说过就先歇会儿
+  if (now - (live.lastCheckAt ?? -1e12) < MIN_CHECK_GAP_MS) return;    // 两次自检之间的地板
   const force = noLookupTicks >= FORCE_LOOKUP_AFTER;
   live.checking = true;
   live.lastCheckAt = now;
+  // 自检的响应要是丢了（断线/API 报错），checking 会永远卡住让 tick 彻底哑掉
+  clearTimeout(live.checkGuard);
+  live.checkGuard = setTimeout(() => { live.checking = false; }, 20000);
   liveLine('sys', '💭 ' + (why || '例行') + '自检：说不说 / 查不查' + (force ? '（这次强制提一个查证）' : ''));
+  // 结论必须走 decide 工具：Realtime 没有 response_format，光在 instructions 里写
+  // 「只回一行 JSON」没有任何约束力，它经常回一句人话，于是每次自检都解析失败。
+  // 工具调用的 arguments 由 API 按 schema 校验，是这套 API 里唯一可靠的结构化出口。
   live.dc.send(JSON.stringify({type: 'response.create',
     response: {output_modalities: ['text'],
+               // 工具定义随这一轮一起发，不依赖 session 配置里已经有它：
+               // server.py 改过之后没重启的话，光靠 tool_choice 点名会直接报错，
+               // 那一轮永远完不成，表现就是它彻底不说话了
+               tools: [DECIDE_TOOL],
+               tool_choice: {type: 'function', name: 'decide'},
                instructions: TICK_PROMPT + (force ? FORCE_LOOKUP_NOTE : '')}}));
 }
 
-function onSelfCheckDecision(text){
+/* 正路：自检的结论以 decide 工具调用的形式回来，arguments 是 API 校验过的 JSON */
+function handleDecideCall(item){
   live.checking = false;
-  let d = null;
-  const m = (text || '').match(/\{[\s\S]*\}/);
-  if (m) { try { d = JSON.parse(m[0]); } catch {} }
-  if (!d) { liveLine('sys', '💬 自检返回没解析出来，跳过：' + (text || '').trim().slice(0, 50)); return; }
+  clearTimeout(live.checkGuard);
+  let d = {};
+  try { d = JSON.parse(item.arguments || '{}'); } catch {}
+  if (live.dc && live.dc.readyState === 'open') {
+    // 工具调用得有个结果回去，否则这次调用一直挂着；但不发 response.create，
+    // 要不要说话由下面的 applyDecision 决定
+    live.dc.send(JSON.stringify({type: 'conversation.item.create',
+      item: {type: 'function_call_output', call_id: item.call_id, output: 'ok'}}));
+  }
+  applyDecision(d);
+}
 
-  const q = d.lookup && String(d.lookup).trim();
+/* 兜底：它没走工具，直接回了文本 */
+function onSelfCheckText(text){
+  if (!live.checking) return;        // 不是自检那一轮的输出，别当成决定
+  live.checking = false;
+  clearTimeout(live.checkGuard);
+  const raw = (text || '').trim();
+  const m = raw.match(/\{[\s\S]*\}/);
+  let d = null;
+  if (m) { try { d = JSON.parse(m[0]); } catch {} }
+  if (!d) {
+    liveLine('sys', '💬 自检没走 decide 工具，按「不说」处理：' + raw.slice(0, 60));
+    noLookupTicks++;
+    return;
+  }
+  applyDecision(d);
+}
+
+function applyDecision(d){
+  liveLine('sys', `🧠 decide: speak=${!!d.speak} lookup=${d.lookup ? '「' + String(d.lookup).slice(0, 24) + '」' : '无'}`);
+  const q = d.lookup == null ? '' : String(d.lookup).trim();
   if (q && q.toLowerCase() !== 'null') {
     noLookupTicks = 0;
-    if (bgBusy) liveLine('sys', '🔍 想查「' + q.slice(0, 30) + '」，但后台还在忙，这次跳过');
-    else { liveLine('sys', '🔍 它自己要查：' + q.slice(0, 50)); runBackgroundLookup(q, !!d.need_frame); }
+    if (bgBusy) {
+      // 丢掉的话，后台一忙（备料一次就是二三十秒）它自己提的问题就永远轮不上
+      pendingLookup = {q, needFrame: !!d.need_frame};
+      liveLine('sys', '🔍 它自己要查：' + q.slice(0, 40) + '（后台忙，排队）');
+    } else {
+      liveLine('sys', '🔍 它自己要查：' + q.slice(0, 50));
+      runBackgroundLookup(q, !!d.need_frame);
+    }
   } else {
     noLookupTicks++;
   }
@@ -1526,7 +1816,8 @@ function onSelfCheckDecision(text){
   if (!live.dc || live.dc.readyState !== 'open') return;
   live.dc.send(JSON.stringify({type: 'response.create', response: {instructions:
     `你刚判断这一刻值得开口，要点是：${point}\n` +
-    `现在用自然口语说出来。一两句就够，别念稿子，别把要点原样复述一遍。` +
+    `现在用自然口语说出来，一两句就够。是"说"出来的不是"写"出来的：不要"首先/另外/建议你/` +
+    `可以尝试"这类书面词，不要长句套长句，句子长了就断开。别念稿子，别把要点原样复述一遍。\n` +
     `如果这需要具体事实（数值/机制/报错含义）而你手上没有，先调 lookup_game_info 再说。`}}));
 }
 

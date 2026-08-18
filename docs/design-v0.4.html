@@ -181,76 +181,88 @@ td,th{overflow-wrap:anywhere;}
 <section>
   <p class="eyebrow">Part 2</p>
   <h2>agent 怎么工作</h2>
-  <p>agent 由两个引擎组成。<b>OpenAI Realtime API</b> 负责说话，它听得到现场、也能随时出声，但不方便查资料。
-  <b>codex CLI</b> 负责查证，能读资料也能搜网，答得扎实但比较慢，一次需要七秒到四十秒。两者之间通过一次 HTTP 调用连接。</p>
+  <p>agent 由两个引擎组成。<b>OpenAI Realtime API</b> 常驻在浏览器这端：听直播原声、每 5 秒看一帧画面、负责说话，
+  是全程唯一连续跟着直播的一端。<b>codex CLI</b> 负责查证，能读资料也能搜网，答得扎实但比较慢，一次需要七秒到四十秒，
+  而且它每次只看到一张画面和一个问题，听不到声音，也不知道刚才发生过什么。两者之间通过一次 HTTP 调用连接。</p>
+
+  <p>分工线画在哪是这一块的关键：<b>后端只是工具，不做任何判断</b>——把问题连同按进度挑出的资料原文、提示分级规则拼成 prompt 交给 codex，
+  拿回一段文字和引用。说什么、什么时候说、查什么、什么时候查，全部由常驻的那一端决定，而它做这些决定的地方只有一个。</p>
 
   <figure class="diagram">
-<svg viewBox="0 0 780 250" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="三个端点共用同一段查证：锚点触发的 answer、语音引擎调用的 lookup、每 15 秒自主的 research，中间都由 agent_live 拼 prompt 交给 codex，结果分别去 TTS、语音引擎对话、语音引擎上下文">
+<svg viewBox="0 0 780 328" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="浏览器把原声和每5秒一帧喂给常驻的 Realtime 引擎；每 5 秒一次纯文本自检同时决定说不说和查不查；要说就发语音响应，要查就交给 codex 后台线程；另有主播问出声和定时备料两条辅路">
     <defs><marker id="ar7" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
 
-    <!-- 左：谁发起 -->
-    <rect x="8" y="20" width="160" height="52" rx="8" fill="var(--panel)" stroke="var(--line)"/>
-    <text x="26" y="43" font-size="12" font-weight="600" fill="var(--ink)">视频经过锚点</text>
-    <text x="26" y="61" font-size="11" fill="var(--muted)">问题是题目里写好的</text>
+    <rect x="8" y="44" width="146" height="92" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="24" y="68" font-size="12" font-weight="600" fill="var(--ink)">浏览器</text>
+    <text x="24" y="90" font-size="11" fill="var(--ink)">🔊 直播原声</text>
+    <text x="24" y="108" font-size="11" fill="var(--ink)">🖼 每 5 秒一帧</text>
+    <text x="24" y="126" font-size="10.5" fill="var(--muted)">都只进上下文</text>
 
-    <rect x="8" y="92" width="160" height="52" rx="8" fill="var(--panel)" stroke="var(--line)"/>
-    <text x="26" y="115" font-size="12" font-weight="600" fill="var(--ink)">语音引擎要查证</text>
-    <text x="26" y="133" font-size="11" fill="var(--muted)">问题是它自己提的</text>
+    <g color="var(--muted)"><line x1="154" y1="90" x2="176" y2="90" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar7)"/></g>
 
-    <rect x="8" y="164" width="160" height="62" rx="8" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
-    <text x="26" y="187" font-size="12" font-weight="600" fill="var(--accent)">播放中每 15 秒</text>
-    <text x="26" y="205" font-size="11" fill="var(--muted)">没有人问，只给它一帧画面</text>
-    <text x="26" y="220" font-size="11" fill="var(--muted)">查不查、查什么它自己定</text>
+    <rect x="180" y="34" width="170" height="112" rx="8" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="196" y="58" font-size="12.5" font-weight="700" fill="var(--accent)">Realtime 引擎（常驻）</text>
+    <text x="196" y="82" font-size="11" fill="var(--ink)">听得到 · 看得到</text>
+    <text x="196" y="100" font-size="11" fill="var(--ink)">记得刚才聊过什么</text>
+    <text x="196" y="126" font-size="10.5" fill="var(--muted)">但它不会自发说话</text>
 
-    <g color="var(--muted)">
-      <line x1="168" y1="46" x2="244" y2="46" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar7)"/>
-      <line x1="168" y1="118" x2="244" y2="118" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar7)"/>
-      <line x1="168" y1="195" x2="244" y2="195" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar7)"/>
-    </g>
-    <text x="206" y="38" font-size="10" text-anchor="middle" font-family="Menlo,monospace" fill="var(--muted)">/answer</text>
-    <text x="206" y="110" font-size="10" text-anchor="middle" font-family="Menlo,monospace" fill="var(--muted)">/lookup</text>
-    <text x="206" y="187" font-size="10" text-anchor="middle" font-family="Menlo,monospace" fill="var(--accent)">/research</text>
+    <g color="var(--muted)"><line x1="350" y1="90" x2="390" y2="90" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar7)"/></g>
 
-    <!-- 中：agent_live 干的活 -->
-    <rect x="248" y="20" width="242" height="206" rx="8" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
-    <text x="266" y="44" font-size="12.5" font-weight="700" fill="var(--accent)">agent_live.py</text>
-    <text x="266" y="72" font-size="11.5" font-weight="600" fill="var(--ink)">① 拼 prompt</text>
-    <text x="266" y="92" font-size="11" fill="var(--ink)">当前帧（主动型再加 5 张历史缩图）</text>
-    <text x="266" y="110" font-size="11" fill="var(--ink)">按进度挑的资料原文（整篇）</text>
-    <text x="266" y="128" font-size="11" fill="var(--ink)">提示分级 · 剧透红线</text>
-    <text x="266" y="158" font-size="11.5" font-weight="600" fill="var(--ink)">② codex exec resume</text>
-    <text x="266" y="178" font-size="11" fill="var(--ink)">读资料，不够就搜网 · 7–40 秒</text>
-    <text x="266" y="208" font-size="11.5" font-weight="600" fill="var(--ink)">③ 回 text + SOURCES 一行</text>
+    <rect x="394" y="24" width="176" height="132" rx="8" fill="var(--accent)"/>
+    <text x="410" y="50" font-size="12.5" font-weight="700" fill="var(--accent-ink)">自检 · 每 5 秒一次</text>
+    <text x="410" y="74" font-size="11" fill="var(--accent-ink)">同时决定两件事：</text>
+    <text x="410" y="96" font-size="10.5" font-family="Menlo,monospace" fill="var(--accent-ink)">speak — 现在说不说</text>
+    <text x="410" y="114" font-size="10.5" font-family="Menlo,monospace" fill="var(--accent-ink)">lookup — 要不要查</text>
+    <text x="410" y="140" font-size="10.5" fill="var(--accent-ink)">用户听不到，结论走工具调用</text>
 
     <g color="var(--muted)">
-      <line x1="490" y1="46" x2="542" y2="46" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar7)"/>
-      <line x1="490" y1="118" x2="542" y2="118" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar7)"/>
-      <line x1="490" y1="195" x2="542" y2="195" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar7)"/>
+      <line x1="570" y1="58" x2="602" y2="58" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar7)"/>
+      <line x1="570" y1="122" x2="602" y2="122" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar7)"/>
     </g>
 
-    <!-- 右：结果去哪 -->
-    <rect x="546" y="20" width="226" height="52" rx="8" fill="none" stroke="var(--line)"/>
-    <text x="564" y="43" font-size="12" font-weight="600" fill="var(--ink)">浏览器 TTS 直接念</text>
-    <text x="564" y="61" font-size="11" fill="var(--muted)">所以压到 3–6 句</text>
+    <rect x="606" y="34" width="166" height="48" rx="8" fill="none" stroke="var(--line)"/>
+    <text x="620" y="56" font-size="12" font-weight="600" fill="var(--ink)">开口</text>
+    <text x="620" y="74" font-size="10.5" fill="var(--muted)">再发一次语音响应</text>
 
-    <rect x="546" y="92" width="226" height="52" rx="8" fill="none" stroke="var(--line)"/>
-    <text x="564" y="115" font-size="12" font-weight="600" fill="var(--ink)">回语音引擎的对话里</text>
-    <text x="564" y="133" font-size="11" fill="var(--muted)">由它提炼成口语，所以不限长度</text>
+    <rect x="606" y="98" width="166" height="62" rx="8" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="620" y="120" font-size="12" font-weight="600" fill="var(--accent)">交给 codex 查</text>
+    <text x="620" y="138" font-size="10.5" fill="var(--muted)">后台会话 · 15–20 秒</text>
+    <text x="620" y="153" font-size="10.5" fill="var(--muted)">问题是它自己提的</text>
 
-    <rect x="546" y="164" width="226" height="62" rx="8" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
-    <text x="564" y="187" font-size="12" font-weight="600" fill="var(--accent)">塞进语音引擎的上下文</text>
-    <text x="564" y="205" font-size="11" fill="var(--muted)">标成「后台资料」，紧接着</text>
-    <text x="564" y="220" font-size="11" fill="var(--muted)">问一次「现在要不要说」</text>
+    <g color="var(--accent)">
+      <path d="M689 160 L689 192 L265 192 L265 148" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar7)"/>
+    </g>
+    <text x="477" y="185" font-size="10.5" text-anchor="middle" fill="var(--accent)">查回来的内容标成「后台资料」塞进上下文，不直接出声，但立刻触发一次自检</text>
+
+    <rect x="8" y="218" width="764" height="102" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 4"/>
+    <text x="26" y="242" font-size="11.5" font-weight="600" fill="var(--ink)">另一条路：主播直接问出声</text>
+    <text x="26" y="262" font-size="11" fill="var(--muted)">语音检测听到之后它自己调查证工具，走同一个后端，只是换成前台会话（有人在等结果）。标了必须引用的题会强制走这一次查证。</text>
+    <text x="26" y="290" font-size="11.5" font-weight="600" fill="var(--accent)">备料通道（可关）：每 30 秒把最近十帧交给 codex，它自己想一个问题去查</text>
+    <text x="26" y="310" font-size="11" fill="var(--muted)">查回来的只塞进上下文当储备，不触发自检——它可以喂料，但不能决定什么时候说话。</text>
   </svg>
-  <figcaption class="cap">图 4 · 三个入口共用同一个后端。有没有人在等结果、要等多久，决定了每个入口适合返回多长的内容。</figcaption>
+  <figcaption class="cap">图 4 · 全程只有一个决策点，两个触发点：定时器，和后台内容回来的那一刻。两者之间有五秒的最小间隔，所以同一时刻不会判两次。</figcaption>
   </figure>
+
+  <p>还有一条备料通道：定时把最近几帧交给 codex，让它自己从画面里想一个问题去查。这条路本来想删掉，
+  因为查证的节奏由评测框架定，不由 agent 定。实测之后还是留下了：常驻的那一端<b>几乎从不主动提出要查东西</b>——
+  对话式模型不肯承认自己不确定，跟必须引用的题要强制查证是同一个毛病。光靠它自己开口要，后台会长时间一片空白，
+  等主播真问起来又只能现查。</p>
+
+  <p>留下来的同时改了两处，把它限制成纯粹的「喂料」：一是输入从单帧变成最近几帧的时间线，
+  单帧看不出画面是刚推进过来还是原地打转；二是<b>备料查回来的内容不触发自检</b>。
+  这条边界是有意画的——喂料可以由框架定时做，但什么时候说话必须完全由 agent 自己决定，
+  否则测出来的时机就是我们的节奏，不是它的。这条通道可以整条关掉，用来对照它完全自力更生时的表现。</p>
+
+  <p>自检的间隔决定了主动开口最快能有多快。卡关这种慢变化的时刻，十秒二十秒的粒度都够；
+  真正吃亏的是庆祝、惊吓、名场面这类情绪反应，晚八秒的一句「漂亮」等于没说，所以间隔定在五秒。
+  代价不是钱，是每次自检都要重读一遍不断变长的会话上下文。</p>
 
   <div class="tablebox"><table>
     <tr><th style="width:150px;">这一块</th><th>干什么</th></tr>
-    <tr><td>浏览器</td><td>放视频，把直播原声和画面帧喂给 Realtime，到锚点时触发题目，收到回答后念出来</td></tr>
-    <tr><td>Realtime API</td><td>全程在听在看，自己判断要不要开口。需要具体事实时调工具，拿回结果后用口语说出来</td></tr>
-    <tr><td>本地 HTTP 服务</td><td>把资料、画面、提示分级规则拼成 prompt 交给 codex，拿回文字和引用</td></tr>
-    <tr><td>codex CLI</td><td>读资料和截图，资料不够就搜网，产出带出处的答案</td></tr>
+    <tr><td>浏览器</td><td>放视频，把直播原声和画面帧喂给 Realtime，到锚点时触发题目，收到回答后念出来；顺手留最近四分钟的画面备用</td></tr>
+    <tr><td>Realtime API</td><td>全程在听在看。每五秒、以及后台内容回来时做一次自检，同时决定要不要开口、要不要让后台查东西；主播问出声时由语音检测直接回应，不经过自检</td></tr>
+    <tr><td>本地 HTTP 服务</td><td>把问题、资料、画面、提示分级规则拼成 prompt 交给 codex，拿回文字和引用；有人等的和没人等的分两条会话</td></tr>
+    <tr><td>codex CLI</td><td>读资料和截图，资料不够就搜网，产出带出处的答案。要不要说话它一概不管；备料通道里它可以自己想问题，但也仅止于此</td></tr>
   </table></div>
 
   <h3>一道题从触发到判分</h3>
@@ -296,11 +308,20 @@ td,th{overflow-wrap:anywhere;}
   <h3>几个关键设计</h3>
   <div class="tablebox"><table>
     <tr><th style="width:160px;">设计</th><th>解决什么</th></tr>
-    <tr><td>开口时机自己定</td><td>Realtime 不会自发说话，只往对话里塞画面不会触发任何输出。所以后台一查到内容就立刻塞给它，紧接着问一次现在要不要说。这次判断走纯文本，用户听不到，判定不说的时候不会产生任何声音</td></tr>
+    <tr><td>开口时机自己定</td><td>Realtime 不会自发说话，只往对话里塞画面不会触发任何输出，所以需要定期让它自己判断一次。这次判断走纯文本，用户听不到，判定不说的时候不会产生任何声音。判断的入口只有这一个，触发它的有两处：五秒一次的定时器，和后台内容回来的那一刻。两处共用一道五秒的最小间隔，避免同一时刻判两遍</td></tr>
+    <tr><td>结论怎么交回来</td><td>不能让它写一行 JSON 了事。Realtime 没有结构化输出的开关，在提示词里要求「只回 JSON」没有任何约束力，实测它经常回一句人话，前端只能靠正则去猜，结果每次自检都解析失败。改成用一次强制的工具调用把结论交回来，参数由 API 按 schema 校验，这是这套 API 里唯一可靠的结构化出口</td></tr>
+    <tr><td>主播问话优先</td><td>主播一开口（语音检测就是最早的信号，比工具调用早十几秒），后台正在跑的那条立刻让路：浏览器掐掉请求，后端把 codex 子进程杀掉——只掐请求没用，进程还在占着 CPU 和那条会话，前台的查证只会更慢。被杀的那条会话一并作废，下次从干净的会话重开。这段时间也不自检、不备料</td></tr>
+    <tr><td>过程要看得见</td><td>codex 的事件流里能看到它在读哪份资料、搜什么词，后端按调用 id 攒着，前端轮询回显。只送过程不送半截答案：答案在 codex 那边本来就是一次成型的，而半截事实一旦进了语音引擎的上下文，它可能直接念出去</td></tr>
+    <tr><td>说的是话不是稿</td><td>同一份内容写出来和说出来不是一回事。提示词里明确禁掉「首先/其次/建议你/需要注意的是」这类书面词、禁掉条目和长句套长句，并给了对照例句：「建议你优先尝试利用货叉的升降机制到达高处平台」是错的，「那个叉车能升降嘛，你把它抬起来当电梯用」才对</td></tr>
+    <tr><td>备料不许催开口</td><td>备料是框架定时驱动的，它只把查到的内容塞进 agent 的上下文；只有 agent 自己在自检里提出的查证，回来时才会触发下一次自检。喂料和决定说话的时机是两回事，后者必须留在 agent 手里</td></tr>
+    <tr><td>备料不备完整解法</td><td>备的是「这是什么、怎么回事」。整套通关步骤摆在 agent 手上很容易提前说出去，所以备料明确只写方向性内容，也不写当前进度之后的关卡和剧情</td></tr>
+    <tr><td>查证要有截止线</td><td>codex 自己不会因为查得太久停手，只能从外面卡：有人等的四十秒、没人等的九十秒、锚点题一百二十秒，超时返回一句能直接用的话，而不是让前台干等。前端另有一条稍宽的截止线，否则后端一挂，「正在查」的标志就永远落不下来，从此一条都发不出去</td></tr>
+    <tr><td>连着不提问就要求它提</td><td>把查什么交给它有个已知风险：对话式模型很少表示自己不确定，可能一直觉得不用查。所以连续六次自检都没提出问题时，下一次会要求它必须提一个——要求的是提问本身，问题仍由它自己出</td></tr>
     <tr><td>主动型题带一条时间线</td><td>值不值得开口取决于这段时间发生了什么，单张画面看不出来。比如通关那一帧是角色在云里下坠，和掉出地图的画面几乎一样。所以额外附上锚点之前几个时间点的缩图</td></tr>
     <tr><td>该查的必须查</td><td>对话式模型很少表示自己不确定，容易把没有查过的内容说得像查过一样。标了必须引用的题会强制它走一次查证，判分时再看引用里有没有内容</td></tr>
     <tr><td>资料按进度给</td><td>资料是整篇拼进 prompt 的，篇数一多每道题都要付这份成本。常驻的只放底层设定，其余按当前进度取当前和下一段</td></tr>
-    <tr><td>查证之间接得上</td><td>每次都开新进程的话，五分钟前查过的内容下一次用不上，只能从头再搜。改成接着上一轮继续，前台和后台各走一条，避免互相排队</td></tr>
+    <tr><td>查证之间接得上</td><td>每次都开新进程的话，五分钟前查过的内容下一次用不上，只能从头再搜。改成接着上一轮继续，主播问出声的走前台、自检提的走后台，避免有人等的查证排在后台后面</td></tr>
+    <tr><td>画面留一份备用</td><td>直播模式视频在播，没法像锚点触发时那样暂停回去截帧，所以每 5 秒喂给它的那张顺手留一份（384px，留 5 分钟）。取用时近处密、远处稀：备料取十帧，最近二十秒里每五秒一张，再往前逐渐拉开到四分钟。隔一分钟才一帧是看不出动态的——刚做成一件事、刚摔下去、还是原地打转，都发生在最近十几秒里</td></tr>
   </table></div>
 </section>
 
