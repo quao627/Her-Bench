@@ -214,7 +214,7 @@ td,th{overflow-wrap:anywhere;}
 
     <rect x="360" y="22" width="168" height="110" rx="8" fill="var(--accent)"/>
     <text x="374" y="44" font-size="12" font-weight="700" fill="var(--accent-ink)">自检 · 每 <tspan font-family="Menlo,monospace">T_tick</tspan></text>
-    <text x="374" y="66" font-size="10.5" fill="var(--accent-ink)">一次判断，两个结论：</text>
+    <text x="374" y="66" font-size="10.5" fill="var(--accent-ink)">发一段自检 prompt 去问它：</text>
     <text x="374" y="86" font-size="10.5" font-family="Menlo,monospace" fill="var(--accent-ink)">speak  现在说不说</text>
     <text x="374" y="102" font-size="10.5" font-family="Menlo,monospace" fill="var(--accent-ink)">lookup 要不要查</text>
     <text x="374" y="122" font-size="10" fill="var(--accent-ink)">纯文本，用户听不到</text>
@@ -370,7 +370,7 @@ td,th{overflow-wrap:anywhere;}
   <h3>几个关键设计</h3>
   <div class="tablebox"><table>
     <tr><th style="width:160px;">设计</th><th>解决什么</th></tr>
-    <tr><td>只有一个决策点</td><td>主动开口这件事得自己搭：Realtime API 不会自己触发生成，往对话里塞画面、塞后台资料都不会让它出声，只有显式发一次请求、或者语音检测判定主播说完了才会。所以要定期让它自己判断一次，开口和查证在同一次判断里决定。触发这次判断的有两处：<span class="t">T_tick</span> 的定时器，和后台内容回来的那一刻，两处共用一道最小间隔。判断走纯文本，用户听不到</td></tr>
+    <tr><td>只有一个决策点</td><td>主动开口这件事得自己搭：Realtime API 不会自己触发生成，往对话里塞画面、塞后台资料都不会让它出声，只有显式发一次请求、或者语音检测判定主播说完了才会。所以要定期发一段固定的自检 prompt 去问它一次：现在没人问你话，这一轮用户听不到，看一眼画面和手上的资料，同时定两件事——要不要开口、要不要让后台查东西。定时器只管什么时候问，问什么由这段 prompt 定，结论用一次强制的工具调用交回来。触发这次提问的有两处：<span class="t">T_tick</span> 的定时器，和后台内容回来的那一刻，两处共用一道最小间隔。判断走纯文本，用户听不到</td></tr>
     <tr><td>主播问话优先</td><td>主播一开口，后台正在跑的那条立刻让路：浏览器掐掉请求，后端把 codex 子进程杀掉，那条会话一并作废，下次从干净的会话重开。这段时间也不自检、不备料</td></tr>
     <tr><td>喂料和开口分开</td><td>备料是定时驱动的，它只把查到的内容塞进上下文；只有 agent 自己提出的查证，回来时才会触发下一次自检。什么时候说话必须留在 agent 手里，这条通道可以整条关掉做对照</td></tr>
     <tr><td>判断要看一段时间线</td><td>值不值得开口取决于这段时间发生了什么，单帧看不出是刚推进过来还是原地打转。比如通关那一帧是角色在云里下坠，和掉出地图的画面几乎一样。所以每次都带 <span class="t">N_look</span> 或 <span class="t">N_brief</span> 帧，近处密、远处稀</td></tr>
@@ -430,10 +430,64 @@ td,th{overflow-wrap:anywhere;}
   </table></div>
 
   <h3>出题流程</h3>
-  <p>每道题都对应视频里真实发生的一件事。<b>提出和验证由不同的 agent 负责</b>：一批分段扫视频提候选，另一批重新截帧逐条检查。</p>
-  <p>两条必须做到。一是<b>锚点要截帧核对</b>，转写只能定位大概位置，题目里的现场描述必须是这一帧上真有的东西。
-  二是<b>锚点要落在证据出现之后</b>，像「过关了」这种要靠场景切换才看得出来的事，锚点得推到画面变化之后。</p>
-  <p>资料整篇拼进 prompt，写错会直接进到回答里，所以每篇标出处，查不到依据的写「未证实」，几个来源说法不一致就把分歧写出来。</p>
+  <p>每道题都对应视频里真实发生的一件事。<b>提出和验证由不同的 agent 负责</b>。</p>
+
+  <figure class="diagram">
+<svg viewBox="0 0 780 316" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="出题流程：素材进来，一批 agent 分段扫全片提候选，逐条截帧定锚点，另一批 agent 重新截帧过六项检查，任一条不过就打回重提；下方是锚点的两条硬规则和资料核对规则">
+    <defs><marker id="aq" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+
+    <rect x="8" y="34" width="168" height="102" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="22" y="56" font-size="11.5" font-weight="700" fill="var(--ink)">① 素材</text>
+    <text x="22" y="78" font-size="10.5" font-family="Menlo,monospace" fill="var(--muted)">episode.mp4</text>
+    <text x="22" y="96" font-size="10.5" font-family="Menlo,monospace" fill="var(--muted)">transcript.jsonl</text>
+    <text x="22" y="114" font-size="10.5" font-family="Menlo,monospace" fill="var(--muted)">resources/*.md</text>
+    <text x="22" y="130" font-size="10" fill="var(--muted)">一个视频一个 container</text>
+
+    <g color="var(--muted)"><line x1="176" y1="85" x2="196" y2="85" stroke="currentColor" stroke-width="1.5" marker-end="url(#aq)"/></g>
+
+    <text x="200" y="24" font-size="10" font-weight="700" fill="var(--accent)" letter-spacing=".5">一批 agent</text>
+    <rect x="200" y="34" width="168" height="102" rx="8" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="214" y="56" font-size="11.5" font-weight="700" fill="var(--accent)">② 提候选</text>
+    <text x="214" y="78" font-size="10.5" fill="var(--ink)">分段扫全片，找谜题、</text>
+    <text x="214" y="94" font-size="10.5" fill="var(--ink)">卡关、失误、第一次</text>
+    <text x="214" y="110" font-size="10.5" fill="var(--ink)">出现的东西</text>
+    <text x="214" y="130" font-size="10" fill="var(--muted)">产出：事件 + 大概时间</text>
+
+    <g color="var(--muted)"><line x1="368" y1="85" x2="388" y2="85" stroke="currentColor" stroke-width="1.5" marker-end="url(#aq)"/></g>
+
+    <rect x="392" y="34" width="168" height="102" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="406" y="56" font-size="11.5" font-weight="700" fill="var(--ink)">③ 定锚点、写题</text>
+    <text x="406" y="78" font-size="10.5" fill="var(--ink)">逐条截帧核对</text>
+    <text x="406" y="94" font-size="10.5" fill="var(--ink)">用主播第一人称写问题</text>
+    <text x="406" y="110" font-size="10.5" fill="var(--ink)">写 rubric 和防剧透清单</text>
+    <text x="406" y="130" font-size="10" fill="var(--muted)">见下面两条硬规则</text>
+
+    <g color="var(--muted)"><line x1="560" y1="85" x2="580" y2="85" stroke="currentColor" stroke-width="1.5" marker-end="url(#aq)"/></g>
+
+    <text x="584" y="24" font-size="10" font-weight="700" fill="var(--bad)" letter-spacing=".5">另一批 agent</text>
+    <rect x="584" y="34" width="188" height="102" rx="8" fill="var(--bad-soft)" stroke="var(--bad)" stroke-width="1.5"/>
+    <text x="598" y="56" font-size="11.5" font-weight="700" fill="var(--bad)">④ 独立验证</text>
+    <text x="598" y="76" font-size="10.5" fill="var(--ink)">重新截帧，逐条过六项：</text>
+    <text x="598" y="94" font-size="10.5" fill="var(--ink)">可答性 · 非 trivial · 剧透</text>
+    <text x="598" y="110" font-size="10.5" fill="var(--ink)">撞车 · rubric 可判 · 编造</text>
+    <text x="598" y="130" font-size="10" fill="var(--muted)">出题的 agent 不验自己的题</text>
+
+    <g color="var(--bad)">
+      <path d="M678 136 L678 158 L284 158 L284 136" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#aq)"/>
+    </g>
+    <text x="481" y="153" font-size="10.5" text-anchor="middle" fill="var(--bad)">任何一项不过就打回重提</text>
+
+    <rect x="8" y="176" width="764" height="76" rx="8" fill="none" stroke="var(--accent)" stroke-dasharray="4 4"/>
+    <text x="24" y="196" font-size="10.5" font-weight="700" fill="var(--accent)" letter-spacing="1">锚点的两条硬规则</text>
+    <text x="24" y="218" font-size="11" fill="var(--ink)">一 · 必须截帧核对。转写只用来定位大概位置，具体是哪一秒看画面；scene 写的必须是这一帧上真有的东西</text>
+    <text x="24" y="240" font-size="11" fill="var(--ink)">二 · 必须落在证据出现之后。「过关了」这种要靠场景切换才看得出来，锚点得推到画面变化之后，否则可见范围里无解</text>
+
+    <rect x="8" y="262" width="764" height="46" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 4"/>
+    <text x="24" y="282" font-size="10.5" font-weight="700" fill="var(--muted)" letter-spacing="1">资料也要核</text>
+    <text x="24" y="300" font-size="11" fill="var(--ink)">整篇拼进 prompt，写错会直接进到回答里：每篇标真实出处，查不到依据的写「未证实」，几个来源说法不一致就把分歧写出来</text>
+  </svg>
+  <figcaption class="cap">图 7 · 出题流程。两条硬规则都是为了让题在自己的可见范围里有解，而且题面写的确实是画面上发生过的事。</figcaption>
+  </figure>
 
   <h3>怎么判</h3>
   <p>两类题都判说得对不对，主动型再多判一项时机。</p>
@@ -489,7 +543,7 @@ td,th{overflow-wrap:anywhere;}
     <text x="340" y="246" font-size="11.5" fill="var(--bad)" text-anchor="middle">窗口也命中了，但静默段开口 4 次，逐次扣分</text>
     <text x="340" y="266" font-size="10.5" fill="var(--bad)" text-anchor="middle" font-family="Menlo,monospace">window_hit ✓ · over_trigger 4</text>
   </svg>
-  <figcaption class="cap">图 7 · 时机不能只看命中率。两行 agent 的 window_hit 一样，但一个静默段开口 0 次，一个 4 次。</figcaption>
+  <figcaption class="cap">图 8 · 时机不能只看命中率。两行 agent 的 window_hit 一样，但一个静默段开口 0 次，一个 4 次。</figcaption>
   </figure>
 
   <h3>一道题的文件</h3>
