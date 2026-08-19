@@ -1,0 +1,138 @@
+[
+ {
+  "start_sec": 304,
+  "end_sec": 361,
+  "kind": "误解了规则",
+  "need": "他刚发现敌人不是单纯的吓人贴脸特效，而是真的会跟随/追击；这时需要一句简短安抚加机制澄清，帮他从乱跑切换到规避。",
+  "look_for": "应该能看到 Tinky Winky 在远处或中距离持续出现在同一片区域，并随着玩家移动保持追踪，而不是一次性跳脸后消失。玩家镜头可能突然转开并开始持续奔跑。",
+  "evidence": [
+   {
+    "t": 304,
+    "text": "huh I didn't know he was following me I thought it was just one of those games there's a pop-up in front of your face but nothing happens okay I'm running everywhere now haha Oh scary music go away"
+   },
+   {
+    "t": 346,
+    "text": "okay so is he gonna be this is like the spongebob uh spongebob"
+   },
+   {
+    "t": 361,
+    "text": "sandy pants where he kind of just wanders across the field after you"
+   }
+  ],
+  "help_points": [
+   "先安抚一句：敌人看起来是在巡追/跟随，不是立刻必死，别慌。",
+   "提醒他偶尔回头确认敌人位置，避免只顾直冲把自己跑迷路。",
+   "建议优先拉开视线和距离，再继续找收集物，不要因为误以为只是贴脸效果而无视敌人。"
+  ],
+  "must_not_say": [
+   "不要透露敌人的完整 AI 行为、速度细节或击杀条件。",
+   "不要直接给出最佳逃课路线或后续安全点位置。"
+  ],
+  "hint_level": "direction_only",
+  "confidence": 0.82,
+  "drop_reason": "只看这几帧，看不出明确的异常或完成迹象；没有明显可辨认的敌人持续出现在画面里，也没有界面提示、报错、进度变化或反复卡在同一处的明确证据。"
+ },
+ {
+  "start_sec": 471,
+  "end_sec": 499,
+  "kind": "怕/慌了",
+  "need": "他被追上时明显慌乱，需要一句简短安抚加逃生方向。",
+  "look_for": "应该能看到敌人非常接近玩家身后，镜头抖动或频繁回头，玩家冲向几座圆顶小屋并尝试靠近/进入。",
+  "evidence": [
+   {
+    "t": 471,
+    "text": "my god what to tell you w house sunny w house I can't slow down stinky wake you right there thinking wait he's right there behind me don't slow down keep going can I get in these two houses remind"
+   },
+   {
+    "t": 499,
+    "text": "okay where is he where is he where are you tinker's Arius Ron away"
+   }
+  ],
+  "help_points": [
+   "先安抚：别停，先拉开距离，比确认敌人位置更重要。",
+   "提示不要指望进屋脱险，优先绕开障碍物继续跑。",
+   "提醒可以利用回头确认一次方位，但不要连续回头到减速。"
+  ],
+  "must_not_say": [
+   "不要剧透敌人的完整追击机制。",
+   "不要直接告诉他终点或安全点的精确位置。"
+  ],
+  "hint_level": "direction_only",
+  "confidence": 0.77,
+  "drop_reason": "单看这串帧，只能看出人在黑暗场景里持续跑动并调整视角，画面是在正常推进；看不出被什么追上、也看不出明确的卡住、失败或刚完成一件事的可辨认迹象。"
+ },
+ {
+  "start_sec": 575,
+  "end_sec": 600,
+  "kind": "误解了规则",
+  "need": "他开始根据少量经验武断推断收集物不会离路太远，这可能把搜索方向带偏。",
+  "look_for": "应该能看到他走进死路后掉头，并开始沿着明显的小路/房屋周边搜；收集进度一段时间没有变化，镜头对 off-path 区域搜索变少。",
+  "evidence": [
+   {
+    "t": 575,
+    "text": "dead-end is bad"
+   },
+   {
+    "t": 575,
+    "text": "god I can't find anything anymore yeah tree I know you're"
+   },
+   {
+    "t": 589,
+    "text": "okay so they're not gonna be off the beaten path I figured that out by now I"
+   },
+   {
+    "t": 598,
+    "text": "here to tell you Toby house again I heard like a buzzing here it is can I get up on top of it can I go inside huh what was that that wasn't a Teletubby oh I can't go inside there's"
+   }
+  ],
+  "help_points": [
+   "纠正他的搜索思路：别过早认定收集物只会在路边，路外和地标附近也值得扫。",
+   "提示死路本身信息量不大，掉头后换一个扇区继续找，比反复检查房子更有效。",
+   "提醒房子不一定能进入，不要把太多时间耗在尝试进屋上。"
+  ],
+  "must_not_say": [
+   "不要直接说某个 custard 就在某棵树后或某个房子旁。",
+   "不要给出完整最优搜图路线。"
+  ],
+  "hint_level": "direction_only",
+  "confidence": 0.8,
+  "drop_reason": "只看这几帧，能看出人在户外夜间继续走动和转视角，但看不出明显卡在同一处、来回走同一路、进入死路后掉头，或因为规则误解而导致的异常；也没有足够清晰的 HUD/收集进度可供判断是否长时间没变化。"
+ },
+ {
+  "start_sec": 648,
+  "end_sec": 688,
+  "kind": "怕/慌了",
+  "need": "他被突脸/近距离遭遇明显吓到并短暂慌乱，这时一句安抚和简单逃生方向会有用。",
+  "look_for": "应该能看到敌人突然近距离出现在画面中，伴随镜头剧烈甩动、快速转身或逃跑；也可能出现他短时间失去方向感的移动。",
+  "evidence": [
+   {
+    "t": 648,
+    "text": "holy [ __ ] oh my god oh"
+   },
+   {
+    "t": 654,
+    "text": "that scared the bejesus out of me holy [ __ ] good job in the sound effect oh my god oh my god that"
+   },
+   {
+    "t": 668,
+    "text": "terrified the [ __ ] out of me"
+   },
+   {
+    "t": 688,
+    "text": "that was scary Oh tinky-winky you're such a dick your dick get away from you suck tinky-winky"
+   }
+  ],
+  "help_points": [
+   "先安抚：被贴脸吓到很正常，先拉开距离，不用急着回头看。",
+   "提醒他优先朝开阔地跑，避免把自己逼进房子、角落或屋顶附近。",
+   "如果画面允许，提示他边跑边观察障碍物，别在慌乱里卡地形。"
+  ],
+  "must_not_say": [
+   "不要剧透敌人的固定刷新点或完整追逐机制。",
+   "不要提前透露后面还会在哪再被吓到。"
+  ],
+  "hint_level": "direction_only",
+  "confidence": 0.92,
+  "drop_reason": "只看这几帧，10:48到11:28这段像是正常在夜晚室外转视角和移动，看不出明确的卡住、来回反复、报错提示，或清楚可见的“突然近距离出现了什么东西”与明显完成迹象。"
+ }
+]

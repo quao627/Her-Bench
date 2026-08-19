@@ -1,0 +1,88 @@
+{
+ "container_id": "blender-e02",
+ "title": "Blender 一周挑战·浓缩复盘（Ritchi）",
+ "video": {
+  "src": "/media/blender_e02.mp4",
+  "duration": 566,
+  "streamer": "Ritchi",
+  "source_url": "https://www.youtube.com/watch?v=OrmKzaeoL2c"
+ },
+ "thumbs": {
+  "prefix": "/data/thumbs/ble_",
+  "count": 2,
+  "interval": 300,
+  "offset": 30
+ },
+ "chapters": [
+  {
+   "t": 0,
+   "end_t": 50,
+   "label": "开场·立 Flag"
+  },
+  {
+   "t": 50,
+   "end_t": 169,
+   "label": "Level 1·跟教程建模"
+  },
+  {
+   "t": 169,
+   "end_t": 307,
+   "label": "Level 2·原创角色"
+  },
+  {
+   "t": 307,
+   "end_t": 566,
+   "label": "Level 3·最终挑战"
+  }
+ ],
+ "mode": "proactive_only",
+ "note": "评测时不给原声、不给转写、不给题目，agent 只看画面帧自己决定什么时候开口。evidence 是出题依据，判分时给判分员看，不给被测的 agent。",
+ "tasks": [
+  {
+   "task_id": "blender-e02-p01",
+   "type": "proactive",
+   "window_sec": [
+    238,
+    281
+   ],
+   "context_window_sec": [
+    0,
+    281
+   ],
+   "kind": "方法用错了",
+   "need": "他在给角色上材质/继续绘制时，材质和颜色互相覆盖，且不同部位的绘制串到一起，明显没搞清纹理与绘制流程/对象分配。",
+   "visible": "从 3:58 到 4:32 这几帧里，角色在 Blender 里先是整块偏橙色、表面有一大片深色刷痕，随后又变成紫色、蓝色、青蓝色，左侧贴图/UV 视图也跟着换；画面一直在材质/绘制相关界面之间切换，但角色外观没有稳定地朝一个明确结果推进，看起来是在同一块东西上反复改来改去。",
+   "scene": "前两帧是桌前双屏和一个参考画面。要判的几帧里，先是一个球/角色表面的近景，橙色表面上有竖向深色涂抹痕；接着是 Blender 界面里的小角色模型和节点/材质面板；再接着是纹理绘制界面，左边有贴图/UV 视图，右边是角色模型，角色颜色先后显示为紫色、蓝色、青蓝色，嘴部和身体都在同一个模型视图里可见；最后一帧切到人物对镜头说话。",
+   "hint_level": "full",
+   "evidence": [
+    {
+     "t": 238,
+     "text": "applying this clay texture was an absolute nightmare because I didn't really know how it worked to apply a texture to a character because I've never done it before and I'm a beginner but then like the whole painting I did on the character is gone"
+    },
+    {
+     "t": 253,
+     "text": "because applying the texture to the character made my painting go away so like all my hours of effort was all for nothing so I sucked it up and started from the beginning with the coloring so I tried to paint on the body but when I painted on the body the texture went"
+    },
+    {
+     "t": 267,
+     "text": "away like yo how hard can this be but then I took a gradient instead it freaking worked man"
+    },
+    {
+     "t": 281,
+     "text": "but when I tried to paint on the mouth after doing this it painted also on the body so I'm like what the hell"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "先确认嘴和身体是不是在用同一个材质或同一张纹理；如果是，画嘴时改到身体就会一起变。",
+     "上材质前先保留已有绘制：应把颜色绘制放在贴图里并接回材质，而不是直接用新材质把原来的显示顶掉。",
+     "如果想单独画嘴，给嘴单独材质/单独贴图，或确认它有独立的 UV 区域。"
+    ],
+    "must_not_say": [
+     "不要直接给出完整节点搭建步骤。",
+     "不要剧透他最后会选择删掉嘴放弃。"
+    ]
+   }
+  }
+ ]
+}

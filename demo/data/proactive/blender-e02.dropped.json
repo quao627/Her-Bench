@@ -1,0 +1,60 @@
+[
+ {
+  "start_sec": 281,
+  "end_sec": 293,
+  "kind": "误解了规则",
+  "need": "他不知道为什么画嘴巴时会同时涂到身体上，实际上是多个部位共用同一张贴图/UV 区域或未隔离材质，误以为这是随机出错。",
+  "visible": "画面上角色已经有身体颜色和材质；当他在嘴巴区域下笔时，身体别处同步出现相同笔触或颜色变化。接着他反复尝试在嘴部绘制，但每次都会连带改动身体，最后删除嘴巴放弃。这个“一个部位上色，另一个部位同步变化”的现象能直接从画面看出来。",
+  "evidence": [
+   {
+    "t": 281,
+    "text": "but when I tried to paint on the mouth after doing this it painted also on the body so I'm like what the hell"
+   },
+   {
+    "t": 281,
+    "text": "so I think I tried for two or three hours before I just deleted the mouth and gave up on that"
+   }
+  ],
+  "help_points": [
+   "指出这通常不是画笔坏了，而是嘴和身体共用了同一材质/同一贴图区域，或 UV 重叠了。",
+   "提醒检查 mouth 和 body 是否是同一个材质槽、同一张图像纹理，或在 UV 编辑里是否叠在一起。",
+   "如果想单独画嘴巴，可以给嘴单独材质/单独贴图，或先把对应 UV 岛分开后再画。"
+  ],
+  "must_not_say": [
+   "不要直接泄露他后面会选择删掉嘴巴。",
+   "不要展开成完整 UV 教学或角色贴图课程。"
+  ],
+  "hint_level": "full",
+  "confidence": 0.95,
+  "drop_reason": "不通过的点在于：这几帧并没有直接显示“在嘴巴区域下笔时，身体别处同步出现相同笔触或颜色变化”，也看不出“反复尝试在嘴部绘制”“每次都会连带改动身体”“最后删除嘴巴放弃”这些过程。要成立，至少需要连续画面明确展示笔触前后对应部位同步变化；这里只是一个软件静帧加两帧讲话镜头。关于他因此需要帮助、原因是共用贴图/UV/材质未隔离，更属于解释和推断，不能算画面可直接见内容。"
+ },
+ {
+  "start_sec": 419,
+  "end_sec": 433,
+  "kind": "卡住出不去",
+  "need": "他在给角色做坐姿/手部姿势时把模型拉坏了，而且受镜像限制，想摆出单手拿杯的动作却做不到，需要一个可行的变通方向。",
+  "visible": "画面上应能看到人物模型在姿态编辑中被拖拽、局部变形明显（头部/腿部异常），随后重建角色；接着继续在同一角色姿态界面调整，但双臂会同步镜像移动，导致两只手一起抬起，长时间停留在角色摆姿势这一步。",
+  "evidence": [
+   {
+    "t": 419,
+    "text": "and I tried to like manipulate the character to have it seated I just destroyed the characters that like the head was bulging in and the legs looked weird so I took an L I deleted it and I made a new one much better"
+   },
+   {
+    "t": 433,
+    "text": "I also tried to post the characters but I can really move around the characters since I was limited of a mirroring Aid I used in the program so when I tried to make him drink both of the hands wanted a drink"
+   }
+  ],
+  "help_points": [
+   "先别硬拉网格本体，坐姿和抬手这种动作优先用骨骼/姿态去摆，不要直接把头腿顶点拽变形。",
+   "如果镜像开着导致两边一起动，先临时关掉 X Mirror / Symmetry，再单独调一侧手臂。",
+   "镜头只拍到桌边的话，可以只把能看见的上半身和手部摆自然，降低全身都要完美的压力。"
+  ],
+  "must_not_say": [
+   "不要直接给出后面完整的人物绑定/权重绘制全流程。",
+   "不要剧透最终成品或后面渲染结果。"
+  ],
+  "hint_level": "full",
+  "confidence": 0.86,
+  "drop_reason": "给出的 visible 描述里，只有“在 Blender 里调整角色模型/姿态相关内容”这类非常宽泛的信息还能勉强沾边；但更具体的说法这几帧都看不实。看不出“被拖拽”的动作过程，也看不出“随后重建角色”；看不出“头部/腿部异常”到了明确可判定的局部变形明显；也看不出“继续在同一角色姿态界面调整”“双臂同步镜像移动”“两只手一起抬起”“长时间停留在摆姿势这一步”。至于“玩的人需要帮助”“想摆出单手拿杯却做不到”更是对意图和状态的推测，不属于这几帧里能直接看见的内容。"
+ }
+]

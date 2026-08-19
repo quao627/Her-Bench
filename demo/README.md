@@ -26,6 +26,69 @@
 锚点间隔低于 60 秒时要单独确认两道题不冲突：不同主题、答案不重叠、
 触发时机不打架（query 会暂停视频等作答，proactive 有 30-100 秒响应窗口）才可以共存。
 
+
+## 纯 proactive 模式
+
+跟主界面并行的另一套，入口 `app/proactive.html`（主界面右上角「👁 纯 Proactive」）。
+
+一句话说清差别：**agent 只看得到画面，听不到任何声音，也没有人向它提问。**
+什么时候开口、说什么，全由它自己判断。
+
+```
+python3 server.py                                  # 同一个服务，多一个 /app/proactive.html
+open http://localhost:8080/app/proactive.html
+```
+
+### 题是怎么来的
+
+```
+python3 mine_proactive.py <container_id> <path/to/en.vtt>
+python3 build_proactive_index.py
+```
+
+`mine_proactive.py` 分两段：
+
+1. **从转写里提候选**。按分钟切段喂给模型，找「他这会儿确实需要帮助」的时刻：
+   自言自语问这是啥、同一个地方反复试、翻半天找不到东西、理解错了规则、被吓到、
+   刚做成一件事。每个候选带上让你这么判断的原话（`evidence`，原样抄的）。
+   提候选的模型看不到画面，所以它只写 `look_for`：如果这事是真的，画面上应该能找到什么。
+
+2. **截帧核**。在窗口内取八帧（外加两帧铺垫），让模型只看这串画面判断：
+   一个听不到声音的人能不能察觉这里不太顺。能察觉才留下，`visible` 和 `scene`
+   由这一步写，保证写进题里的是画面上真有的东西。核不过的进 `<id>.dropped.json`。
+
+这一步刷掉的比留下的多，是有意的：只在嘴上抱怨、画面上完全没痕迹的时刻，
+对一个只有画面的 agent 来说是无解题。
+
+### 一道题长什么样
+
+```jsonc
+{
+  "task_id": "slendytubbies-e01-p02",
+  "type": "proactive",
+  "window_sec": [361, 417],          // 这段时间里开口才算接住
+  "kind": "卡住出不去",
+  "need": "他不知道自己该往哪走，环境太相似",
+  "visible": "这几帧一直在很像的夜晚树林里来回转视角，前后没有出现新地点",
+  "evidence": [                       // 出题依据，判分时给判分员看，被测的 agent 看不到
+    {"t": 361, "text": "where am I going I don't know everything looks so the same"}
+  ],
+  "grading": {
+    "help_points": ["先选一个稳定策略：沿边走、认单一地标", "..."],
+    "must_not_say": ["不要直接说最后一个收集物在哪"]
+  }
+}
+```
+
+### 怎么算分
+
+- 窗口内开口 = 接住，同一个窗口只认第一句，记晚了多少秒
+- 所有窗口之外的发言 = 多余，逐次记
+- 接住之后再判说得有没有用：对着 `help_points` 逐条勾，另外看剧透、提示分级、是不是在念稿
+
+判分走 `/api/judge`，跟主界面同一条：单独一个模型、单独一次调用。
+
+
 ## 快速开始
 
 ```bash

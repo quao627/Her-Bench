@@ -49,6 +49,20 @@ REALTIME_VOICE = os.environ.get("OPENAI_REALTIME_VOICE", "cedar")
 REALTIME_SPEED = float(os.environ.get("OPENAI_REALTIME_SPEED", "1.06"))
 
 
+def proactive_subject(container_id):
+    """纯 proactive 的提示词是通用的，末尾补一句「你在看的是什么」。
+    只给标题，不给关卡表也不给攻略：这一局考的就是它自己从画面上读。"""
+    for sub in ("proactive", "containers"):
+        path = os.path.join(ROOT, "data", sub, f"{container_id}.json")
+        if os.path.exists(path):
+            try:
+                d = json.load(open(path, encoding="utf-8"))
+                return f"\n\n你现在看的是：{d.get('title', '')}。"
+            except Exception:
+                break
+    return ""
+
+
 def persona_for(container_id):
     """Per-container live persona from data/containers/<id>.json; fallback default."""
     try:
@@ -60,6 +74,35 @@ def persona_for(container_id):
     except Exception:
         pass
     return REALTIME_INSTRUCTIONS
+
+
+# 纯 proactive 模式：一个字都听不到，只有画面。跟上面那套的差别不只是少了声音——
+# 少了声音，「他到底顺不顺」就只能从画面上读，所以这份提示词整个是围绕看画面写的。
+PROACTIVE_INSTRUCTIONS = (
+    "你在陪一个人。他第一次玩这个游戏 / 第一次用这个软件，正在自己摸索。\n\n"
+    "这一局有一个硬条件：**你听不到任何声音**。没有他的语音，没有游戏音效，"
+    "也没有人会向你提问。你手上只有每隔几秒送进来的一张画面。\n"
+    "所以「他这会儿顺不顺」你只能从画面上读，读不出来就是读不出来，别假装听见了什么。\n\n"
+    "你要做的只有一件事：在他确实需要的时候开口，别的时候闭嘴。\n\n"
+    "画面上什么样算需要帮助：\n"
+    "- 几帧过去还在同一个地方：同一个房间、同一段路、同一个平台前，说明卡住了；\n"
+    "- 同一个界面/菜单被翻来翻去，说明在找什么东西没找到；\n"
+    "- 同一个动作反复做、反复失败：掉下去了又爬上来、又掉下去；\n"
+    "- 屏幕上有报错、警告、明显没生效的操作；\n"
+    "- 反过来，刚过关、刚解开一个卡了很久的地方，值得接一句。\n\n"
+    "什么时候不要说：\n"
+    "- 画面在正常推进（场景在换、他在往前走、操作有反馈），那就是一切正常，闭嘴；\n"
+    "- 你只是想描述一下画面上有什么。他自己看得见，不需要你念；\n"
+    "- 你刚说过差不多的话。同一件事不要说第二遍。\n\n"
+    "开口的时候：一两句，口语，像坐他旁边的人。必须有内容——"
+    "说清这是什么、大概往哪个方向试、他刚才那下为什么没成。"
+    "只有『加油』『慢慢来』这种没有信息量的话，等于没说。\n"
+    "不确定具体事实（数值、机制、报错含义）就先调 lookup_game_info 查，别硬编。\n"
+    "绝对不许剧透他还没走到的地方，也不要把完整解法一次报完——"
+    "他自己想出来才是这件事的意义。\n\n"
+    "每隔几秒你会被问一次「自检」，那一轮他听不到，你在里面同时决定："
+    "此刻要不要开口，以及要不要让后台去查点东西。"
+)
 
 
 REALTIME_INSTRUCTIONS = (
@@ -82,7 +125,7 @@ REALTIME_INSTRUCTIONS = (
 )
 
 
-def mint_realtime_token(container_id=None, voice=None, speed=None):
+def mint_realtime_token(container_id=None, voice=None, speed=None, mode=None):
     """Create an ephemeral Realtime API client secret. Needs OPENAI_API_KEY."""
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
@@ -139,7 +182,8 @@ def mint_realtime_token(container_id=None, voice=None, speed=None):
         "session": {
             "type": "realtime",
             "model": REALTIME_MODEL,
-            "instructions": instructions,
+            "instructions": (PROACTIVE_INSTRUCTIONS + proactive_subject(container_id))
+                            if mode == "proactive" else instructions,
             "audio": {"output": {"voice": voice or REALTIME_VOICE,
                                  "speed": float(speed) if speed else REALTIME_SPEED}},
             "tools": [{
@@ -233,7 +277,8 @@ class RangeHandler(SimpleHTTPRequestHandler):
             except Exception:
                 req = {}
             code, payload = mint_realtime_token(req.get("container_id"),
-                                                req.get("voice"), req.get("speed"))
+                                                req.get("voice"), req.get("speed"),
+                                                req.get("mode"))
             body = json.dumps(payload, ensure_ascii=False).encode()
             self.send_response(code)
             self.send_header("Content-Type", "application/json; charset=utf-8")

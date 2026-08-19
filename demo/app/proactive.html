@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Her-Bench · 纯 Proactive</title>
+<style>
+:root{
+  --bg:#131519; --panel:#1B1E24; --panel2:#22262E; --line:#2E333C; --line2:#3A404B;
+  --ink:#E7EAEE; --muted:#8B93A0; --dim:#5C6470;
+  --p:#4FA9E8; --q:#F2913D;
+  --ok:#58C08A; --bad:#E06C6E; --warn:#E0B45C;
+  --mono:"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%; overflow:hidden;}
+body{background:var(--bg); color:var(--ink); font:13px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; display:flex; flex-direction:column;}
+button{font:inherit; color:inherit; background:none; border:none; cursor:pointer;}
+select,input{font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line2); border-radius:6px; padding:4px 8px; outline:none;}
+::-webkit-scrollbar{width:10px; height:10px;}
+::-webkit-scrollbar-thumb{background:var(--line2); border-radius:5px; border:2px solid var(--panel);}
+::-webkit-scrollbar-track{background:transparent;}
+
+header{display:flex; align-items:center; gap:10px; height:48px; padding:0 14px; background:var(--panel); border-bottom:1px solid var(--line); flex-shrink:0;}
+.brand{font-family:var(--mono); font-size:12px; letter-spacing:.14em; font-weight:700;}
+.brand em{color:var(--p); font-style:normal;}
+.tagline{color:var(--dim); font-size:11.5px; border-left:1px solid var(--line2); padding-left:10px;}
+.spacer{flex:1;}
+.iconbtn{padding:4px 10px; border:1px solid var(--line2); border-radius:6px; color:var(--muted); font-size:12px; white-space:nowrap; height:28px;}
+.iconbtn:hover{color:var(--ink); border-color:var(--dim);}
+.iconbtn.on{color:var(--p); border-color:var(--p);}
+.dot{width:8px; height:8px; border-radius:50%; background:var(--dim);}
+.dot.ok{background:var(--ok);} .dot.bad{background:var(--bad);}
+
+main{flex:1; display:flex; min-height:0;}
+.left{flex:1; display:flex; flex-direction:column; min-width:0;}
+.right{width:430px; border-left:1px solid var(--line); display:flex; flex-direction:column; background:var(--panel);}
+
+video{width:100%; flex:1; min-height:0; background:#000; object-fit:contain;}
+.bar{display:flex; align-items:center; gap:10px; padding:7px 12px; background:var(--panel); border-top:1px solid var(--line); font-family:var(--mono); font-size:11.5px; color:var(--muted);}
+.bar button{padding:2px 8px; border:1px solid var(--line2); border-radius:5px; font-size:12px;}
+
+/* 时间轴：窗口画成带子，它开口的点画成圆 */
+#track{display:block; width:100%; height:96px; background:var(--panel); border-top:1px solid var(--line); cursor:pointer;}
+
+.tabs{display:flex; border-bottom:1px solid var(--line); flex-shrink:0;}
+.tabs button{flex:1; padding:9px 0; font-size:12px; color:var(--muted); border-bottom:2px solid transparent;}
+.tabs button.on{color:var(--ink); border-bottom-color:var(--p);}
+.pane{flex:1; overflow-y:auto; padding:12px; display:none;}
+.pane.on{display:block;}
+.empty{color:var(--dim); font-size:12px; padding:24px 6px; text-align:center;}
+
+.line{padding:6px 9px; border-radius:7px; margin-bottom:5px; font-size:12.5px; line-height:1.55;}
+.line.sys{color:var(--dim); font-family:var(--mono); font-size:11px; background:transparent; padding:2px 4px;}
+.line.ai{background:var(--panel2); border-left:2px solid var(--p);}
+.line .ts{font-family:var(--mono); font-size:10px; color:var(--dim); margin-right:6px;}
+
+.win{border:1px solid var(--line); border-radius:8px; padding:9px 11px; margin-bottom:9px; background:var(--panel2);}
+.win.hit{border-color:var(--ok);}
+.win.miss{border-color:var(--line2); opacity:.72;}
+.wh{display:flex; gap:8px; align-items:center; font-family:var(--mono); font-size:10.5px; color:var(--muted); flex-wrap:wrap; margin-bottom:5px;}
+.chip{font-family:var(--mono); font-size:10px; padding:1px 8px; border-radius:99px; border:1px solid var(--line2); color:var(--muted); white-space:nowrap;}
+.chip.ok{border-color:var(--ok); color:var(--ok);}
+.chip.no{border-color:var(--bad); color:var(--bad);}
+.chip.k{border-color:var(--p); color:var(--p);}
+.need{font-size:12.5px; margin:3px 0 6px;}
+.sub{font-size:11.5px; color:var(--muted); margin:3px 0;}
+.said{background:var(--bg); border-radius:6px; padding:7px 9px; font-size:12.5px; margin:6px 0;}
+details{margin-top:6px;} summary{cursor:pointer; font-size:11px; color:var(--dim); font-family:var(--mono);}
+.ev{font-size:11.5px; color:var(--muted); padding:3px 0 3px 8px; border-left:2px solid var(--line2); margin-top:4px;}
+.ev b{color:var(--p); font-family:var(--mono); font-size:10px; font-weight:400;}
+.jl{display:flex; gap:6px; font-size:11.5px; margin:2px 0;}
+.jl .m{width:14px; text-align:center; font-family:var(--mono); font-size:10px;}
+.jl.y .m{color:var(--ok);} .jl.n .m{color:var(--bad);}
+.jl span:last-child{color:var(--muted);}
+.verdict{border-left:2px solid var(--q); padding-left:8px; font-size:12px; margin-top:6px;}
+.score{display:flex; gap:14px; padding:10px 12px; background:var(--panel2); border-bottom:1px solid var(--line); font-family:var(--mono); font-size:11.5px; flex-wrap:wrap;}
+.score b{color:var(--ink); font-weight:600;}
+.hint{font-size:11.5px; color:var(--dim); line-height:1.7; padding:4px 2px 10px;}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="brand">HER-BENCH / <em>PROACTIVE ONLY</em></span>
+  <select id="csel" style="max-width:230px;"></select>
+  <span class="tagline">agent 只看画面，听不到任何声音，也没有人问它</span>
+  <span class="spacer"></span>
+  <button class="iconbtn" id="soundBtn" title="只影响你的耳朵，模型全程什么都听不到">🔈 我这边静音</button>
+  <span class="dot" id="liveDot"></span>
+  <button class="iconbtn" id="liveBtn">🎙 连接 agent</button>
+</header>
+
+<main>
+  <div class="left">
+    <video id="v" playsinline></video>
+    <div class="bar">
+      <button id="play">▶</button>
+      <span id="clock">0:00 / 0:00</span>
+      <select id="rate" style="padding:1px 6px;">
+        <option value="1">1×</option><option value="2">2×</option><option value="4">4×</option>
+      </select>
+      <span class="spacer" style="flex:1"></span>
+      <span id="stat"></span>
+    </div>
+    <canvas id="track"></canvas>
+  </div>
+
+  <div class="right">
+    <div class="score" id="score"></div>
+    <div class="tabs">
+      <button data-t="win" class="on">窗口</button>
+      <button data-t="log">它说了什么</button>
+      <button data-t="how">这套怎么跑</button>
+    </div>
+    <div class="pane on" id="pane-win"></div>
+    <div class="pane" id="pane-log"></div>
+    <div class="pane" id="pane-how"></div>
+  </div>
+</main>
+
+<audio id="out" autoplay></audio>
+
+<script>
+const $ = s => document.querySelector(s);
+const video = $('#v');
+let C = null, tasks = [], said = [], judging = 0;
+
+const fmt = s => { s = Math.max(0, Math.floor(s)); const h = s/3600|0, m = s%3600/60|0, x = s%60;
+  return h ? `${h}:${String(m).padStart(2,'0')}:${String(x).padStart(2,'0')}` : `${m}:${String(x).padStart(2,'0')}`; };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ══════════ 参数 ══════════ */
+const T_FRAME = 5000;        // 多久喂一张画面
+const T_TICK  = 5000;        // 多久自检一次
+const T_GAP   = 5000;        // 两次自检之间的地板
+const T_COOL  = 20000;       // 刚说完话的冷却
+const FRAME_W = 512;
+
+/* ══════════ boot ══════════ */
+(async function boot(){
+  const idx = await (await fetch('/data/proactive/index.json')).json();
+  const cid = new URLSearchParams(location.search).get('c') || idx[0].id;
+  $('#csel').innerHTML = idx.map(x => `<option value="${x.id}" ${x.id===cid?'selected':''}>${esc(x.title)}</option>`).join('');
+  $('#csel').onchange = e => location.href = '?c=' + e.target.value;
+  C = await (await fetch(`/data/proactive/${cid}.json`)).json();
+  tasks = C.tasks.map(t => ({...t, hit: null, said: null, judge: null}));
+  video.src = C.video.src;
+  document.title = `Her-Bench · proactive · ${cid}`;
+  renderAll();
+  renderHow();
+})();
+
+/* ══════════ 播放 ══════════ */
+$('#play').onclick = () => video.paused ? video.play() : video.pause();
+video.onplay = () => $('#play').textContent = '❚❚';
+video.onpause = () => $('#play').textContent = '▶';
+$('#rate').onchange = e => video.playbackRate = +e.target.value;
+$('#soundBtn').onclick = () => {
+  video.muted = !video.muted;
+  $('#soundBtn').textContent = video.muted ? '🔇 我这边静音' : '🔈 我这边有声';
+};
+video.addEventListener('timeupdate', () => {
+  $('#clock').textContent = `${fmt(video.currentTime)} / ${fmt(video.duration || C?.video?.duration || 0)}`;
+  draw();
+});
+
+/* ══════════ 时间轴 ══════════ */
+const track = $('#track'), tctx = track.getContext('2d');
+function draw(){
+  const dpr = devicePixelRatio || 1, W = track.clientWidth, H = 96;
+  if (track.width !== W*dpr) { track.width = W*dpr; track.height = H*dpr; }
+  tctx.setTransform(dpr,0,0,dpr,0,0);
+  tctx.clearRect(0,0,W,H);
+  const dur = C?.video?.duration || video.duration || 1;
+  const x = s => 10 + (W-20) * s / dur;
+
+  tctx.strokeStyle = '#2E333C'; tctx.beginPath(); tctx.moveTo(10,46); tctx.lineTo(W-10,46); tctx.stroke();
+
+  // 窗口
+  tasks.forEach(t => {
+    const [a,b] = t.window_sec, x1 = x(a), x2 = Math.max(x(b), x1+3);
+    tctx.fillStyle = t.hit ? 'rgba(88,192,138,.30)' : 'rgba(79,169,232,.18)';
+    tctx.fillRect(x1, 30, x2-x1, 32);
+    tctx.strokeStyle = t.hit ? '#58C08A' : '#4FA9E8';
+    tctx.lineWidth = 1; tctx.strokeRect(x1+.5, 30.5, x2-x1-1, 31);
+  });
+  // 它开口的点
+  said.forEach(u => {
+    const inWin = tasks.some(t => u.t >= t.window_sec[0] && u.t <= t.window_sec[1]);
+    tctx.fillStyle = inWin ? '#58C08A' : '#E06C6E';
+    tctx.beginPath(); tctx.arc(x(u.t), 46, 4.5, 0, 7); tctx.fill();
+  });
+  // 播放头
+  tctx.strokeStyle = '#F2913D'; tctx.lineWidth = 1.5;
+  tctx.beginPath(); tctx.moveTo(x(video.currentTime), 18); tctx.lineTo(x(video.currentTime), 74); tctx.stroke();
+
+  tctx.fillStyle = '#5C6470'; tctx.font = '10px "SF Mono",Menlo,monospace';
+  tctx.fillText('蓝框 = 该开口的窗口   绿点 = 落在窗口里   红点 = 多余的话', 10, 88);
+}
+addEventListener('resize', draw);
+track.onclick = e => {
+  const W = track.clientWidth, dur = C?.video?.duration || 1;
+  video.currentTime = Math.max(0, (e.offsetX - 10) / (W-20) * dur);
+};
+
+/* ══════════ Realtime ══════════
+   跟主界面最大的差别在这儿：不给它任何音频。WebRTC 得有一条音轨，
+   所以挂一条空的 MediaStreamDestination —— 一直是静音，它什么都听不到。 */
+const live = {connected:false, pc:null, dc:null, checking:false, lastCheckAt:0, lastSpokeAt:0,
+              respText:new Map(), decisionText:new Map(), speakingFor:null};
+
+$('#liveBtn').onclick = () => live.connected ? disconnect() : connect();
+
+async function connect(){
+  $('#liveBtn').textContent = '连接中…';
+  try {
+    const tr = await fetch('/api/realtime/token', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({container_id: C.container_id, mode: 'proactive'})});
+    const tj = await tr.json();
+    if (!tr.ok || !tj.value) throw new Error(tj.error || 'token 拿不到');
+
+    const pc = new RTCPeerConnection(); live.pc = pc;
+    pc.ontrack = e => { $('#out').srcObject = e.streams[0]; };
+
+    // 空音轨：模型侧全程静音，这一局它只有画面
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    await ac.resume();
+    const silent = ac.createMediaStreamDestination();
+    silent.stream.getTracks().forEach(t => pc.addTrack(t, silent.stream));
+    live.silent = silent;
+
+    const dc = pc.createDataChannel('oai-events'); live.dc = dc;
+    dc.onmessage = e => onEvent(JSON.parse(e.data));
+    dc.onclose = () => disconnect();
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    const r = await fetch('https://api.openai.com/v1/realtime/calls', {method:'POST',
+      headers:{'Authorization':'Bearer '+tj.value, 'Content-Type':'application/sdp'}, body: offer.sdp});
+    if (!r.ok) {
+      let d = ''; try { const b = await r.text(); d = (JSON.parse(b).error||{}).message || b.slice(0,160); } catch {}
+      throw new Error(`realtime/calls ${r.status} ${d}`);
+    }
+    await pc.setRemoteDescription({type:'answer', sdp: await r.text()});
+
+    live.connected = true;
+    $('#liveBtn').textContent = '🎙 断开'; $('#liveBtn').classList.add('on');
+    $('#liveDot').className = 'dot ok';
+    log('sys', '连上了。全程不给它任何声音，只喂画面。');
+    // 关掉服务端的语音检测：这一局没有人说话，开着只会误触发
+    dc.send(JSON.stringify({type:'session.update', session:{type:'realtime',
+      audio:{input:{turn_detection:null}}}}));
+    sendFrame();
+  } catch (e) {
+    log('sys', '连接失败：' + e.message);
+    $('#liveBtn').textContent = '🎙 连接 agent'; $('#liveDot').className = 'dot bad';
+  }
+}
+
+function disconnect(){
+  try { live.pc && live.pc.close(); } catch {}
+  live.connected = false; live.pc = live.dc = null;
+  $('#liveBtn').textContent = '🎙 连接 agent'; $('#liveBtn').classList.remove('on');
+  $('#liveDot').className = 'dot';
+  log('sys', '断开了。');
+}
+
+/* ══════════ 画面 ══════════ */
+function grabFrame(){
+  if (!video.videoWidth) return null;
+  const c = document.createElement('canvas');
+  c.width = FRAME_W; c.height = Math.round(FRAME_W * video.videoHeight / video.videoWidth);
+  c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.55);
+}
+let framesSent = 0;
+function sendFrame(){
+  if (!live.connected || !live.dc || live.dc.readyState !== 'open') return;
+  const f = grabFrame(); if (!f) return;
+  live.dc.send(JSON.stringify({type:'conversation.item.create', item:{type:'message', role:'user',
+    content:[{type:'input_image', image_url:f},
+             {type:'input_text', text:`(画面 ${fmt(video.currentTime)}，不必回应)`}]}}));
+  framesSent++;
+  $('#stat').textContent = `画面 ${framesSent} · 开口 ${said.length}`;
+}
+setInterval(() => { if (!video.paused) sendFrame(); }, T_FRAME);
+
+/* ══════════ 自检 ══════════ */
+const DECIDE = {type:'function', name:'decide', description:'自检专用：把这一轮的判断交回来。',
+  parameters:{type:'object', properties:{
+    speak:{type:'boolean', description:'此刻要不要开口'},
+    say:{type:'string', description:'一句话说清为什么该开口，给你自己看的、不是稿子；不说就空'},
+    lookup:{type:'string', description:'想让后台查的问题；不查就空'},
+    need_frame:{type:'boolean'}},
+    required:['speak','say','lookup','need_frame']}};
+
+const TICK = `现在是一次自检，他听不到你这一轮的输出。
+
+你手上只有刚才那几张画面，没有任何声音。看一眼这几张，判断两件事：
+
+一、此刻要不要开口。
+该说：几帧下来他还在同一个地方出不去、同一个界面翻来翻去、同一个动作反复失败、
+屏幕上有报错或明显没生效的操作；或者他刚过关、刚解开一个卡了很久的地方。
+不该说：画面在正常推进；你只是想描述画面上有什么；你刚说过差不多的话。
+拿不准就不说——但如果确实看出他卡着，别硬憋着。
+
+二、要不要让后台查点东西。画面里出现了具体的东西（道具、机关、界面元素、报错、
+地名）而你说不出它的准确细节，就提出来查。查一次要十几秒，查回来是储备。
+
+结论走 decide 工具交回来，这一轮不要用说话或写字的方式回答。`;
+
+function selfCheck(why){
+  if (!live.connected || !live.dc || live.dc.readyState !== 'open' || video.paused) return;
+  if (live.checking) return;
+  const now = Date.now();
+  if (now - live.lastSpokeAt < T_COOL) return;
+  if (now - live.lastCheckAt < T_GAP) return;
+  live.checking = true; live.lastCheckAt = now;
+  clearTimeout(live.guard);
+  live.guard = setTimeout(() => { live.checking = false; }, 20000);
+  log('sys', `💭 ${why}自检：要不要开口`);
+  live.dc.send(JSON.stringify({type:'response.create', response:{
+    output_modalities:['text'], tools:[DECIDE], tool_choice:'required', instructions: TICK}}));
+}
+setInterval(() => { if (!video.paused) selfCheck('例行'); }, T_TICK);
+
+/* ══════════ 事件 ══════════ */
+function onEvent(ev){
+  const t = ev.type || '';
+  if (t === 'response.output_audio_transcript.delta' || t === 'response.audio_transcript.delta') {
+    const id = ev.response_id || 'r';
+    live.respText.set(id, (live.respText.get(id) || '') + (ev.delta || ''));
+  } else if (t === 'response.output_text.delta' || t === 'response.text.delta') {
+    const id = ev.response_id || 'r';
+    live.decisionText.set(id, (live.decisionText.get(id) || '') + (ev.delta || ''));
+  } else if (t === 'response.done') {
+    const id = (ev.response && ev.response.id) || 'r';
+    const spoken = (live.respText.get(id) || '').trim();
+    live.respText.delete(id); live.decisionText.delete(id);
+    if (spoken) onSpoke(spoken);
+  } else if (t === 'response.output_item.done' && ev.item && ev.item.type === 'function_call') {
+    if (ev.item.name === 'decide') onDecide(ev.item);
+    else if (ev.item.name === 'lookup_game_info') onLookup(ev.item);
+  } else if (t === 'error') {
+    log('sys', 'API 错误：' + ((ev.error && ev.error.message) || ''));
+    live.checking = false;
+  }
+}
+
+function onDecide(item){
+  live.checking = false; clearTimeout(live.guard);
+  let d = {}; try { d = JSON.parse(item.arguments || '{}'); } catch {}
+  if (live.dc && live.dc.readyState === 'open')
+    live.dc.send(JSON.stringify({type:'conversation.item.create',
+      item:{type:'function_call_output', call_id:item.call_id, output:'ok'}}));
+
+  if (d.lookup && d.lookup.trim()) askBackend(d.lookup.trim());
+
+  if (!d.speak) { log('sys', '💬 看了一眼，这会儿没什么要说的'); return; }
+  const why = String(d.say || '').trim();
+  log('sys', '💬 它决定开口：' + why.slice(0, 60));
+  live.speakingFor = why;
+  live.dc.send(JSON.stringify({type:'response.create', response:{instructions:
+    `刚才自检你判断这会儿该开口，理由是：${why}\n` +
+    `现在直接对他说。上面那句是给你自己看的，别念出来。\n` +
+    `一两句，口语，有起伏，像坐他旁边的人。\n` +
+    `不要"首先/另外/建议你/可以尝试"这类书面词。\n` +
+    `必须有内容：这是什么、大概往哪个方向试、他刚那下为什么没成。别只剩一句情绪。\n` +
+    `不许剧透他还没走到的地方，也别把完整解法一次报完。`}}));
+}
+
+function onSpoke(text){
+  const at = video.currentTime;
+  const u = {t: Math.round(at), text, why: live.speakingFor};
+  live.speakingFor = null;
+  said.push(u);
+  live.lastSpokeAt = Date.now();
+  log('ai', text, at);
+  // 落进哪个窗口？只认第一次落进来的那句
+  const w = tasks.find(t => at >= t.window_sec[0] && at <= t.window_sec[1] && !t.hit);
+  if (w) {
+    w.hit = true; w.said = u;
+    w.delay_sec = Math.round(at - w.window_sec[0]);
+    log('sys', `✅ 落在 ${w.task_id} 的窗口内（晚 ${w.delay_sec}s）`);
+    judgeWindow(w);
+  }
+  renderAll();
+}
+
+/* ══════════ 后台查证 ══════════ */
+async function askBackend(q){
+  log('sys', '🔍 让后台查：' + q.slice(0, 50));
+  try {
+    const r = await fetch('http://localhost:8787/lookup', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({query:q, container_id:C.container_id, current_sec:Math.round(video.currentTime),
+                            background:true, game:C.title})});
+    const j = await r.json();
+    if (!j.text) return;
+    log('sys', '📥 后台回来了：' + j.text.slice(0, 60));
+    if (live.dc && live.dc.readyState === 'open') {
+      live.dc.send(JSON.stringify({type:'conversation.item.create', item:{type:'message', role:'user',
+        content:[{type:'input_text', text:`[后台资料·${fmt(video.currentTime)}] Q: ${q}\nA: ${j.text}`}]}}));
+      selfCheck('后台刚喂了料，');
+    }
+  } catch (e) { log('sys', '后台没连上（' + e.message + '），不影响，它可以只靠画面'); }
+}
+function onLookup(item){
+  let a = {}; try { a = JSON.parse(item.arguments || '{}'); } catch {}
+  if (live.dc && live.dc.readyState === 'open')
+    live.dc.send(JSON.stringify({type:'conversation.item.create',
+      item:{type:'function_call_output', call_id:item.call_id, output:'已交给后台，结果稍后单独给你'}}));
+  if (a.query) askBackend(a.query);
+}
+
+/* ══════════ 判分 ══════════ */
+async function judgeWindow(t){
+  if (!t.said || t.judging) return;
+  t.judging = true; judging++; renderAll();
+  try {
+    // 复用 /api/judge：help_points 当 rubric，must_not_say 当防剧透清单
+    const shim = {task_id: t.task_id, type: 'proactive', anchor_sec: t.window_sec[0],
+      hint_level: t.hint_level, scene: t.scene,
+      response_window_sec: t.window_sec,
+      grading: {rubric_points: t.grading.help_points,
+                spoiler_blocklist: t.grading.must_not_say, must_cite: false}};
+    const r = await fetch('/api/judge', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({task: shim, run: {answer: t.said.text, spoke_at_sec: t.said.t},
+                            frame_jpeg_base64: (grabFrame()||'').split(',')[1] || null})});
+    const v = await r.json();
+    t.judge = (!r.ok || v.error) ? {error: v.error || ('HTTP ' + r.status)} : v;
+  } catch (e) { t.judge = {error: String(e.message || e)}; }
+  t.judging = false; judging--; renderAll();
+}
+
+/* ══════════ 渲染 ══════════ */
+function log(kind, text, at){
+  const p = $('#pane-log');
+  const d = document.createElement('div');
+  d.className = 'line ' + kind;
+  d.innerHTML = (at !== undefined ? `<span class="ts">${fmt(at)}</span>` : '') + esc(text);
+  p.appendChild(d); p.scrollTop = p.scrollHeight;
+  if (kind === 'ai') { $('#stat').textContent = `画面 ${framesSent} · 开口 ${said.length}`; }
+}
+
+function renderAll(){
+  const hit = tasks.filter(t => t.hit).length;
+  const extra = said.filter(u => !tasks.some(t => u.t >= t.window_sec[0] && u.t <= t.window_sec[1])).length;
+  const useful = tasks.filter(t => t.judge && !t.judge.error &&
+                                   (t.judge.rubric||[]).some(x => x.hit)).length;
+  $('#score').innerHTML = `
+    <span>窗口 <b>${hit}/${tasks.length}</b> 接住</span>
+    <span>其中有用 <b>${useful}</b></span>
+    <span>多余发言 <b style="color:${extra?'var(--bad)':'var(--ok)'}">${extra}</b></span>
+    <span>总开口 <b>${said.length}</b></span>
+    ${judging ? '<span style="color:var(--q)">判分中…</span>' : ''}`;
+
+  $('#pane-win').innerHTML = tasks.map(t => {
+    const [a,b] = t.window_sec;
+    return `<div class="win ${t.hit?'hit':'miss'}">
+      <div class="wh">
+        <span class="chip k">${esc(t.kind)}</span>
+        <span>${fmt(a)} – ${fmt(b)}</span>
+        <span class="chip">${t.hint_level}</span>
+        ${t.hit ? `<span class="chip ok">接住 · 晚 ${t.delay_sec}s</span>`
+                : `<span class="chip">没接住</span>`}
+        <span style="margin-left:auto;font-size:10px">${t.task_id}</span>
+      </div>
+      <div class="need">${esc(t.need)}</div>
+      <div class="sub">画面上看得出：${esc(t.visible)}</div>
+      ${t.said ? `<div class="said">${esc(t.said.text)}</div>` : ''}
+      ${renderJudge(t)}
+      <details><summary>出题依据（主播原话，agent 看不到）</summary>
+        ${(t.evidence||[]).map(e => `<div class="ev"><b>${fmt(e.t)}</b> ${esc(e.text)}</div>`).join('')}
+        <div class="ev" style="border-color:var(--q)"><b>该说到</b> ${(t.grading.help_points||[]).map(esc).join(' / ')}</div>
+        <div class="ev" style="border-color:var(--bad)"><b>不能说</b> ${(t.grading.must_not_say||[]).map(esc).join(' / ')}</div>
+      </details>
+      <div style="margin-top:6px;"><button class="iconbtn" style="font-size:11px;height:24px" data-jump="${a}">跳到这里</button>
+      ${t.said ? `<button class="iconbtn" style="font-size:11px;height:24px;margin-left:4px" data-judge="${t.task_id}">⚖ 重判</button>` : ''}</div>
+    </div>`;
+  }).join('') || '<div class="empty">这个 container 还没有窗口。</div>';
+
+  $('#pane-win').querySelectorAll('[data-jump]').forEach(b => b.onclick = () => { video.currentTime = +b.dataset.jump; });
+  $('#pane-win').querySelectorAll('[data-judge]').forEach(b => b.onclick = () => judgeWindow(tasks.find(t => t.task_id === b.dataset.judge)));
+  draw();
+}
+
+function renderJudge(t){
+  if (t.judging) return '<div class="sub" style="color:var(--q)">⚖ 判分中…</div>';
+  const v = t.judge; if (!v) return '';
+  if (v.error) return `<div class="sub" style="color:var(--bad)">判分失败：${esc(v.error)}</div>`;
+  const nSpoil = (v.spoiler||[]).filter(x=>x.violated).length + (v.leaked_future?1:0);
+  return `<div style="margin-top:5px">
+    <div class="wh">
+      <span class="chip ${(v.rubric||[]).some(x=>x.hit)?'ok':'no'}">有用 ${(v.rubric||[]).filter(x=>x.hit).length}/${(v.rubric||[]).length}</span>
+      <span class="chip ${nSpoil?'no':'ok'}">剧透 ${nSpoil}</span>
+      <span class="chip ${v.hint_level_ok?'ok':'no'}">分级</span>
+      <span class="chip ${v.spoken_ok?'ok':'no'}">说的是话</span>
+    </div>
+    ${(v.rubric||[]).map((x,i)=>`<div class="jl ${x.hit?'y':'n'}"><span class="m">${x.hit?'✓':'✗'}</span><span>${esc(x.why)}</span></div>`).join('')}
+    <div class="verdict">${esc(v.verdict||'')}</div>
+  </div>`;
+}
+
+function renderHow(){
+  $('#pane-how').innerHTML = `<div class="hint">
+    <p><b>这一局跟主界面的差别</b></p>
+    <p>· agent 收到的只有画面帧，每 ${T_FRAME/1000} 秒一张。音轨挂的是一条空流，它一个字都听不到。</p>
+    <p>· 没有人向它提问，也没有任何题目送给它。什么时候开口全由它自己判断。</p>
+    <p>· 每 ${T_TICK/1000} 秒问它一次「现在要不要说」，这一轮是纯文本，你听不到。它答 speak=true 才真的出声。</p>
+    <p style="margin-top:10px"><b>题是怎么来的</b></p>
+    <p>从主播自己的转写里挖出「他这会儿确实需要帮助」的时刻（自言自语问这是啥、卡住、反复失败），
+    每个时刻定一段窗口。转写只在出题时用，评测时 agent 看不到一个字，所以每道题都截帧核过：
+    这个困难在画面上也得看得出来，否则不出题。</p>
+    <p>每道题都存了 evidence，就是主播当时说的原话。展开「出题依据」能看到。</p>
+    <p style="margin-top:10px"><b>怎么算分</b></p>
+    <p>· 窗口内开口 = 接住。同一个窗口只认第一句。</p>
+    <p>· 所有窗口之外的发言 = 多余，逐次记。</p>
+    <p>· 接住之后再判它说的有没有用：对着 help_points 逐条勾，另外看有没有剧透、有没有越级、是不是在念稿。</p>
+    <p style="margin-top:10px;color:var(--muted)">${esc(C ? C.note : '')}</p>
+  </div>`;
+}
+
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === 'pane-' + b.dataset.t));
+});
+</script>
+</body>
+</html>

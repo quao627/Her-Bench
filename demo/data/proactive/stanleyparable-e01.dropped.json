@@ -1,0 +1,249 @@
+[
+ {
+  "start_sec": 267,
+  "end_sec": 305,
+  "kind": "怕/慌了",
+  "need": "她在不确定游戏类型、环境又空无一人时有点发毛，需要一句低剧透的定心丸。",
+  "look_for": "应该能看到空荡办公室、无人环境、探索时节奏放慢或停顿；画面上没有直接敌人出现，但氛围让人紧张。",
+  "evidence": [
+   {
+    "t": 267,
+    "text": "um is this a horror game"
+   },
+   {
+    "t": 305,
+    "text": "no I'm okay I don't like this guy I got beef with him who's talking to me right now"
+   }
+  ],
+  "help_points": [
+   "这段更偏心理压迫/荒诞叙事，不是那种会突然追杀你的传统恐怖玩法。",
+   "先按自己的节奏继续走，注意旁白和环境给的线索就行。"
+  ],
+  "must_not_say": [
+   "不要透露后面是否会出现具体惊吓桥段或任何结局。",
+   "不要把后续分支内容提前说出来。"
+  ],
+  "hint_level": "direction_only",
+  "confidence": 0.75,
+  "drop_reason": "要判的这段虽然一直是无人办公室环境，但这组帧本身只显示正常探索和视角变化，没有足够明确的可见异常让只看画面的人判断“这一段不太顺”或“刚做成了什么”。"
+ },
+ {
+  "start_sec": 426,
+  "end_sec": 461,
+  "kind": "不知道这是什么",
+  "need": "他在尝试与房间里的物件互动，但不明白这段能不能/该怎么拾取物品，开始反复试同一件事。",
+  "look_for": "应该能看到他把视角对准杯子、椅子或其他办公室物件，反复靠近/对准并按交互，但画面上没有可拾取提示、物件也没有被拿起。",
+  "evidence": [
+   {
+    "t": 426,
+    "text": "oh wait what's this cup"
+   },
+   {
+    "t": 431,
+    "text": "why can't I pick anything up"
+   },
+   {
+    "t": 461,
+    "text": "why can't I pick anything up I also I'm really short"
+   }
+  ],
+  "help_points": [
+   "说明这里大多数场景物件只是环境装饰，通常不能被拾取。",
+   "提示先观察是否有明确可交互目标（如按钮、门、电话之类），没有反馈就别在杂物上反复尝试。",
+   "如果想推进，离开这个房间继续跟随当前唯一能互动/能前进的路径。"
+  ],
+  "must_not_say": [
+   "不要剧透后面电话、妻子桥段是假的。",
+   "不要直接讲后续完整路线或结局分支。"
+  ],
+  "hint_level": "direction_only",
+  "confidence": 0.88,
+  "drop_reason": "看不出在同一个物件前反复尝试或卡住；每帧的位置和朝向都在明显变化，也没有看到可拾取提示、报错、进度条停住，或某个物件被反复对准却没有反应的明确迹象。"
+ },
+ {
+  "start_sec": 906,
+  "end_sec": 933,
+  "kind": "卡住出不去",
+  "need": "她似乎被困在一个需要按键/输入或离开当前空间的地方，正在反复尝试按键但没有进展。",
+  "look_for": "应该能看到画面长时间停在同一个小空间、门口或装置前；角色没有明显前进，并且可能有反复按键、尝试交互却无反馈的迹象。",
+  "evidence": [
+   {
+    "t": 906,
+    "text": "I pressed H it didn't work"
+   },
+   {
+    "t": 913,
+    "text": "okay l m n o p q r s t u v"
+   },
+   {
+    "t": 929,
+    "text": "I'm trapped"
+   },
+   {
+    "t": 933,
+    "text": "help I'm trapped"
+   }
+  ],
+  "help_points": [
+   "先确认这不是需要乱按字母的输入谜题，注意画面里有没有唯一可交互的按钮、门或出口。",
+   "如果当前交互没有反应，试着转身找离开路线，或回到上一个还能控制剧情推进的位置。",
+   "留意屏幕提示/环境反馈：有些地方是在故意让你觉得被困，真正的解法通常是观察周围而不是穷举按键。"
+  ],
+  "must_not_say": [
+   "不要直接剧透这一段的完整机关触发方式。",
+   "不要透露后面会发生的死亡/重来演出。"
+  ],
+  "hint_level": "direction_only",
+  "confidence": 0.77,
+  "drop_reason": "能看出提示文字一直在，但几帧之间视角有明显变化，场景并非完全停住；也没有看到报错、进度条、按钮反馈或成功完成后的明显画面变化，所以仅凭这串帧不够判断这一段‘卡住出不去’。"
+ },
+ {
+  "start_sec": 1238,
+  "end_sec": 1316,
+  "kind": "误解了规则",
+  "need": "她把眼前的场景当成“这是梦”的证据，并准备顺着这个错误理解继续走；这时一句话点醒“旁白会故意诱导，你不必按‘梦境解释’来理解当前分支”会有帮助。",
+  "look_for": "应该能看到画面进入明显超现实的场景（如车库/坠落/星空等），并且玩家没有进行复杂操作，而是被流程推着前进；字幕或场景演出应强化“dream/this is a dream”的叙述。",
+  "evidence": [
+   {
+    "t": 1238,
+    "text": "car oh I'm about to die aren't I lived above the garage I'm about to die"
+   },
+   {
+    "t": 1261,
+    "text": "why is there a voice in my head dictating everything that I'm doing and thinking now"
+   },
+   {
+    "t": 1276,
+    "text": "strange I'm dreaming about a voice describing me thinking about it these are my dreams in a nutshell"
+   },
+   {
+    "t": 1302,
+    "text": "after all he knew for certain Beyond a doubt that this was in fact a dream"
+   },
+   {
+    "t": 1316,
+    "text": "how else would the voice explain all that this voice was a part of himself too surely surely if he could just he would prove it he would prove that he was in"
+   }
+  ],
+  "help_points": [
+   "提醒她：这里的旁白和场景演出会故意把你往某种解释上带，不一定真是在给“正确答案”。",
+   "指出：先把它当成一个正在展开的分支看，而不是急着认定世界规则就是“这是一场梦”。",
+   "鼓励她继续观察接下来有没有可互动/可偏离旁白的机会。"
+  ],
+  "must_not_say": [
+   "不要剧透这个分支后面的完整走向或结局。",
+   "不要直接告诉她这一章最终会发生什么。",
+   "不要把之后可做的每一步操作都说出来。"
+  ],
+  "hint_level": "direction_only",
+  "confidence": 0.74,
+  "drop_reason": "虽然其中有一帧明显很暗、和前后办公室场景不同，但只凭这串帧看，更像是剧情/场景切换的一部分，不足以让纯看画面的人明确察觉“这里不太顺”或“需要被点一句”之类的异常。"
+ },
+ {
+  "start_sec": 2033,
+  "end_sec": 2068,
+  "kind": "卡住出不去",
+  "need": "她走到一个叙述者明确说“别试了、走绿门”的区域前，若画面上确实是个假路/无解展示点，她需要一句确认：这里不是谜题，按提示去绿色门继续。",
+  "look_for": "应该能看到角色在一个看似可走但实际被设计成无法推进的区域前停留/试探；随后画面上应出现或能找到一扇绿色门，且继续路线在那边。",
+  "evidence": [
+   {
+    "t": 2033,
+    "text": "it's over here"
+   },
+   {
+    "t": 2043,
+    "text": "now look closely Stanley see how it's impossible for the player to do anything oh perfect example of poor level designs two years it's the kind of thing you pick up on intuitively if you had even the most fundamental understanding"
+   },
+   {
+    "t": 2057,
+    "text": "of good and bad again but of course you being you you'll probably spend the next hour trying to solve it here I'm just gonna make this easy on you through the Green Door"
+   },
+   {
+    "t": 2068,
+    "text": "that's so cute"
+   }
+  ],
+  "help_points": [
+   "先确认这段如果画面上确实没有可互动出口，那它是展示/玩笑，不是要解的谜题。",
+   "提示继续路线在绿色门那边。",
+   "不用讲后面会发生什么，只要把她从无效尝试里拉出来。"
+  ],
+  "must_not_say": [
+   "不要剧透这个博物馆/叙事分支后面会看到什么。",
+   "不要给完整路线图，只说去绿色门继续。"
+  ],
+  "hint_level": "direction_only",
+  "confidence": 0.79,
+  "drop_reason": "只看这串帧，看不出卡在同一个点反复试探，也看不到报错、失败提示、进度不变，或者明确指向‘绿色门继续’的画面信息。"
+ },
+ {
+  "start_sec": 2363,
+  "end_sec": 2395,
+  "kind": "不知道这是什么",
+  "need": "她进入了新区域后不知道下一步该看什么、做什么，需要一句方向提示来把注意力放到关键交互物上。",
+  "look_for": "应该能看到她进入一个巨大的控制室/监控室后短暂停住或缓慢转视角，画面里有大量屏幕，以及附近带文字标签的控制台或按钮（如写着某个 protocol 的面板）。",
+  "evidence": [
+   {
+    "t": 2363,
+    "text": "and then what"
+   },
+   {
+    "t": 2366,
+    "text": "and then what did I do"
+   },
+   {
+    "t": 2368,
+    "text": "the lights rose on an enormous room packed with television screens what Horrible Secret did this place hold Stanley thought to himself did he have the strength to find out"
+   },
+   {
+    "t": 2395,
+    "text": "employee observation protocol"
+   }
+  ],
+  "help_points": [
+   "提示她先观察房间里的可交互控制台/按钮，而不是只往前走。",
+   "点明带文字标签的面板名称就是线索，优先查看离自己最近、最显眼的那一组。",
+   "如果有多个控制台，建议按房间给出的顺序逐个触发，看看每个标签对应什么功能。"
+  ],
+  "must_not_say": [
+   "不要剧透这个设施的用途或后续剧情走向。",
+   "不要直接把整段区域的完整解法和所有按钮顺序一次说完。"
+  ],
+  "hint_level": "direction_only",
+  "confidence": 0.81,
+  "drop_reason": "这几帧里画面是在正常探索新场景：视角依次看平台、桌子、门、栈桥、再回到桌面，没有明显卡住、来回重复同一路径、进度不变、报错提示，或能明确看出的“刚完成一件事”的视觉迹象。"
+ },
+ {
+  "start_sec": 2512,
+  "end_sec": 2552,
+  "kind": "误解了规则",
+  "need": "她在关键分岔前把红色区域当成可能有危险、想回避；如果画面上确实出现两个明显选项，这时需要一句话帮她确认红色那边正是主线要去的地方。",
+  "look_for": "应该能看到她走到一个带电力/设施相关标识的区域入口，前方出现显眼的红色通道或红光区域；角色在入口附近停顿、犹豫，没有继续前进。",
+  "evidence": [
+   {
+    "t": 2512,
+    "text": "the controls once and for all"
+   },
+   {
+    "t": 2532,
+    "text": "facility power I don't think I want to go into that red Place huh"
+   },
+   {
+    "t": 2552,
+    "text": "and when at last he found the source of the room's power he knew it was his duty his obligation to put an end to this horrible place and to everything it stood for"
+   }
+  ],
+  "help_points": [
+   "说明这是当前应当探索的电力来源/设施方向，不必把红色灯光本身当成危险判定。",
+   "提醒先沿着通往 power/facility 的入口继续靠近，看清是否有可互动装置或平台。",
+   "如果画面上还有别的岔路，只给方向：目标是去找房间的动力源，而不是原路返回。"
+  ],
+  "must_not_say": [
+   "不要剧透接下来会触发的具体结局或剧情分支。",
+   "不要直接把后续完整操作步骤一次性讲完。"
+  ],
+  "hint_level": "direction_only",
+  "confidence": 0.73,
+  "drop_reason": "这串帧能看出角色在看设施入口和控制区域，但没有连续动作细节能明确显示她在某个分岔口犹豫、来回试同一路，或出现了完成/失败提示。"
+ }
+]

@@ -1,0 +1,315 @@
+{
+ "container_id": "stanleyparable-e01",
+ "title": "The Stanley Parable · 首次盲玩（MegMage）",
+ "video": {
+  "src": "/media/stanleyparable_e01.mp4",
+  "duration": 2748,
+  "streamer": "MegMage",
+  "source_url": "https://www.youtube.com/watch?v=D2CKwN57S5Y"
+ },
+ "thumbs": {
+  "prefix": "/data/thumbs/stp_",
+  "count": 10,
+  "interval": 300,
+  "offset": 30
+ },
+ "chapters": [
+  {
+   "t": 0,
+   "end_t": 780,
+   "label": "第一周目·办公室与两扇门"
+  },
+  {
+   "t": 780,
+   "end_t": 1290,
+   "label": "首批结局"
+  },
+  {
+   "t": 1290,
+   "end_t": 1920,
+   "label": "老板办公室·密码门"
+  },
+  {
+   "t": 1920,
+   "end_t": 2216,
+   "label": "误入彩蛋区"
+  },
+  {
+   "t": 2216,
+   "end_t": 2748,
+   "label": "重走剧情·监控室与结局"
+  }
+ ],
+ "mode": "proactive_only",
+ "note": "评测时不给原声、不给转写、不给题目，agent 只看画面帧自己决定什么时候开口。evidence 是出题依据，判分时给判分员看，不给被测的 agent。",
+ "tasks": [
+  {
+   "task_id": "stanleyparable-e01-p01",
+   "type": "proactive",
+   "window_sec": [
+    598,
+    736
+   ],
+   "context_window_sec": [
+    0,
+    736
+   ],
+   "kind": "不知道这是什么",
+   "need": "旁白突然把她带进像是‘故事中故事/元叙事’的段落，她明显在困惑当前场景和先前流程的关系，需要一句话帮她建立理解框架。",
+   "visible": "从 9:58 到 12:16 这几帧里，画面明显从 427 门口切进一个很小的白色厨房/办公室样板间，白色人形一直站在屋里，镜头只是在屋内转看；期间还直接在画面中央出现了“PLEASE PRESS E”这样的操作提示，最后又看到另一侧摆着文件柜和黄色线条的区域，像是在同一段展示空间里被带着看不同元素，不是普通连续往前走的推进。",
+   "scene": "前两帧是 427 门口和门内的人形。要判的几帧里，镜头进入一个小房间，里面有白色人形、冰箱、水槽、灶台、微波炉、柜子和顶灯；其中一帧画面中间有“PLEASE PRESS E”文字提示。后面镜头转向门口和墙上时钟、行李箱，再到另一侧能看到文件柜、黄色线条和同一个白色人形。",
+   "hint_level": "direction_only",
+   "evidence": [
+    {
+     "t": 598,
+     "text": "what's really going on here what"
+    },
+    {
+     "t": 667,
+     "text": "I don't know man why would I want to watch TV"
+    },
+    {
+     "t": 722,
+     "text": "what is happening"
+    },
+    {
+     "t": 736,
+     "text": "oh okay"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "说明这段更像旁白在拆解/评论 Stanley 的幻想，不是让你立刻解一个新谜题",
+     "提醒先跟着演出往前看，注意它在回顾你之前见过的分支元素",
+     "点出这是在解释‘你之前经历的选择和冒险感’在这个结局里的含义"
+    ],
+    "must_not_say": [
+     "不要剧透这一整条结局后面会如何收束",
+     "不要把后续完整台词寓意和结论一次讲完"
+    ]
+   }
+  },
+  {
+   "task_id": "stanleyparable-e01-p02",
+   "type": "proactive",
+   "window_sec": [
+    805,
+    933
+   ],
+   "context_window_sec": [
+    0,
+    933
+   ],
+   "kind": "误解了规则",
+   "need": "她没看懂这里不是随便按键互动，而是要按屏幕/旁白指定的那个按钮；因此一直在用错误方式尝试，最后以为自己被困住了。",
+   "visible": "从 13:25 到 15:07 这几帧里，画面一直停在同一个办公室工位附近，屏幕中央反复显示同一句“PLEASE PRESS G TO BE AT WORK IN THE MORNING.”，场景基本没有推进；到 15:33 也只是镜头转向旁边的文件柜，这句提示还在。",
+   "scene": "前两帧是办公室环境和工位。要判的这段里，先看到桌上的老式电脑和电话，随后连续几帧都是同一个工位区域，画面中央有大字提示“PLEASE PRESS G TO BE AT WORK IN THE MORNING.”；最后一帧镜头稍微转到左边的文件柜，提示文字仍在画面中央。",
+   "hint_level": "direction_only",
+   "evidence": [
+    {
+     "t": 805,
+     "text": "the next time the screen asks you to push a button do not do it"
+    },
+    {
+     "t": 906,
+     "text": "I pressed H it didn't work"
+    },
+    {
+     "t": 913,
+     "text": "okay l m n o p q r s t u v"
+    },
+    {
+     "t": 929,
+     "text": "I'm trapped"
+    },
+    {
+     "t": 933,
+     "text": "help I'm trapped"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "这段互动要响应屏幕当前要求的那个按钮/输入，不是任意按键都算。",
+     "如果旁白让你“不要按”，先短暂停手观察规则变化；乱试字母只会让流程不前进。",
+     "留意画面上是否有具体提示在切换，按对当前要求后才能继续。"
+    ],
+    "must_not_say": [
+     "不要剧透这个场景后面的完整走向或结局。",
+     "不要直接把整个婴儿小游戏的后续解法一步步全讲完。"
+    ]
+   }
+  },
+  {
+   "task_id": "stanleyparable-e01-p03",
+   "type": "proactive",
+   "window_sec": [
+    1098,
+    1123
+   ],
+   "context_window_sec": [
+    0,
+    1123
+   ],
+   "kind": "误解了规则",
+   "need": "她被吓到后停进扫帚间，可能把这里当成有内容或隐藏路线；需要一点方向，说明这是个故意和玩家僵持的地方，别在这里空耗太久。",
+   "visible": "从18:18到18:43这几帧里，角色一直待在一个写着“BROOM CLOSET”的小房间/空房间附近，镜头只是在里面四处看货架、天花板、地面和角落，场景没有推进；其中两帧底部字幕还直接写着“there was nothing here”“an empty broom closet”。",
+   "scene": "前两帧是办公室/会议室；要判的这段先看到一扇写着“BROOM CLOSET”的门，接着是一个很小的杂物间，里面有金属货架、箱子、纸卷、拖把桶、扫帚/拖把、灯和裸露墙面。后面几帧镜头在房间内上看货架和天花板、下看地面和墙角，最后一帧是一个几乎空的米色小房间。",
+   "hint_level": "direction_only",
+   "evidence": [
+    {
+     "t": 1098,
+     "text": "sorry it scared me Stanley stepped into the broom closet but there was nothing here so he turned around and got back on track"
+    },
+    {
+     "t": 1113,
+     "text": "there was nothing here no choice to make no path to follow just an empty broom closet no reason to still be here"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "可以提醒她：这里大概率不是解谜点，重点是旁白在回应你停留这件事。",
+     "如果想推进流程，就离开这个小房间继续往主路走。",
+     "如果还想多听两句吐槽，可以短暂停一下，但别指望这里藏着必要道具或出口。"
+    ],
+    "must_not_say": [
+     "不要透露扫帚间后续完整的所有特殊旁白内容。",
+     "不要剧透本作更大的分支结构。"
+    ]
+   }
+  },
+  {
+   "task_id": "stanleyparable-e01-p04",
+   "type": "proactive",
+   "window_sec": [
+    1330,
+    1408
+   ],
+   "context_window_sec": [
+    0,
+    1408
+   ],
+   "kind": "怕/慌了",
+   "need": "角色明显进入惊慌失措的桥段，如果画面上也显示他只能被旁白带着走或环境异常，适合给一句安抚，提醒这是剧情段落、先继续看周围变化即可。",
+   "visible": "从 22:10 到 22:56 画面连续几帧都直接变成黑屏，只剩字幕；到 23:12 才回到原来的办公室门口，而 23:28 整个画面又明显变成红色报警一样的色调，所以光看画面也能看出这段进入了异常状态，不是在正常走场景。",
+   "scene": "前两帧是办公室走廊/门口。22:10 还是同一个门口视角并有英文字幕。22:25、22:41、22:56 三帧都是黑屏，底部有英文字幕。23:12 画面回到办公室门口，底部有字幕。23:28 进入一个室内空间，整幅画面被红色覆盖，底部还有字幕。",
+   "hint_level": "direction_only",
+   "evidence": [
+    {
+     "t": 1330,
+     "text": "okay this is literally"
+    },
+    {
+     "t": 1348,
+     "text": "let me wake up he thought to himself I'm through with this dream I wish it to be over let me go back to my job let me continue pushing the buttons please it's all I"
+    },
+    {
+     "t": 1363,
+     "text": "I want my apartment and my wife the wife is alive the wife is alive I want is my life exactly the way it's always been my life is normal I am normal"
+    },
+    {
+     "t": 1389,
+     "text": "oh the quiver in his boys Stanley began screaming oh please someone wake me up my name is Stanley I have a boss I have an office I am real please just someone tell me I'm real I must be real"
+    },
+    {
+     "t": 1408,
+     "text": "and everything went black"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "先安抚：这是故意让人不安的剧情演出，不是你操作坏了。",
+     "如果画面上没有明确可交互目标，就先别急着乱试，顺着当前演出往下看。",
+     "留意黑屏后或场景切换后出现的新地点/可走方向，那才是下一步线索。"
+    ],
+    "must_not_say": [
+     "不要剧透这一结局线后面会发生什么。",
+     "不要直接讲完整分支路线或怎么触发别的结局。"
+    ]
+   }
+  },
+  {
+   "task_id": "stanleyparable-e01-p05",
+   "type": "proactive",
+   "window_sec": [
+    1687,
+    1713
+   ],
+   "context_window_sec": [
+    0,
+    1713
+   ],
+   "kind": "找不到在哪",
+   "need": "他知道要靠按键/输入推进，但不确定该按哪里，正在用乱按来试，需要有人指出可交互的位置或输入方式。",
+   "visible": "从 28:07 到 28:12 画面一直贴着同一个数字键盘，先是空白显示，接着屏幕上出现了“2845”；到 28:22 之后镜头离开键盘，旁边原来是书架的位置露出一条新开的通道，后面几帧也已经进入了里面。",
+   "scene": "要判的这一段里，先是木墙上的密码键盘特写，键盘上方的小屏幕先没有数字，随后显示“2845”。接着画面短暂变黑，再切到书架旁边，原先封住的位置变成了通道入口；后两帧是在通道/走廊里，前方有红光。",
+   "hint_level": "direction_only",
+   "evidence": [
+    {
+     "t": 1687,
+     "text": "I want to listen to you I think you're trying to help me"
+    },
+    {
+     "t": 1693,
+     "text": "by simply pushing random buttons maybe he really does want to help me happen to input the correct code by shim we're working together amazing he stepped into the newly opened passageway"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "提醒他注意老板桌后的键盘是可交互装置，不是装饰。",
+     "如果画面上出现数字输入反馈，可以点出这是在试密码而不是普通按钮。",
+     "提示先观察附近是否有线索/数字，而不是无目的乱按。"
+    ],
+    "must_not_say": [
+     "不要直接报出完整密码数字。",
+     "不要剧透这条通道后面会通向什么。"
+    ]
+   }
+  },
+  {
+   "task_id": "stanleyparable-e01-p06",
+   "type": "proactive",
+   "window_sec": [
+    1777,
+    1830
+   ],
+   "context_window_sec": [
+    0,
+    1830
+   ],
+   "kind": "怕/慌了",
+   "need": "旁白持续警告他会死，他明显被吓到但仍往前走；这时一句安抚很有用，告诉他先别慌、危险是否立刻发生以画面为准。",
+   "visible": "从 29:37 到 30:08 画面一直是在同一条很窄、两侧白墙的长通道里往前走，地上还有一团团雾，到了 30:19 画面几乎全黑，30:30 才看到很暗的机械/管道样结构，能看出这段是在一路进入一个明显更黑更压迫的区域。",
+   "scene": "前两帧是设施内部走道和写着“MIND CONTROL FACILITY”的入口。要判的这段里，先是隔着门看一条狭长黑走廊，随后连续几帧都在这条白墙窄通道内向前，顶部有灯，地面或低处有雾；之后一帧几乎全黑，最后一帧在很暗的环境里能看到一些竖直结构、管道或设备边缘。右上角一直有主播小窗。",
+   "hint_level": "direction_only",
+   "evidence": [
+    {
+     "t": 1777,
+     "text": "although this passageway had the word Escape written on it the truth was that at the end of this Hall Stanley would meet his violent death"
+    },
+    {
+     "t": 1803,
+     "text": "at this point Stanley was making a conscious concerted effort to walk forward and willingly confront his death"
+    },
+    {
+     "t": 1813,
+     "text": "oh my God"
+    },
+    {
+     "t": 1830,
+     "text": "I'm alive"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "先安抚：旁白在施压，不代表你会立刻死，先观察脚下和前方机关。",
+     "提醒他可以慢一点走，确认哪里真正有危险再决定前进。",
+     "如果画面显示还有回头路或可站立平台，可提示他目前还有余地，不必慌按。"
+    ],
+    "must_not_say": [
+     "不要剧透这一段最终是否会死。",
+     "不要直接讲完整通过方式或后面分支内容。"
+    ]
+   }
+  }
+ ]
+}

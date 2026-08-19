@@ -1,0 +1,264 @@
+{
+ "container_id": "slendytubbies-e01",
+ "title": "Slendytubbies 首次盲玩（jacksepticeye）",
+ "video": {
+  "src": "/media/slendytubbies_e01.mp4",
+  "duration": 1213,
+  "streamer": "jacksepticeye",
+  "source_url": "https://www.youtube.com/watch?v=xVpUezLBM6g"
+ },
+ "thumbs": {
+  "prefix": "/data/thumbs/sty_",
+  "count": 4,
+  "interval": 300,
+  "offset": 30
+ },
+ "chapters": [
+  {
+   "t": 0,
+   "end_t": 100,
+   "label": "开场·游戏介绍"
+  },
+  {
+   "t": 100,
+   "end_t": 620,
+   "label": "初探地图·反派首次现身"
+  },
+  {
+   "t": 620,
+   "end_t": 1130,
+   "label": "追逐升级·发现手电筒"
+  },
+  {
+   "t": 1130,
+   "end_t": 1213,
+   "label": "结局·功亏一篑"
+  }
+ ],
+ "mode": "proactive_only",
+ "note": "评测时不给原声、不给转写、不给题目，agent 只看画面帧自己决定什么时候开口。evidence 是出题依据，判分时给判分员看，不给被测的 agent。",
+ "tasks": [
+  {
+   "task_id": "slendytubbies-e01-p01",
+   "type": "proactive",
+   "window_sec": [
+    250,
+    304
+   ],
+   "context_window_sec": [
+    0,
+    304
+   ],
+   "kind": "卡住出不去",
+   "need": "他在树林里反复绕、认不出方向，不确定自己是不是一直在兜圈，需要一个只给方向的找路建议。",
+   "visible": "从 4:10 到 5:04 这几帧里一直是在很暗的树林空地里转，镜头一会儿对着树丛、一会儿照到近处的树干和石头，最后又回到跟前面很像的林间空地；画面里没有出现新的地点、明确路标或完成提示。",
+   "scene": "前两帧是夜里的树林。要判断的 4:10 到 5:04 这几帧里，都是夜晚森林场景：黑暗的树丛和空地、地上的小路或草地，手电光照到近处的大树干、一个石头，以及一截断木；最后一帧还是对着树林空地。左上角一直有玩家摄像头画面。",
+   "hint_level": "direction_only",
+   "evidence": [
+    {
+     "t": 250,
+     "text": "it looks so yummy licious I think I'm going in circles and I just don't realize it games like these are so easy to get lost in like incredibly easy to get lost in"
+    },
+    {
+     "t": 280,
+     "text": "where are all these coasters yo okay there's the fallen tree and"
+    },
+    {
+     "t": 295,
+     "text": "go around that oh I can jump later"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "提醒他先把一个显眼地标当参照，比如倒下的树，避免无目的乱转。",
+     "建议沿着一个固定方向持续前进，或贴着边缘/围着同一侧探索，不要频繁转头改路线。",
+     "如果画面上有重复出现的地标，指出这说明他确实在绕圈，可以立刻换一个方向。"
+    ],
+    "must_not_say": [
+     "不要直接报出奶昔/奶油冻的具体刷新点或完整收集路线。",
+     "不要剧透后面地图结构或敌人机制细节。"
+    ]
+   }
+  },
+  {
+   "task_id": "slendytubbies-e01-p02",
+   "type": "proactive",
+   "window_sec": [
+    361,
+    417
+   ],
+   "context_window_sec": [
+    0,
+    417
+   ],
+   "kind": "卡住出不去",
+   "need": "他再次明确表示不知道自己该往哪走，环境太相似；同时画面里可能还有掉树等干扰，值得给一个低剧透的导航与避险提示。",
+   "visible": "从 6:01 到 6:57 这几帧里，画面一直是在很像的夜晚树林空地/小路上来回转视角，前后都没有出现明显的新地点或界面变化；到 6:23 还出现了“ A Player has collected 3/10 crystals ”的提示，说明这一段里只看到在林子里找路、顺手触发了一次收集提示。",
+   "scene": "夜晚的森林场景，手电筒照着地面和树木，镜头在树之间、小路和空地间切换；有一帧树干贴得很近占了右侧，一帧上方有大块物体遮住画面，地上有一个发光的小物件；屏幕下方出现过“A Player has collected 3/10 crystals”的文字提示。",
+   "hint_level": "direction_only",
+   "evidence": [
+    {
+     "t": 361,
+     "text": "where am I going I don't know everything looks so the same everything similar in looking"
+    },
+    {
+     "t": 386,
+     "text": "just collected four okay a tree fell on my head it almost knocked me out and killed me for tinky-winky to come and have his way with me yeah I really don't know what think he's gonna do to me in the dark oh why"
+    },
+    {
+     "t": 417,
+     "text": "they're all okay why do you keep telling me how many clusters I have on a tree falls down"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "告诉他这种地形容易迷路，先选一个稳定策略：沿边走、认单一地标、不要在开阔地乱转。",
+     "提醒他环境本身也可能有危险，经过树旁或可疑区域时别停太久。",
+     "如果 HUD 反复提示收集数，说明核心目标仍是继续找剩余收集物，不必纠结额外事件含义。"
+    ],
+    "must_not_say": [
+     "不要直接说最后一个收集物在哪。",
+     "不要完整解释后续所有环境陷阱和结局触发。"
+    ]
+   }
+  },
+  {
+   "task_id": "slendytubbies-e01-p03",
+   "type": "proactive",
+   "window_sec": [
+    759,
+    864
+   ],
+   "context_window_sec": [
+    0,
+    864
+   ],
+   "kind": "卡住出不去",
+   "need": "他在开放地图里反复绕圈，找不到还没收集到的 custard，需要一个找路/搜图方向提示。",
+   "visible": "从 12:39 到 14:24 这几帧里，画面一直都是夜里的草地和一圈黑色树丛，几次还能看到很像同一棵粗树干/同一排树林，视角只是左右转和在附近挪动，没有出现明显的新地点、界面变化或完成提示。",
+   "scene": "要判的这段里是第一人称夜间户外场景：前景是草地，周围是树木和树丛，远处是黑色的树林轮廓；有时画面中央或右侧能看到一棵较粗的树干。镜头在树林边和空地间缓慢转动、移动。",
+   "hint_level": "direction_only",
+   "evidence": [
+    {
+     "t": 759,
+     "text": "no I hear the house again I'm not going back there well then going back there we're not going inside again holy [ __ ] it's so easy at lost in these games I'm going in circles at"
+    },
+    {
+     "t": 804,
+     "text": "this one is kind of tense Jesus back at these trees where am I going I'm going in giant ass circles I"
+    },
+    {
+     "t": 816,
+     "text": "don't know where custards are there's something in the middle of the map"
+    },
+    {
+     "t": 836,
+     "text": "tinky-winky where are you did you go away I hope so see you wink he's a scary mofo okay I don't know where any custards are come on game"
+    },
+    {
+     "t": 851,
+     "text": "give me something any down here seriously is that the sound Tinky week he's gonna make if he catches you because that's frightening that is very frightening as scary as all hell"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "先别盲跑：用已经见过的固定地标来定方向，避免一直绕回房子/中央区域。",
+     "没见过的边缘路线、洞口、岔路更值得搜；重复经过的树林可以先放弃。",
+     "如果画面上有收集数显示，可以提醒他现在只差几个，不必冒险回屋，优先扩大搜索范围。"
+    ],
+    "must_not_say": [
+     "不要直接报出剩余 custard 的具体坐标。",
+     "不要剧透敌人接下来会从哪里出现或结局触发条件。"
+    ]
+   }
+  },
+  {
+   "task_id": "slendytubbies-e01-p04",
+   "type": "proactive",
+   "window_sec": [
+    925,
+    979
+   ],
+   "context_window_sec": [
+    0,
+    979
+   ],
+   "kind": "找不到在哪",
+   "need": "他只差最后几个收集物，但已经开始在地图里兜圈，找不到还没搜过的区域在哪里。",
+   "visible": "从 15:25 到 16:19 这几帧里，人物一直在夜里沿着岩壁/山壁边缘移动，先后都还是很相似的黑暗山路、树和峭壁，最后又到了一段贴着大岩壁的海边，没有看到明显的新地点、收集成功或界面变化。",
+   "scene": "前两帧是夜里的山路和树林。15:25 之后依次能看到：狭窄山路旁的大岩壁；贴着岩壁的暗路；树和岩壁边的小路；临海的岩壁和岸边；最后是一段海边，右侧是高黑色岩壁。左上角一直有主播脸部画面。",
+   "hint_level": "direction_only",
+   "evidence": [
+    {
+     "t": 925,
+     "text": "okay but that keeps happening it's less scary but still startling all the same oh my god where is it where's the land where the last custards oh no what oh I thought I got stuck I kind of broke the game I did a super giant"
+    },
+    {
+     "t": 939,
+     "text": "leap oh my god where are the last clusters I'm looking at the outside of the map because the inside has nothing anymore it's just all it does is leave me around in circles where are you who are you where are you come on custards stop hiding there's not a good"
+    },
+    {
+     "t": 967,
+     "text": "okay I really shouldn't be going through gaps like that it's not trustworthy I don't know how the game works I don't know what the limitations oh my god custards"
+    },
+    {
+     "t": 979,
+     "text": "I'm back at the beach and back at the beach can I draw myself"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "提醒他剩下的 custard 更可能在没彻底搜过的内部区域，而不是一直沿地图外圈乱跑。",
+     "建议用地标法搜索：沿一个方向系统扫，不要来回穿缝或随机转向。",
+     "点出“又回到海滩/老地方”说明他在绕圈，需要立刻换搜索路线。"
+    ],
+    "must_not_say": [
+     "不要直接报出剩余 custard 的具体刷新点坐标。",
+     "不要给完整路线解法，把最后两个的精确位置全说穿。"
+    ]
+   }
+  },
+  {
+   "task_id": "slendytubbies-e01-p05",
+   "type": "proactive",
+   "window_sec": [
+    1090,
+    1124
+   ],
+   "context_window_sec": [
+    0,
+    1124
+   ],
+   "kind": "误解了规则",
+   "need": "他先得出“敌人不会杀你，只会追上来吓人”的错误判断，随后很快因此放松了对威胁的估计。",
+   "visible": "从 18:10 到 18:30 画面一直只是夜里树林里跑动、视角来回转，没有明显结算；但到 18:37 画面中央突然出现红字“A Player has been caught...”，18:44 又直接回到游戏主菜单，能看出这一段最后发生了被抓/结束。",
+   "scene": "前两帧是夜里树林远景。18:10 开始是第一人称手电照着草地和树干，在树林里转向、跑动；18:37 画面上出现红色提示“A Player has been caught...”；18:44 切到《SlendyTubbies BETA v2》主菜单，左侧有 Singleplayer、Multiplayer、Settings、Credits。",
+   "hint_level": "direction_only",
+   "evidence": [
+    {
+     "t": 1090,
+     "text": "sorry he doesn't even kill you he just catches up to you and does nothing he all he does is scare the crap out of you okay if I can't find anything like two minutes I'm just ending this video because this is just obnoxious at this stage oh my god"
+    },
+    {
+     "t": 1105,
+     "text": "why is it taking me so long to find some damn custard I really shouldn't be out in the outside of maps should I should be in the inside where I haven't found stuff before oh no it's gonna happen again"
+    },
+    {
+     "t": 1124,
+     "text": "after all that after all the screaming after all the [ __ ] terror of [ __ ] that was happening and here right behind me all of a sudden I'm caught and that's it it's over god damn it I was 2 custards away"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "纠正认知：别把贴近后暂时没结算当成安全，还是要按致命威胁处理。",
+     "提醒他不要因为误判而放松走位；被追时优先保命，不要边找边赌。",
+     "顺带把搜索策略拉回去：既然只差两个，换到内部未搜区域，但前提是持续保持距离。"
+    ],
+    "must_not_say": [
+     "不要提前剧透具体什么时候会判定失败。",
+     "不要把敌人的所有 AI 机制一次性讲透。"
+    ]
+   }
+  }
+ ]
+}
