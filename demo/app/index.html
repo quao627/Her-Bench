@@ -1748,6 +1748,15 @@ const FORCE_LOOKUP_NOTE = `
 注意：你已经连续很多次没提出任何要查的东西了。「感觉不用查」通常不是真的不用查。
 这一次 decide 的 lookup 不许为空——从画面里挑一个你说不出准确细节的具体东西去查。`;
 
+// 跟 server.py 里 session 级声明的那个保持一致；强制查证时按 per-response 传，
+// 这样 'required' 只可能落在它身上
+const LOOKUP_TOOL = {
+  type: 'function', name: 'lookup_game_info',
+  description: '让后台 agent 查资料（机制/配方/参数/剧情/报错含义）核实一个具体事实，约15-20秒返回。',
+  parameters: {type: 'object', properties: {
+    query: {type: 'string', description: '要查的问题，中文，具体明确'}}, required: ['query']}
+};
+
 const DECIDE_TOOL = {
   type: 'function', name: 'decide',
   description: '自检专用：把这一轮的判断结果交回来。',
@@ -1782,11 +1791,13 @@ function selfCheck(why){
   // 工具调用的 arguments 由 API 按 schema 校验，是这套 API 里唯一可靠的结构化出口。
   live.dc.send(JSON.stringify({type: 'response.create',
     response: {output_modalities: ['text'],
-               // 工具定义随这一轮一起发，不依赖 session 配置里已经有它：
-               // server.py 改过之后没重启的话，光靠 tool_choice 点名会直接报错，
-               // 那一轮永远完不成，表现就是它彻底不说话了
+               // 工具定义随这一轮一起发，不依赖 session 配置里已经有它。
+               // tool_choice 必须用 'required'：实测点名式 {type:'function', name:'decide'}
+               // 会被 API 收下（写错形状还会报错），但并不强制执行——模型照样返回 message，
+               // 于是自检全靠文本兜底在撑，它一旦回一句人话，lookup 和 speak 就一起丢了。
+               // per-response 只传这一个工具，'required' 就等价于点名，而且真的生效。
                tools: [DECIDE_TOOL],
-               tool_choice: {type: 'function', name: 'decide'},
+               tool_choice: 'required',
                instructions: TICK_PROMPT + (force ? FORCE_LOOKUP_NOTE : '')}}));
 }
 
@@ -1897,7 +1908,9 @@ function sendLiveTask(task){
   live.dc.send(JSON.stringify({type: 'conversation.item.create',
     item: {type: 'message', role: 'user', content}}));
   const respEv = {type: 'response.create'};
-  if (mustLookup && !hasNotes) respEv.response = {tool_choice: {type: 'function', name: 'lookup_game_info'}};
+  // 同上：点名不生效，必须 'required'，而且只传 lookup 这一个工具——
+  // 会话里还挂着 decide，光给 'required' 它可能去调 decide，那这道题就白强制了
+  if (mustLookup && !hasNotes) respEv.response = {tools: [LOOKUP_TOOL], tool_choice: 'required'};
   live.dc.send(JSON.stringify(respEv));
 }
 </script>
