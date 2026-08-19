@@ -13,6 +13,8 @@ import re
 import sys
 import mimetypes
 import urllib.request
+
+import judge as judge_mod
 import urllib.error
 from http.server import HTTPServer, ThreadingHTTPServer, SimpleHTTPRequestHandler
 
@@ -203,6 +205,27 @@ class RangeHandler(SimpleHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
     def do_POST(self):
+        if self.path.split("?")[0] == "/api/judge":
+            # 判分是独立的一条路：另一个模型、另一次调用，跟 codex 和 Realtime 会话
+            # 都不相干。ThreadingHTTPServer 起的线程，所以这几秒不挡视频流。
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                req = json.loads(self.rfile.read(length)) if length else {}
+            except Exception:
+                req = {}
+            try:
+                code, payload = judge_mod.judge_run(
+                    req.get("task") or {}, req.get("run") or {},
+                    req.get("frame_jpeg_base64"), req.get("model"))
+            except Exception as e:
+                code, payload = 500, {"error": f"judge 异常: {e}"}
+            body = json.dumps(payload, ensure_ascii=False).encode()
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         if self.path.split("?")[0] == "/api/realtime/token":
             try:
                 length = int(self.headers.get("Content-Length", 0))

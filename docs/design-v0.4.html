@@ -490,7 +490,9 @@ td,th{overflow-wrap:anywhere;}
   </figure>
 
   <h3>怎么判</h3>
-  <p>两类题都判说得对不对，主动型再多判一项时机。</p>
+  <p>两类题都判说得对不对，主动型再多判一项时机。一道题跑完就自动记一条，
+  然后送去判一次：<b>判分是单独一个模型、单独一次调用</b>，不共享 codex 会话，也不共享陪看那一端的上下文。
+  同一条会话既作答又给自己打分等于自己验自己，而且它手里还留着刚才查到的资料，会顺着自己的话往下认。</p>
   <div class="tablebox"><table>
     <tr><th style="width:150px;">指标</th><th>量什么</th><th style="width:110px;">怎么判</th></tr>
     <tr><td colspan="3" style="font-weight:600; color:var(--accent); font-size:12px; letter-spacing:.08em;">说得对不对（两类题都算）</td></tr>
