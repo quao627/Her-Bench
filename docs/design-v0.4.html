@@ -208,7 +208,7 @@ td,th{overflow-wrap:anywhere;}
     <text x="186" y="50" font-size="12" font-weight="700" fill="var(--accent)">Realtime（常驻）</text>
     <text x="186" y="72" font-size="10.5" fill="var(--ink)">听得到，看得到</text>
     <text x="186" y="90" font-size="10.5" fill="var(--ink)">记得刚才聊过什么</text>
-    <text x="186" y="112" font-size="10.5" fill="var(--muted)">但它不会自发说话</text>
+    <text x="186" y="112" font-size="10.5" fill="var(--muted)">但 API 不会自己触发生成</text>
 
     <g color="var(--muted)"><line x1="336" y1="76" x2="356" y2="76" stroke="currentColor" stroke-width="1.5" marker-end="url(#a4)"/></g>
 
@@ -370,7 +370,7 @@ td,th{overflow-wrap:anywhere;}
   <h3>几个关键设计</h3>
   <div class="tablebox"><table>
     <tr><th style="width:160px;">设计</th><th>解决什么</th></tr>
-    <tr><td>只有一个决策点</td><td>Realtime 不会自发说话，只往对话里塞画面不会触发任何输出，所以要定期让它自己判断一次。开口和查证在同一次判断里决定，触发这次判断的有两处：<span class="t">T_tick</span> 的定时器，和后台内容回来的那一刻，两处共用一道最小间隔。判断走纯文本，用户听不到</td></tr>
+    <tr><td>只有一个决策点</td><td>主动开口这件事得自己搭：Realtime API 不会自己触发生成，往对话里塞画面、塞后台资料都不会让它出声，只有显式发一次请求、或者语音检测判定主播说完了才会。所以要定期让它自己判断一次，开口和查证在同一次判断里决定。触发这次判断的有两处：<span class="t">T_tick</span> 的定时器，和后台内容回来的那一刻，两处共用一道最小间隔。判断走纯文本，用户听不到</td></tr>
     <tr><td>主播问话优先</td><td>主播一开口，后台正在跑的那条立刻让路：浏览器掐掉请求，后端把 codex 子进程杀掉，那条会话一并作废，下次从干净的会话重开。这段时间也不自检、不备料</td></tr>
     <tr><td>喂料和开口分开</td><td>备料是定时驱动的，它只把查到的内容塞进上下文；只有 agent 自己提出的查证，回来时才会触发下一次自检。什么时候说话必须留在 agent 手里，这条通道可以整条关掉做对照</td></tr>
     <tr><td>判断要看一段时间线</td><td>值不值得开口取决于这段时间发生了什么，单帧看不出是刚推进过来还是原地打转。比如通关那一帧是角色在云里下坠，和掉出地图的画面几乎一样。所以每次都带 <span class="t">N_look</span> 或 <span class="t">N_brief</span> 帧，近处密、远处稀</td></tr>
