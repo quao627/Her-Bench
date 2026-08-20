@@ -462,6 +462,7 @@ function renderAll(){
         <span class="chip k">${esc(t.kind)}</span>
         <span>${fmt(a)} – ${fmt(b)}</span>
         <span class="chip">${t.hint_level}</span>
+        <span class="chip" title="${t.found_by==='frames'?'扫画面扫出来的：这一段看得出没有推进':'从主播的转写里挖的，再截帧核过'}">${t.found_by==='frames'?'📺 画面':'💬 转写'}</span>
         ${t.hit ? `<span class="chip ok">接住 · 晚 ${t.delay_sec}s</span>`
                 : `<span class="chip">没接住</span>`}
         <span style="margin-left:auto;font-size:10px">${t.task_id}</span>
@@ -470,7 +471,7 @@ function renderAll(){
       <div class="sub">画面上看得出：${esc(t.visible)}</div>
       ${t.said ? `<div class="said">${esc(t.said.text)}</div>` : ''}
       ${renderJudge(t)}
-      <details><summary>出题依据（主播原话，agent 看不到）</summary>
+      <details><summary>出题依据（主播原话，agent 看不到）${t.evidence&&t.evidence.length?'':' · 这题他当时没说话'}</summary>
         ${(t.evidence||[]).map(e => `<div class="ev"><b>${fmt(e.t)}</b> ${esc(e.text)}</div>`).join('')}
         <div class="ev" style="border-color:var(--q)"><b>该说到</b> ${(t.grading.help_points||[]).map(esc).join(' / ')}</div>
         <div class="ev" style="border-color:var(--bad)"><b>不能说</b> ${(t.grading.must_not_say||[]).map(esc).join(' / ')}</div>
@@ -512,7 +513,12 @@ function renderHow(){
     <p>从主播自己的转写里挖出「他这会儿确实需要帮助」的时刻（自言自语问这是啥、卡住、反复失败），
     每个时刻定一段窗口。转写只在出题时用，评测时 agent 看不到一个字，所以每道题都截帧核过：
     这个困难在画面上也得看得出来，否则不出题。</p>
-    <p>每道题都存了 evidence，就是主播当时说的原话。展开「出题依据」能看到。</p>
+    <p>题有两条来路，卡片上标着：</p>
+    <p>· <b>📺 画面</b> — 直接扫视频。一段一段地看八帧，问「从第一帧到最后一帧他推进了吗」，
+    没推进就是候选。这条路出来的题天生可见，不用再核一遍，也能找到他压根没吭声的时刻。</p>
+    <p>· <b>💬 转写</b> — 从他自己说的话里挖，再截帧核一遍。这条能捞到画面上不显眼、
+    但他自己说破了的时刻，代价是核不过的会被刷掉（大概一半）。</p>
+    <p>两条都会把那一段的原话存进 evidence。展开「出题依据」能看到——判分员看得到，被测的 agent 看不到。</p>
     <p style="margin-top:10px"><b>怎么算分</b></p>
     <p>· 窗口内开口 = 接住。同一个窗口只认第一句。</p>
     <p>· 所有窗口之外的发言 = 多余，逐次记。</p>

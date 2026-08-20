@@ -239,13 +239,174 @@ def verify(cand, video, key, n=8):
         return {"visible_ok": False, "visible": "", "scene": "", "note": f"复核调用失败: {e}"}
 
 
+
+# ───────────────────── 直接扫画面出候选 ─────────────────────
+#
+# 只靠转写有个天花板：他不吭声的时候就没有候选，而且他嘴上说的困难有一半在画面上
+# 根本看不出来（复核阶段刷掉的大多是这一类）。反过来从画面扫，出来的候选天生就是
+# 可见的，不用再赌一次。
+#
+# 分工：**画面决定这算不算一道题、窗口在哪**（公平，因为 agent 也只有画面），
+# **转写决定「什么才叫帮到了」**（他自己说出来的困惑，是最准的 help_points 依据）。
+
+SWEEP_WIN = 120          # 一次看这么长一段
+SWEEP_STRIDE = 80        # 往前挪这么多，留点重叠
+
+SWEEP_SCHEMA = {
+    "type": "object", "additionalProperties": False,
+    "properties": {
+        "worth": {"type": "boolean",
+                  "description": "这一段值不值得让旁边的人开口。正常推进就是 false"},
+        "kind": {"type": "string",
+                 "enum": ["不知道这是什么", "卡住出不去", "找不到在哪", "方法用错了",
+                          "怕/慌了", "刚做成一件事", "误解了规则", "无"]},
+        "start_sec": {"type": "number", "description": "从哪一秒起说了有用，落在给你的时间范围内"},
+        "end_sec": {"type": "number", "description": "到哪一秒为止；再晚说就没意义了"},
+        "visible": {"type": "string", "description": "你从这串帧上看到了什么才这么判断。只写画面上真有的"},
+        "scene": {"type": "string", "description": "这一段画面上有什么，写实"},
+        "confidence": {"type": "number"},
+    },
+    "required": ["worth", "kind", "start_sec", "end_sec", "visible", "scene", "confidence"],
+}
+
+SWEEP_PROMPT = """你在看一段录像的连续截帧：有人第一次玩这个游戏 / 第一次用这个软件。
+
+**先回答一个具体问题：从第一帧到最后一帧，这段时间里他推进了吗？**
+
+推进了的样子：换了房间/区域/场景，界面从一个切到另一个，HUD 上的数字变了，
+物体做出来了、门开了、任务提示更新了。只要看得出「现在的位置比刚才靠后」，就算推进。
+
+没推进的样子：几帧下来还在同一片地方转，视角在变但位置没变；同一个菜单/面板一直开着；
+同一个东西被反复对准或反复操作，屏幕上没有任何反馈；进度数字从头到尾没动；
+同一个动作循环出现（掉下去、爬上来、又掉下去）。
+
+**没推进，就是这一局要找的东西**——他大概率卡住了、迷路了、或者在反复试错。
+这时 worth=true。
+
+另外两种也算 worth=true：
+- 屏幕上有明确的报错、警告、失败提示
+- 明显刚完成一件事（一直打不开的门开了、做了半天的东西成了），值得接一句
+
+worth=false 只有一种情况：他在正常推进，画面一路往前走。
+
+注意别把「画面暗」「场景重复」「你看不懂在干嘛」当成没推进。判断依据是**位置和状态有没有往前**，
+不是你看得清不清楚。真拿不准就 false。
+
+worth=true 的时候，start_sec / end_sec 定在给你的时间范围里：从哪一秒起搭话有用，
+到哪一秒为止再说就晚了。visible 写你到底看到了什么（比如「6:01 和 6:57 两帧都是同一片
+树林空地，中间几帧只是视角在转，HUD 的收集数一直是 3/10」），别写「他看起来困惑」这种。"""
+
+
+def sweep_window(video, t0, t1, key, n=8):
+    """看一段画面，判断这一段值不值得开口。"""
+    secs = [round(t0 + (t1 - t0) * i / (n - 1), 1) for i in range(n)]
+    frames = [(s_, grab(video, s_)) for s_ in secs]
+    frames = [(s_, f) for s_, f in frames if f]
+    if len(frames) < 4:
+        return None
+    content = [{"type": "text", "text":
+                f"这是同一段录像里按时间排的 {len(frames)} 帧，时间点分别是 "
+                + "、".join(vtt.fmt(s_) for s_, _ in frames)
+                + f"（秒数：{', '.join(str(int(s_)) for s_, _ in frames)}）。\n"
+                + f"start_sec / end_sec 用秒数，落在 {int(t0)} 到 {int(t1)} 之间。\n\n"
+                + SWEEP_PROMPT}]
+    for s_, f in frames:
+        content.append({"type": "image_url",
+                        "image_url": {"url": "data:image/jpeg;base64," + f, "detail": "low"}})
+    try:
+        d = _post("https://api.openai.com/v1/chat/completions", {
+            "model": MODEL,
+            "messages": [{"role": "user", "content": content}],
+            "response_format": {"type": "json_schema", "json_schema": {
+                "name": "sweep", "strict": True, "schema": SWEEP_SCHEMA}},
+        }, key)
+        return json.loads(d["choices"][0]["message"]["content"])
+    except Exception as e:
+        print(f"    [扫描失败] {str(e)[:100]}", flush=True)
+        return None
+
+
+FILLIN_SCHEMA = {
+    "type": "object", "additionalProperties": False,
+    "properties": {
+        "need": {"type": "string", "description": "一句话说清他这会儿缺什么"},
+        "help_points": {"type": "array", "items": {"type": "string"},
+                        "description": "一句有用的话该说到什么，2-4 条，逐条可勾"},
+        "must_not_say": {"type": "array", "items": {"type": "string"}},
+        "hint_level": {"type": "string", "enum": ["direction_only", "full"]},
+    },
+    "required": ["need", "help_points", "must_not_say", "hint_level"],
+}
+
+
+def fill_in(cand, title, evidence, key):
+    """画面定了「这是一道题」之后，再写「什么才算帮到了」。
+
+    有转写就把这一段的原话给它——他自己说出来的困惑，比对着画面猜准得多。
+    没转写也能写，只是依据只有画面。
+    """
+    ev = "\n".join(f"[{int(e['t'])}s] {e['text']}" for e in evidence) or "（这一段他没说话）"
+    user = (f"素材：{title}\n"
+            f"这一段（{vtt.fmt(cand['start_sec'])}–{vtt.fmt(cand['end_sec'])}）从画面上看是「{cand['kind']}」。\n"
+            f"画面上看到的：{cand['visible']}\n"
+            f"画面里有什么：{cand['scene']}\n\n"
+            f"他这段时间自己说的话（只给你写判分标准用，被测的 agent 看不到）：\n{ev}\n\n"
+            f"写清楚：他这会儿缺什么，以及一句真正帮到他的话应该说到什么。\n"
+            f"help_points 要具体、可勾选，别写「给予鼓励」这种没法判的。\n"
+            f"must_not_say 写这一刻不能说的：后面的剧情、完整解法步骤。\n"
+            f"提示分级：游戏里的谜题多数 direction_only 只给方向；软件操作类的"
+            f"（这个按钮在哪、这个参数干嘛）可以 full 直接讲清楚。")
+    try:
+        d = _post("https://api.openai.com/v1/chat/completions", {
+            "model": MODEL,
+            "messages": [{"role": "user", "content": user}],
+            "response_format": {"type": "json_schema", "json_schema": {
+                "name": "fillin", "strict": True, "schema": FILLIN_SCHEMA}},
+        }, key)
+        return json.loads(d["choices"][0]["message"]["content"])
+    except Exception as e:
+        print(f"    [补写失败] {str(e)[:100]}", flush=True)
+        return None
+
+
+def sweep_video(video, dur, title, lines, key):
+    """从头到尾扫一遍画面，直接出题。"""
+    out, t = [], 0
+    while t < dur - 20:
+        t1 = min(dur, t + SWEEP_WIN)
+        r = sweep_window(video, t, t1, key)
+        if r and r["worth"] and r["confidence"] >= 0.55 and r["kind"] != "无":
+            a = max(t, min(r["start_sec"], t1 - 20))
+            b = min(t1, max(r["end_sec"], a + 20))
+            ev = [{"t": l["t"], "text": l["text"]} for l in lines if a - 10 <= l["t"] <= b + 5][:4]
+            fi = fill_in({**r, "start_sec": a, "end_sec": b}, title, ev, key)
+            if fi:
+                out.append({"start_sec": a, "end_sec": b, "kind": r["kind"],
+                            "visible": r["visible"], "scene": r["scene"],
+                            "confidence": r["confidence"], "evidence": ev,
+                            "from": "frames", **fi})
+                print(f"  ✓ [{vtt.fmt(a)}–{vtt.fmt(b)}] {r['kind']} · {fi['need'][:40]}"
+                      + (f"  依据 {len(ev)} 句" if ev else "  （他没说话）"), flush=True)
+        elif r:
+            print(f"    {vtt.fmt(t)}–{vtt.fmt(t1)} 正常", flush=True)
+        t += SWEEP_STRIDE
+    return out
+
+
 # ────────────────────────────── main ──────────────────────────────
 
 def main():
-    if len(sys.argv) < 3:
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    flags = [a for a in sys.argv[1:] if a.startswith("--")]
+    if not args:
         print(__doc__)
         sys.exit(1)
-    cid, vtt_path = sys.argv[1], sys.argv[2]
+    cid = args[0]
+    vtt_path = args[1] if len(args) > 1 else None
+    source = "both"
+    for f in flags:
+        if f.startswith("--from="):
+            source = f.split("=", 1)[1]
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         sys.exit("OPENAI_API_KEY 没设")
@@ -256,45 +417,67 @@ def main():
         sys.exit(f"找不到视频 {video}")
     dur = src["video"]["duration"]
 
-    lines = vtt.utterances(vtt_path)
-    print(f"{cid}: {len(lines)} 句转写，视频 {vtt.fmt(dur)}", flush=True)
+    lines = vtt.utterances(vtt_path) if vtt_path and os.path.exists(vtt_path) else []
+    if not lines and source in ("transcript", "both"):
+        if source == "transcript":
+            sys.exit("没有转写，--from=transcript 跑不了")
+        print("没有转写，只走画面这一路", flush=True)
+        source = "frames"
+    print(f"{cid}: 转写 {len(lines)} 句，视频 {vtt.fmt(dur)}，出题来源 {source}", flush=True)
 
-    # 1) 分块提候选
-    cands, t = [], 0
-    while t < dur:
-        seg = [l for l in lines if t <= l["t"] < t + CHUNK_SEC]
-        if len(seg) >= 4:
-            got = mine_chunk(seg, src["title"], key, t, min(dur, t + CHUNK_SEC))
-            got = [c for c in got if c["confidence"] >= 0.55]
-            print(f"  {vtt.fmt(t)}–{vtt.fmt(min(dur, t+CHUNK_SEC))}  候选 {len(got)}", flush=True)
-            cands.extend(got)
-        t += CHUNK_SEC - OVERLAP_SEC
-
-    # 2) 窗口太短的丢掉：十几秒对一个几秒才看一帧的 agent 不公平
-    before = len(cands)
-    cands = [c for c in cands if c["end_sec"] - c["start_sec"] >= 20]
-    if before != len(cands):
-        print(f"窗口短于 20 秒的丢掉 {before - len(cands)} 个", flush=True)
-
-    # 3) 去掉挨太近的，按置信度留强的
-    cands.sort(key=lambda c: (-c["confidence"], c["start_sec"]))
-    kept = []
-    for c in cands:
-        if all(abs(c["start_sec"] - k["start_sec"]) >= MIN_GAP_SEC for k in kept):
-            kept.append(c)
-    kept.sort(key=lambda c: c["start_sec"])
-    print(f"去重后 {len(kept)} 个候选，开始截帧复核…", flush=True)
-
-    # 4) 逐个截帧复核
     tasks, dropped = [], []
-    for i, c in enumerate(kept):
-        v = verify(c, video, key)
-        mark = "✓" if v["visible_ok"] else "✗"
-        print(f"  {mark} [{vtt.fmt(c['start_sec'])}–{vtt.fmt(c['end_sec'])}] {c['kind']} · {c['need'][:38]}",
-              flush=True)
-        if not v["visible_ok"]:
-            dropped.append({**c, "drop_reason": v["note"]})
+
+    # ── A) 从画面扫。出来的候选天生可见，不用再复核一遍
+    frame_cands = []
+    if source in ("frames", "both"):
+        print("\n【一】扫画面", flush=True)
+        frame_cands = sweep_video(video, dur, src["title"], lines, key)
+        print(f"画面这一路 {len(frame_cands)} 个", flush=True)
+
+    # ── B) 从转写挖。能捞到画面上不显眼但他自己说破了的时刻，要过一遍截帧复核
+    tr_cands = []
+    if source in ("transcript", "both") and lines:
+        print("\n【二】挖转写", flush=True)
+        t = 0
+        while t < dur:
+            seg = [l for l in lines if t <= l["t"] < t + CHUNK_SEC]
+            if len(seg) >= 4:
+                got = mine_chunk(seg, src["title"], key, t, min(dur, t + CHUNK_SEC))
+                got = [c for c in got if c["confidence"] >= 0.55
+                       and c["end_sec"] - c["start_sec"] >= 20]
+                tr_cands.extend(got)
+            t += CHUNK_SEC - OVERLAP_SEC
+        # 跟画面那一路撞车的先扔掉，省下复核的钱
+        tr_cands = [c for c in tr_cands
+                    if all(abs(c["start_sec"] - f["start_sec"]) >= MIN_GAP_SEC for f in frame_cands)]
+        tr_cands.sort(key=lambda c: (-c["confidence"], c["start_sec"]))
+        uniq = []
+        for c in tr_cands:
+            if all(abs(c["start_sec"] - k["start_sec"]) >= MIN_GAP_SEC for k in uniq):
+                uniq.append(c)
+        print(f"转写这一路 {len(uniq)} 个候选，逐个截帧复核…", flush=True)
+        for c in uniq:
+            v = verify(c, video, key)
+            print(f"  {'✓' if v['visible_ok'] else '✗'} [{vtt.fmt(c['start_sec'])}–"
+                  f"{vtt.fmt(c['end_sec'])}] {c['kind']} · {c['need'][:36]}", flush=True)
+            if v["visible_ok"]:
+                frame_cands.append({**c, "visible": v["visible"], "scene": v["scene"],
+                                    "from": "transcript"})
+            else:
+                dropped.append({**c, "drop_reason": v["note"]})
+
+    # ── 合并、去重、编号
+    frame_cands.sort(key=lambda c: c["start_sec"])
+    merged = []
+    for c in frame_cands:
+        if merged and c["start_sec"] - merged[-1]["start_sec"] < MIN_GAP_SEC:
+            # 挨太近的留置信度高的那个
+            if c.get("confidence", 0) > merged[-1].get("confidence", 0):
+                merged[-1] = c
             continue
+        merged.append(c)
+
+    for c in merged:
         tasks.append({
             "task_id": f"{cid}-p{len(tasks)+1:02d}",
             "type": "proactive",
@@ -302,16 +485,16 @@ def main():
             "context_window_sec": [0, round(c["end_sec"])],
             "kind": c["kind"],
             "need": c["need"],
-            "visible": v["visible"],
-            "scene": v["scene"],
+            "visible": c["visible"],
+            "scene": c["scene"],
             "hint_level": c["hint_level"],
-            "evidence": c["evidence"],
+            "found_by": c.get("from", "frames"),
+            "evidence": c.get("evidence", []),
             "grading": {
                 "help_points": c["help_points"],
                 "must_not_say": c["must_not_say"],
             },
         })
-        time.sleep(0.2)
 
     os.makedirs(OUT_DIR, exist_ok=True)
     out = {
@@ -330,7 +513,11 @@ def main():
     if dropped:
         json.dump(dropped, open(os.path.join(OUT_DIR, f"{cid}.dropped.json"), "w",
                                 encoding="utf-8"), ensure_ascii=False, indent=1)
-    print(f"\n写出 {path}：{len(tasks)} 题，复核刷掉 {len(dropped)} 个", flush=True)
+    by_frame = sum(1 for t in tasks if t["found_by"] == "frames")
+    with_ev = sum(1 for t in tasks if t["evidence"])
+    print(f"\n写出 {path}：{len(tasks)} 题"
+          f"（画面挖到 {by_frame}，转写挖到 {len(tasks)-by_frame}；"
+          f"{with_ev} 题有主播原话作依据），复核刷掉 {len(dropped)}", flush=True)
 
 
 if __name__ == "__main__":
