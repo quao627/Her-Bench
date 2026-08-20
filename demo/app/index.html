@@ -434,6 +434,11 @@ const BG_LOOKUP_DEADLINE_MS = 100000;  // 后台查证的前端截止线，比�
    所以把每 5 秒喂给 Realtime 的那张顺手留一份。Realtime 自己的上下文会被截断，
    这里是补它记忆的洞，不是再造一只眼睛——只在它说这次查证需要看图时才用。 */
 let frameBuf = [];         // {t, dataurl}，只留最近 5 分钟
+
+/* ═══════════════════════════════════════════════════════════════
+   agent · 画面 buffer 与后台查证
+   环形 buffer、备料通道、它自己提的查证、主播开口时让路
+   ═══════════════════════════════════════════════════════════════ */
 function pushFrameBuf(t, dataurl){
   frameBuf.push({t, dataurl});
   while (frameBuf.length && frameBuf[0].t < t - 300) frameBuf.shift();
@@ -789,6 +794,11 @@ $('#agentPing').onclick = async () => {
 /* ════════════════ task trigger ════════════════ */
 let activePlay = null;   // {task, startedAt}
 
+
+/* ═══════════════════════════════════════════════════════════════
+   查看器 · 任务触发与判分
+   播放到锚点时触发，跑完自动送 /api/judge
+   ═══════════════════════════════════════════════════════════════ */
 function triggerTask(task){
   selectTask(task, false);
   activePlay = {task, startedAt: Date.now()};
@@ -1173,6 +1183,11 @@ function renderGradePane(){
   `;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   查看器 · 右侧面板
+   任务 / 资料 / 判分 / 后台调用 / 记录五个 tab
+   ═══════════════════════════════════════════════════════════════ */
 function renderBackendPane(){
   const el = $('#bcount'); if (el) el.textContent = backendLog.length ? backendLog.length : '';
   const pane = $('#pane-backend'); if (!pane) return;
@@ -1331,6 +1346,11 @@ function niceStep(targetPx){
   return steps.find(s => s >= raw) || 7200;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   查看器 · 时间轴绘制
+   缩略图带、锚点标记、命中区、拖动缩放
+   ═══════════════════════════════════════════════════════════════ */
 function draw(){
   if (!C || !tl.clientWidth) return;
   const W = tl.clientWidth, H = tl.clientHeight;
@@ -1624,6 +1644,11 @@ function ensureAudioGraph(){
   return live.graph;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   agent · Live 传输层
+   WebRTC 连接、音频图、事件分派、工具调用
+   ═══════════════════════════════════════════════════════════════ */
 async function liveConnect(){
   const btn = $('#liveBtn');
   btn.textContent = '🎙 连接中…';
@@ -1868,6 +1893,11 @@ function pushBgNoteToLive(question, j, opt){
   if (!(opt && opt.silent)) selfCheck('后台刚回了料，');
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   agent · 自检 tick：说什么 / 查什么
+   唯一的决策入口。纯文本响应 + 强制 decide 工具，判断"不说"时是真的安静
+   ═══════════════════════════════════════════════════════════════ */
 const TICK_PROMPT = `现在没人问你话，这是一次自检——用户听不到你这一轮的输出。
 看一眼刚才这些直播画面、你手上的后台资料和你们刚聊过的内容，同时决定两件事：
 
@@ -2037,6 +2067,11 @@ function noteProactiveHit(sec, spoken){
   return null;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   agent · 锚点任务与评分窗口
+   query 题走 sendLiveTask；proactive 题只记录窗口命中，不催它说话
+   ═══════════════════════════════════════════════════════════════ */
 function sendLiveTask(task){
   if (!live.dc || live.dc.readyState !== 'open') return;
   live.pendingTask = task;

@@ -29,7 +29,7 @@ import urllib.request
 
 import vtt
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # demo/
 MODEL = os.environ.get("HERBENCH_MINE_MODEL", "gpt-5.4")
 OUT_DIR = os.path.join(ROOT, "data", "proactive")
 

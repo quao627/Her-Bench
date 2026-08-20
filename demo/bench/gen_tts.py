@@ -19,9 +19,10 @@ import sys
 import tempfile
 import urllib.request
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-CONTAINERS = os.path.join(HERE, "data", "containers")
-TTS_DIR = os.path.join(HERE, "data", "tts")
+HERE = os.path.dirname(os.path.abspath(__file__))          # demo/bench
+DEMO = os.path.dirname(HERE)
+CONTAINERS = os.path.join(DEMO, "data", "containers")
+TTS_DIR = os.path.join(DEMO, "data", "tts")
 MODEL = "gpt-4o-mini-tts"
 VOICE = "nova"          # 观众提问的声音，跟陪玩 agent 的 cedar 区分开
 FFMPEG = "/Users/bytedance/bin/ffmpeg"
@@ -34,7 +35,7 @@ INSTRUCTIONS = (
 
 
 def load_key():
-    env = os.path.join(HERE, ".env")
+    env = os.path.join(DEMO, ".env")
     if os.path.exists(env):
         for line in open(env):
             line = line.strip()

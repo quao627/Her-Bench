@@ -6,9 +6,13 @@
 
 ```bash
 cd demo
-python3 server.py                        # 查看器 → http://localhost:8080（推荐 Chrome）
-python3 agent_live.py --backend codex     # agent 后端 → :8787（另开终端，需先 codex login）
+python3 bench/fetch_videos.py                   # 把视频下到位（首次；--check 只看状态）
+python3 server.py                               # dashboard → http://localhost:8080（推荐 Chrome）
+python3 agent/agent_live.py --backend codex     # agent 后端 → :8787（另开终端，需先 codex login）
 ```
+
+代码分三块，各管各的：`agent/`（被测的 agent）、`bench/`（数据获取 + 出题 + 判分）、
+`server.py` + `app/`（dashboard）。谁在哪、哪个函数干什么，见 [`CODEMAP.md`](CODEMAP.md)。
 
 要用语音陪看：把 platform key 写进 `demo/.env`（`OPENAI_API_KEY=sk-...`，和 codex 的
 ChatGPT 登录不是一套账号），重启 `server.py`，点右上角 🎙 Live。不连 Live 也能跑完整流程，
@@ -17,9 +21,9 @@ ChatGPT 登录不是一套账号），重启 `server.py`，点右上角 🎙 Liv
 三档 agent 后端按需选：
 
 ```bash
-python3 agent_stub.py                     # 罐头回答，秒回，验证协议用
-python3 agent_live.py                     # 真 agent：claude CLI 无头模式
-python3 agent_live.py --backend codex     # 真 agent：codex CLI
+python3 agent/agent_stub.py                     # 罐头回答，秒回，验证协议用
+python3 agent/agent_live.py                     # 真 agent：claude CLI 无头模式
+python3 agent/agent_live.py --backend codex     # 真 agent：codex CLI
 ```
 
 ## 素材
@@ -75,11 +79,11 @@ open http://localhost:8080/app/proactive.html
 ### 题是怎么来的
 
 ```
-python3 mine_proactive.py <container_id> <path/to/en.vtt>
-python3 build_proactive_index.py
+python3 bench/mine_proactive.py <container_id> <path/to/en.vtt>
+python3 bench/build_proactive_index.py
 ```
 
-`mine_proactive.py` 分两段：
+`bench/mine_proactive.py` 分两段：
 
 1. **从转写里提候选**。按分钟切段喂给模型，找「他这会儿确实需要帮助」的时刻：
    自言自语问这是啥、同一个地方反复试、翻半天找不到东西、理解错了规则、被吓到、
@@ -127,7 +131,7 @@ python3 build_proactive_index.py
 （翻资料、搜网，一次 10–40 秒）。一个模型两头占不住，所以拆成两个引擎：
 
 - **Realtime API** 常驻浏览器这端：听声音、每 5 秒看一帧画面、负责说话。全程唯一连续跟着直播的一端。
-- **codex CLI**（`agent_live.py`）在本地起 HTTP 服务：能读资料能搜网，但听不见、不常驻。**它只是工具，不做任何判断。**
+- **codex CLI**（`agent/agent_live.py`）在本地起 HTTP 服务：能读资料能搜网，但听不见、不常驻。**它只是工具，不做任何判断。**
 
 ### 自检 tick
 
@@ -262,13 +266,14 @@ Realtime API 没有语速/语气参数，只能靠 instructions 里的文字引�
 ## 出题与判分工具链
 
 ```bash
-python3 mine_proactive.py <container_id> <path/to/en.vtt>   # 从转写+画面挖 proactive 题
-python3 build_proactive_index.py                            # 刷新 proactive 界面的索引
-python3 gen_tts.py                                          # 为 query 题生成提问语音
-python3 vtt.py <file.vtt> [n]                               # 把 YouTube 自动字幕转成 {t,text}
+python3 bench/fetch_videos.py [--check] [container_id ...]     # 按清单下载视频到 media/
+python3 bench/mine_proactive.py <container_id> <en.vtt>        # 从转写+画面挖 proactive 题
+python3 bench/build_proactive_index.py                         # 刷新 proactive 界面的索引
+python3 bench/gen_tts.py                                       # 为 query 题生成提问语音
+python3 bench/vtt.py <file.vtt> [n]                            # 把 YouTube 自动字幕转成 {t,text}
 ```
 
-判分（`judge.py`）是**跟陪看 agent 完全分开的一次 LLM 调用**：不碰 codex、不碰
+判分（`bench/judge.py`）是**跟陪看 agent 完全分开的一次 LLM 调用**：不碰 codex、不碰
 Realtime 会话、不共享任何上下文，只拿「题面 + agent 到底说了什么」去问一个纯文本
 模型。让同一条会话既作答又给自己打分等于自己验自己。前端一道题跑完自动打一次分，
 走 `POST /api/judge`；模型用 `HERBENCH_JUDGE_MODEL` 覆盖。
@@ -290,16 +295,25 @@ Realtime 会话、不共享任何上下文，只拿「题面 + agent 到底说�
 
 ```
 demo/
-  server.py                 静态服务器（HTTP Range）+ /api/realtime/token + /api/judge
-  agent_live.py             agent 后端：/answer /lookup /research /cancel /progress
-  agent_stub.py             罐头回答端点，验证协议用
-  judge.py                  独立判分（单独一个模型、单独一次调用）
-  mine_proactive.py         从转写+画面挖 proactive 题
-  build_proactive_index.py  生成 proactive 界面的索引
-  gen_tts.py                合成语音条件用的提问音频
-  vtt.py                    VTT 转写解析
-  app/index.html            主查看器（单文件，无依赖）
-  app/proactive.html        纯 proactive 界面
+  CODEMAP.md                谁在哪、哪个函数干什么
+
+  agent/                    ① 被测的 agent
+    agent_live.py             后端：/answer /lookup /research /cancel /progress
+    agent_stub.py             同协议的罐头实现，验证接线用
+                              （决策那一半目前在 app/index.html 里，见 CODEMAP）
+
+  bench/                    ② 数据获取 + 出题 + 判分
+    fetch_videos.py           按 container 清单下载视频
+    vtt.py                    VTT 转写解析
+    mine_proactive.py         从转写+画面挖 proactive 题
+    build_proactive_index.py  生成 proactive 界面的索引
+    gen_tts.py                合成语音条件用的提问音频
+    judge.py                  独立判分（单独一个模型、单独一次调用）
+
+  server.py                 ③ dashboard 入口：静态文件 + /api/realtime/token + /api/judge
+  app/index.html              主界面（单文件，无依赖）
+  app/proactive.html          纯 proactive 界面
+
   data/containers/*.json    每个 container：视频、章节、题、判分、资料索引
   data/proactive/*.json     proactive 题库（含被复核刷掉的 .dropped.json）
   data/resources/           资料快照（wiki/攻略 markdown）

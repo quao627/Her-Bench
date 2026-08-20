@@ -24,8 +24,9 @@ Blender——agent 在旁边看着，在他需要的时候给恰好够用的帮�
 
 ```bash
 cd demo
-python3 server.py                       # 查看器 → http://localhost:8080
-python3 agent_live.py --backend codex    # agent 后端（另开一个终端，需先 codex login）
+python3 bench/fetch_videos.py                  # 把视频下到位（首次；需要 yt-dlp + ffmpeg）
+python3 server.py                              # dashboard → http://localhost:8080
+python3 agent/agent_live.py --backend codex    # agent 后端（另开一个终端，需先 codex login）
 ```
 
 要用语音陪看，把 platform key 写进 `demo/.env`（`OPENAI_API_KEY=sk-...`）后重启
@@ -34,16 +35,29 @@ python3 agent_live.py --backend codex    # agent 后端（另开一个终端，�
 ## 仓库结构
 
 ```
-demo/          可跑的 demo：查看器、agent 后端、出题与判分工具链、题库
-docs/          设计草案（v0.1 → v0.4）和两张独立的机制图，GitHub Pages 从这里发布
+demo/
+  agent/       ① 被测的 agent：说话的一端（Realtime）+ 查证的一端（codex）
+  bench/       ② 数据获取 + 出题 + 判分：把视频变成题，把回答变成分
+  server.py    ③ dashboard 入口
+  app/         ③ dashboard 前端（主界面 + 纯 proactive 界面）
+  data/        素材与题库（三部分共用）
+docs/          设计草案（v0.1 → v0.4）和两张机制图，GitHub Pages 从这里发布
 live/          一个旁支实验：让弱 agent 直接玩 Pokemon，用来对照「看着别人玩」和「自己玩」
 ```
+
+谁在哪、哪个函数干什么：[`demo/CODEMAP.md`](demo/CODEMAP.md)
 
 ## 视频不在仓库里
 
 `demo/media/`（浏览器兼容版视频）和 `videos/`（原片）都被 `.gitignore` 排除了——
 体积太大，而且版权不属于我们。clone 下来的仓库里题库、资料、缩略图、转写都在，
-只有视频要自己补：容器清单 `demo/data/containers/*.json` 里记着每个视频的来源和时长。
+视频用一条命令补齐（清单里记着每个视频的来源和该放哪）：
+
+```bash
+cd demo && python3 bench/fetch_videos.py        # --check 只报状态，也可以只下某几个
+```
+
+需要 `yt-dlp` 和 `ffmpeg`（`brew install yt-dlp ffmpeg`）。
 
 `demo/.env` 同样不入库，里面是 OpenAI 的 key。
 

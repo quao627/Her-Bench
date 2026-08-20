@@ -32,8 +32,9 @@ import time
 import socketserver
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-RESOURCES = os.path.join(HERE, "data", "resources")
+HERE = os.path.dirname(os.path.abspath(__file__))          # demo/agent
+DEMO = os.path.dirname(HERE)                               # demo/：素材和题库都在这一级
+RESOURCES = os.path.join(DEMO, "data", "resources")
 
 ARGS = None
 
@@ -151,7 +152,7 @@ SOURCES: <实际参考的资料标题，逗号分隔，没查到具体来源就�
 
 
 def _read_doc(entry):
-    file_path = os.path.join(HERE, entry["file"].lstrip("/"))
+    file_path = os.path.join(DEMO, entry["file"].lstrip("/"))
     with open(file_path) as rf:
         content = rf.read().strip()
     return f"### {entry.get('title', entry.get('id', os.path.basename(file_path)))} ({os.path.basename(file_path)})\n{content}"
@@ -173,7 +174,7 @@ def get_resource_docs(container_id, current_sec=None):
     Falls back to "give it everything" when there's no chapter data or no
     current_sec, so containers without this metadata are unaffected."""
     if container_id:
-        manifest_path = os.path.join(HERE, "data", "containers", f"{container_id}.json")
+        manifest_path = os.path.join(DEMO, "data", "containers", f"{container_id}.json")
         try:
             with open(manifest_path) as f:
                 manifest = json.load(f)
@@ -258,7 +259,7 @@ def image_note(frame_paths, frame_labels):
 def run_claude(prompt: str, timeout=None) -> str:
     cmd = ["claude", "-p", "--model", ARGS.model, "--allowedTools", "Read"]
     r = subprocess.run(cmd, input=prompt, capture_output=True, text=True,
-                       timeout=timeout or ARGS.timeout, cwd=HERE)
+                       timeout=timeout or ARGS.timeout, cwd=DEMO)
     if r.returncode != 0:
         raise RuntimeError(r.stderr.strip()[-400:] or "claude exited nonzero")
     return r.stdout.strip()
@@ -393,7 +394,7 @@ def run_codex(prompt: str, frame_paths, container_id=None, kind="fg", timeout=No
         # prompt goes via stdin: the server process has no tty, and codex prefers
         # stdin over a positional arg when stdin is piped
         proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE, text=True, cwd=HERE)
+                                stderr=subprocess.PIPE, text=True, cwd=DEMO)
         run = {"proc": proc, "reason": None}
         with _RUNS_GUARD:
             _RUNS[key] = run
