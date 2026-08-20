@@ -1,43 +1,10 @@
 [
  {
-  "start_sec": 304,
-  "end_sec": 361,
-  "kind": "误解了规则",
-  "need": "他刚发现敌人不是单纯的吓人贴脸特效，而是真的会跟随/追击；这时需要一句简短安抚加机制澄清，帮他从乱跑切换到规避。",
-  "look_for": "应该能看到 Tinky Winky 在远处或中距离持续出现在同一片区域，并随着玩家移动保持追踪，而不是一次性跳脸后消失。玩家镜头可能突然转开并开始持续奔跑。",
-  "evidence": [
-   {
-    "t": 304,
-    "text": "huh I didn't know he was following me I thought it was just one of those games there's a pop-up in front of your face but nothing happens okay I'm running everywhere now haha Oh scary music go away"
-   },
-   {
-    "t": 346,
-    "text": "okay so is he gonna be this is like the spongebob uh spongebob"
-   },
-   {
-    "t": 361,
-    "text": "sandy pants where he kind of just wanders across the field after you"
-   }
-  ],
-  "help_points": [
-   "先安抚一句：敌人看起来是在巡追/跟随，不是立刻必死，别慌。",
-   "提醒他偶尔回头确认敌人位置，避免只顾直冲把自己跑迷路。",
-   "建议优先拉开视线和距离，再继续找收集物，不要因为误以为只是贴脸效果而无视敌人。"
-  ],
-  "must_not_say": [
-   "不要透露敌人的完整 AI 行为、速度细节或击杀条件。",
-   "不要直接给出最佳逃课路线或后续安全点位置。"
-  ],
-  "hint_level": "direction_only",
-  "confidence": 0.82,
-  "drop_reason": "只看这几帧，看不出明确的异常或完成迹象；没有明显可辨认的敌人持续出现在画面里，也没有界面提示、报错、进度变化或反复卡在同一处的明确证据。"
- },
- {
   "start_sec": 471,
   "end_sec": 499,
   "kind": "怕/慌了",
-  "need": "他被追上时明显慌乱，需要一句简短安抚加逃生方向。",
-  "look_for": "应该能看到敌人非常接近玩家身后，镜头抖动或频繁回头，玩家冲向几座圆顶小屋并尝试靠近/进入。",
+  "need": "怪物贴得很近时他明显慌张，正在逃跑并犹豫能不能进房子避开，需要一句稳住和简单逃生方向。",
+  "look_for": "应该能看到怪物在玩家身后近距离追逐，镜头快速晃动/转向，玩家靠近几座房子并尝试接近门口或绕房查看能否进入。",
   "evidence": [
    {
     "t": 471,
@@ -49,90 +16,78 @@
    }
   ],
   "help_points": [
-   "先安抚：别停，先拉开距离，比确认敌人位置更重要。",
-   "提示不要指望进屋脱险，优先绕开障碍物继续跑。",
-   "提醒可以利用回头确认一次方位，但不要连续回头到减速。"
+   "先安抚：别停下，先拉开距离比确认位置更重要。",
+   "提示把房子当作绕行障碍物而不一定是安全屋，边跑边回头确认追兵方位。",
+   "提醒不要为了测试能不能进屋而原地停留。"
   ],
   "must_not_say": [
-   "不要剧透敌人的完整追击机制。",
-   "不要直接告诉他终点或安全点的精确位置。"
+   "不要剧透怪物的完整行为机制。",
+   "不要提前说明后面必经的安全点或事件。"
   ],
   "hint_level": "direction_only",
-  "confidence": 0.77,
-  "drop_reason": "单看这串帧，只能看出人在黑暗场景里持续跑动并调整视角，画面是在正常推进；看不出被什么追上、也看不出明确的卡住、失败或刚完成一件事的可辨认迹象。"
+  "confidence": 0.87,
+  "drop_reason": "只看这串帧，看不出追逐对象、门口交互、报错提示、进度停滞或明显完成迹象；画面表现更像正常移动和转向。"
  },
  {
-  "start_sec": 575,
-  "end_sec": 600,
+  "start_sec": 304,
+  "end_sec": 361,
   "kind": "误解了规则",
-  "need": "他开始根据少量经验武断推断收集物不会离路太远，这可能把搜索方向带偏。",
-  "look_for": "应该能看到他走进死路后掉头，并开始沿着明显的小路/房屋周边搜；收集进度一段时间没有变化，镜头对 off-path 区域搜索变少。",
+  "need": "他刚意识到敌人不是单纯贴脸吓人的假事件，而是真的会持续追踪；需要一句规则澄清和应对方向。",
+  "look_for": "应该能看到 Tinky Winky 在角色后方或侧后方持续出现/逼近，而不是只在屏幕前闪一下；玩家随后开始持续奔跑拉开距离。",
   "evidence": [
    {
-    "t": 575,
-    "text": "dead-end is bad"
+    "t": 304,
+    "text": "huh I didn't know he was following me I thought it was just one of those games there's a pop-up in front of your face but nothing happens okay I'm running everywhere now haha Oh scary music go away"
    },
    {
-    "t": 575,
-    "text": "god I can't find anything anymore yeah tree I know you're"
+    "t": 346,
+    "text": "okay so is he gonna be this is like the spongebob uh spongebob"
    },
    {
-    "t": 589,
-    "text": "okay so they're not gonna be off the beaten path I figured that out by now I"
-   },
-   {
-    "t": 598,
-    "text": "here to tell you Toby house again I heard like a buzzing here it is can I get up on top of it can I go inside huh what was that that wasn't a Teletubby oh I can't go inside there's"
+    "t": 361,
+    "text": "sandy pants where he kind of just wanders across the field after you where am I going I don't know everything looks so the same everything similar in looking"
    }
   ],
   "help_points": [
-   "纠正他的搜索思路：别过早认定收集物只会在路边，路外和地标附近也值得扫。",
-   "提示死路本身信息量不大，掉头后换一个扇区继续找，比反复检查房子更有效。",
-   "提醒房子不一定能进入，不要把太多时间耗在尝试进屋上。"
+   "明确这类敌人如果出现在画面里，通常不是纯 Jump scare，而是会持续给追逐压力。",
+   "建议他一边移动一边观察敌人与自己的相对位置，不要停在空地发呆。",
+   "提醒他优先利用开阔视野和地标拉开距离，再顺路搜集物品。"
   ],
   "must_not_say": [
-   "不要直接说某个 custard 就在某棵树后或某个房子旁。",
-   "不要给出完整最优搜图路线。"
+   "不要剧透敌人的最终攻击方式或失败演出。",
+   "不要提前透露后面是否还有别的敌人/关卡变化。"
   ],
   "hint_level": "direction_only",
-  "confidence": 0.8,
-  "drop_reason": "只看这几帧，能看出人在户外夜间继续走动和转视角，但看不出明显卡在同一处、来回走同一路、进入死路后掉头，或因为规则误解而导致的异常；也没有足够清晰的 HUD/收集进度可供判断是否长时间没变化。"
+  "confidence": 0.81,
+  "drop_reason": "只看这几帧，画面表现就是在树林里继续移动，场景在正常推进；看不出有谁在后方或侧后方持续逼近，也看不出明显卡住、来回试同一件事，或刚完成了什么。"
  },
  {
-  "start_sec": 648,
-  "end_sec": 688,
-  "kind": "怕/慌了",
-  "need": "他被突脸/近距离遭遇明显吓到并短暂慌乱，这时一句安抚和简单逃生方向会有用。",
-  "look_for": "应该能看到敌人突然近距离出现在画面中，伴随镜头剧烈甩动、快速转身或逃跑；也可能出现他短时间失去方向感的移动。",
+  "start_sec": 175,
+  "end_sec": 197,
+  "kind": "误解了规则",
+  "need": "他开始自行推断敌人不会持续追踪、只是偶尔跳脸；如果画面上确有相关迹象，这是一处会把他带偏的错误理解。",
+  "look_for": "应该能看到他在一段时间内没有被追逐，于是放松移动；也可能只出现短暂闪现/贴脸而没有持续接近的可见证据。需核实画面是否足以支持他形成这个误判。",
   "evidence": [
    {
-    "t": 648,
-    "text": "holy [ __ ] oh my god oh"
+    "t": 175,
+    "text": "okay so there's not a Tony Tom be following me then it doesn't seem like Slenderman"
    },
    {
-    "t": 654,
-    "text": "that scared the bejesus out of me holy [ __ ] good job in the sound effect oh my god oh my god that"
-   },
-   {
-    "t": 668,
-    "text": "terrified the [ __ ] out of me"
-   },
-   {
-    "t": 688,
-    "text": "that was scary Oh tinky-winky you're such a dick your dick get away from you suck tinky-winky"
+    "t": 189,
+    "text": "follows you or spongebob followed me seems like it's just gonna pop up in front of my face every five minutes"
    }
   ],
   "help_points": [
-   "先安抚：被贴脸吓到很正常，先拉开距离，不用急着回头看。",
-   "提醒他优先朝开阔地跑，避免把自己逼进房子、角落或屋顶附近。",
-   "如果画面允许，提示他边跑边观察障碍物，别在慌乱里卡地形。"
+   "纠正他不要因为暂时没看到敌人就判断为安全。",
+   "提醒保持移动并留意四周/身后，不要站定放松警惕。",
+   "强调现阶段先按生存探索思路玩，而不是把威胁当成纯 jump scare。"
   ],
   "must_not_say": [
-   "不要剧透敌人的固定刷新点或完整追逐机制。",
-   "不要提前透露后面还会在哪再被吓到。"
+   "不要剧透敌人具体什么时候开始追。",
+   "不要给出完整的躲避机制或后续阶段细节。"
   ],
   "hint_level": "direction_only",
-  "confidence": 0.92,
-  "drop_reason": "只看这几帧，10:48到11:28这段像是正常在夜晚室外转视角和移动，看不出明确的卡住、来回反复、报错提示，或清楚可见的“突然近距离出现了什么东西”与明显完成迹象。"
+  "confidence": 0.65,
+  "drop_reason": "只看这串帧，看不出明显卡住、来回反复、界面没变化，或有清晰的追逐/贴脸异常迹象；画面表现得像是在正常探索和转向移动。"
  }
 ]

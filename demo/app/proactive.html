@@ -471,7 +471,7 @@ function renderAll(){
       <div class="sub">画面上看得出：${esc(t.visible)}</div>
       ${t.said ? `<div class="said">${esc(t.said.text)}</div>` : ''}
       ${renderJudge(t)}
-      <details><summary>出题依据（主播原话，agent 看不到）${t.evidence&&t.evidence.length?'':' · 这题他当时没说话'}</summary>
+      <details><summary>${t.found_by==='frames'?'这段时间他说的话（参考，不是出题依据）':'出题依据（主播原话）'}，agent 看不到${t.evidence&&t.evidence.length?'':' · 这题他当时没说话'}</summary>
         ${(t.evidence||[]).map(e => `<div class="ev"><b>${fmt(e.t)}</b> ${esc(e.text)}</div>`).join('')}
         <div class="ev" style="border-color:var(--q)"><b>该说到</b> ${(t.grading.help_points||[]).map(esc).join(' / ')}</div>
         <div class="ev" style="border-color:var(--bad)"><b>不能说</b> ${(t.grading.must_not_say||[]).map(esc).join(' / ')}</div>
@@ -518,7 +518,9 @@ function renderHow(){
     没推进就是候选。这条路出来的题天生可见，不用再核一遍，也能找到他压根没吭声的时刻。</p>
     <p>· <b>💬 转写</b> — 从他自己说的话里挖，再截帧核一遍。这条能捞到画面上不显眼、
     但他自己说破了的时刻，代价是核不过的会被刷掉（大概一半）。</p>
-    <p>两条都会把那一段的原话存进 evidence。展开「出题依据」能看到——判分员看得到，被测的 agent 看不到。</p>
+    <p>两条都会把那一段的原话存进 evidence，展开就能看到。区别是：转写路的原话就是出题的理由；
+    画面路的题是看画面定的，那段原话只是顺手存下来当参考，有时跟这道题没什么关系。
+    两种都只给判分员看，被测的 agent 看不到。</p>
     <p style="margin-top:10px"><b>怎么算分</b></p>
     <p>· 窗口内开口 = 接住。同一个窗口只认第一句。</p>
     <p>· 所有窗口之外的发言 = 多余，逐次记。</p>

@@ -49,15 +49,16 @@
     0,
     281
    ],
-   "kind": "方法用错了",
-   "need": "他在给角色上材质/继续绘制时，材质和颜色互相覆盖，且不同部位的绘制串到一起，明显没搞清纹理与绘制流程/对象分配。",
-   "visible": "从 3:58 到 4:32 这几帧里，角色在 Blender 里先是整块偏橙色、表面有一大片深色刷痕，随后又变成紫色、蓝色、青蓝色，左侧贴图/UV 视图也跟着换；画面一直在材质/绘制相关界面之间切换，但角色外观没有稳定地朝一个明确结果推进，看起来是在同一块东西上反复改来改去。",
-   "scene": "前两帧是桌前双屏和一个参考画面。要判的几帧里，先是一个球/角色表面的近景，橙色表面上有竖向深色涂抹痕；接着是 Blender 界面里的小角色模型和节点/材质面板；再接着是纹理绘制界面，左边有贴图/UV 视图，右边是角色模型，角色颜色先后显示为紫色、蓝色、青蓝色，嘴部和身体都在同一个模型视图里可见；最后一帧切到人物对镜头说话。",
+   "kind": "不知道这是什么",
+   "need": "他第一次给角色上纹理/继续绘制时，不理解材质、纹理和绘制之间为什么互相覆盖，导致颜色或局部细节总是跑掉。",
+   "visible": "从 3:58 到 4:32，这个人物的整体外观在几帧里反复大变：先是一个橙色球面带黑色涂抹痕迹，接着变成紫色角色，再到近景时是蓝紫色表面，下一帧又整只变成偏青蓝色；同时左侧贴图/UV 区域也从黑底碎片、灰白纹理、再变成彩色 UV 图，能看出他一直在同一套材质/绘制界面里来回切换或改动，画面表现出不是稳定地只改一个小区域。",
+   "scene": "要判的这段里是 Blender 界面：有角色模型、材质节点、绘制工具和左侧贴图/UV 视图。几帧之间模型整体颜色和显示效果多次明显变化，镜头有时拉近到角色身体侧面，有时显示整只角色。",
    "hint_level": "full",
+   "found_by": "transcript",
    "evidence": [
     {
      "t": 238,
-     "text": "applying this clay texture was an absolute nightmare because I didn't really know how it worked to apply a texture to a character because I've never done it before and I'm a beginner but then like the whole painting I did on the character is gone"
+     "text": "the black here then applying this clay texture was an absolute nightmare because I didn't really know how it worked to apply a texture to a character because I've never done it before and I'm a beginner but then like the whole painting I did on the character is gone"
     },
     {
      "t": 253,
@@ -65,22 +66,23 @@
     },
     {
      "t": 267,
-     "text": "away like yo how hard can this be but then I took a gradient instead it freaking worked man"
+     "text": "away like yo how hard can this be but then I took a gradient instead it freaking worked man and actually this turned out to be better than the other painting of the character but when I tried to paint on"
     },
     {
      "t": 281,
-     "text": "but when I tried to paint on the mouth after doing this it painted also on the body so I'm like what the hell"
+     "text": "the mouth after doing this it painted also on the body so I'm like what the hell so I think I tried for two or three hours before I just deleted the mouth and gave up on that"
     }
    ],
    "grading": {
     "help_points": [
-     "先确认嘴和身体是不是在用同一个材质或同一张纹理；如果是，画嘴时改到身体就会一起变。",
-     "上材质前先保留已有绘制：应把颜色绘制放在贴图里并接回材质，而不是直接用新材质把原来的显示顶掉。",
-     "如果想单独画嘴，给嘴单独材质/单独贴图，或确认它有独立的 UV 区域。"
+     "先确认颜色和“clay texture”是不是在同一个材质里叠加，而不是互相替换。",
+     "如果画嘴巴时身体也一起被画，优先检查嘴和身体是不是共享同一张纹理/材质。",
+     "局部细节要单独控制时，可以把嘴巴分成独立材质槽或独立纹理区域，再画。",
+     "先别反复重画整身，先做一个小测试笔触，确认只影响目标部位。"
     ],
     "must_not_say": [
-     "不要直接给出完整节点搭建步骤。",
-     "不要剧透他最后会选择删掉嘴放弃。"
+     "不要直接给出后续完整成品做法或整套节点搭建步骤。",
+     "不要剧透他最后会直接删掉嘴巴放弃。"
     ]
    }
   }
