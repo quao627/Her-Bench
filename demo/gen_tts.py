@@ -12,7 +12,6 @@
 
 已存在的文件默认跳过（这东西要花钱，别重复生成）。
 """
-import base64
 import json
 import os
 import subprocess

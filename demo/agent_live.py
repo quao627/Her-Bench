@@ -9,8 +9,8 @@
 
 后端做的事：把查看器发来的帧截图存成文件，连同问题、提示分级规则、
 资料快照目录一起交给 CLI agent（claude -p / codex exec），拿回答案返回。
-agent 可以自己 Read 帧截图和 resources/ 里的攻略资料——这就是 benchmark
-里 "watch + search" 工具的最小等价物。
+资料是整篇拼进 prompt 的，不让它自己去 ls/Read——每次工具往返都是一个沙箱子进程，
+那是之前最大的一笔延迟。画面帧则按文件路径用 -i 传进去。
 
 两条查证通道，区别只在问题是谁提的：
   /lookup    问题由前台的语音 agent 提（主播问到了，或它自检时觉得接下来用得上）
@@ -341,20 +341,6 @@ def _thread_slot(container_id, kind):
         if key not in _THREADS:
             _THREADS[key] = {"id": None, "lock": threading.Lock()}
         return _THREADS[key]
-
-
-def _parse_thread_id(stdout: str):
-    for line in stdout.splitlines():
-        line = line.strip()
-        if not line.startswith("{"):
-            continue
-        try:
-            ev = json.loads(line)
-        except ValueError:
-            continue
-        if ev.get("type") == "thread.started" and ev.get("thread_id"):
-            return ev["thread_id"]
-    return None
 
 
 # 每条路各有各的截止线。以前统一 180 秒：前台那条意味着模型说完「我查查哈」之后

@@ -16,7 +16,7 @@ import urllib.request
 
 import judge as judge_mod
 import urllib.error
-from http.server import HTTPServer, ThreadingHTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 RANGE_RE = re.compile(r"bytes=(\d*)-(\d*)")

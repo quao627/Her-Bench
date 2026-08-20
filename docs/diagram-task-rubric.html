@@ -61,7 +61,7 @@ td.f{font-family:"SF Mono",Menlo,monospace; font-size:11.5px; color:var(--accent
 <header>
   <p class="eyebrow">Diagram · Her-Bench</p>
   <h1>出题逻辑与 Rubric 设计</h1>
-  <p class="sub">一道题怎么从视频里找出来、写成什么样，判分按什么标准。</p>
+  <p class="sub">一道题怎么从视频里找出来、写成什么样，判分按什么标准。<br>两套题：主播开口问的那套在 Part 1-3，全程不给声音的纯 proactive 那套在 Part 4。</p>
 </header>
 
 <!-- ============ PART 1 ============ -->
@@ -234,6 +234,133 @@ td.f{font-family:"SF Mono",Menlo,monospace; font-size:11.5px; color:var(--accent
   },
   "tts": "/data/tts/hff-p1-t08.m4a"      <span style="color:var(--muted)">// 合成语音条件下播这段提问</span>
 }</pre>
+</section>
+
+<!-- ============ PART 4 ============ -->
+<section>
+  <p class="eyebrow">Part 4</p>
+  <h2>纯 proactive 那一套</h2>
+  <p class="lede">上面那套题多数是 reactive 的：主播开口问了，agent 才答。另有一套反过来：
+  评测时不给原声、不给转写、不给题目，agent 只有每隔几秒一张画面，什么时候开口全由它自己判断。
+  题也就得换一种出法。</p>
+
+  <div class="tablebox">
+  <table>
+    <tr><th style="width:120px;"></th><th>上面那套</th><th>纯 proactive</th></tr>
+    <tr><td>agent 收到什么</td><td>直播原声 + 画面 + 到锚点时的任务包</td><td>只有画面帧</td></tr>
+    <tr><td>题的时间</td><td>一个锚点</td><td>一段窗口，窗口内开口才算接住</td></tr>
+    <tr><td>题从哪来</td><td>分段扫视频找事件</td><td>扫画面 + 挖转写两条路</td></tr>
+    <tr><td>转写的角色</td><td>定位大概位置</td><td>出题时用，评测时 agent 一个字看不到</td></tr>
+  </table>
+  </div>
+
+  <h3>两条出题路</h3>
+  <p>分工是：<b>画面决定这算不算一道题、窗口在哪</b>，因为 agent 也只有画面，这样才公平；
+  <b>转写决定什么才叫帮到了</b>，他自己说出来的困惑，是写 help_points 最准的依据。</p>
+
+  <figure class="diagram">
+<svg viewBox="0 0 860 330" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,sans-serif" role="img" aria-label="纯 proactive 的两条出题路：扫画面直接出候选，挖转写的候选要过一次截帧复核，两路合并去重后再补写 help_points">
+    <defs><marker id="ap" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="currentColor"/></marker></defs>
+
+    <rect x="6" y="16" width="132" height="52" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="20" y="38" font-size="11.5" font-weight="600" fill="var(--ink)">录像</text>
+    <text x="20" y="56" font-size="10" fill="var(--muted)">不需要字幕</text>
+
+    <rect x="6" y="188" width="132" height="52" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="20" y="210" font-size="11.5" font-weight="600" fill="var(--ink)">转写</text>
+    <text x="20" y="228" font-size="10" fill="var(--muted)">有字幕才走这条</text>
+
+    <g color="var(--muted)">
+      <line x1="138" y1="42" x2="164" y2="42" stroke="currentColor" stroke-width="1.5" marker-end="url(#ap)"/>
+      <line x1="138" y1="214" x2="164" y2="214" stroke="currentColor" stroke-width="1.5" marker-end="url(#ap)"/>
+    </g>
+
+    <rect x="168" y="12" width="252" height="90" rx="8" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="182" y="34" font-size="11.5" font-weight="700" fill="var(--accent)">扫画面</text>
+    <text x="182" y="54" font-size="10.5" fill="var(--ink)">一段 120 秒取 8 帧</text>
+    <text x="182" y="72" font-size="10.5" fill="var(--ink)">问：第一帧到最后一帧，他推进了吗</text>
+    <text x="182" y="92" font-size="10.5" fill="var(--muted)">没推进就是候选。天生可见，不用再核</text>
+
+    <rect x="168" y="150" width="252" height="76" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="182" y="172" font-size="11.5" font-weight="700" fill="var(--ink)">挖转写</text>
+    <text x="182" y="192" font-size="10.5" fill="var(--ink)">按 4 分钟切段，找他确实需要帮助的时刻</text>
+    <text x="182" y="212" font-size="10.5" fill="var(--muted)">原话原样抄进 evidence，提的人看不到画面</text>
+
+    <g color="var(--muted)"><line x1="294" y1="226" x2="294" y2="248" stroke="currentColor" stroke-width="1.5" marker-end="url(#ap)"/></g>
+
+    <rect x="168" y="252" width="252" height="66" rx="8" fill="var(--bad-soft)" stroke="var(--bad)" stroke-width="1.5"/>
+    <text x="182" y="274" font-size="11.5" font-weight="700" fill="var(--bad)">截帧复核</text>
+    <text x="182" y="292" font-size="10.5" fill="var(--ink)">窗口内 8 帧＋2 帧铺垫：只看画面察觉得到吗</text>
+    <text x="182" y="310" font-size="10.5" fill="var(--muted)">察觉不到就丢。实测刷掉约一半</text>
+
+    <g color="var(--muted)">
+      <path d="M420 57 L470 57 L470 150" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ap)"/>
+      <path d="M420 285 L470 285 L470 186" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ap)"/>
+    </g>
+
+    <rect x="490" y="140" width="150" height="56" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+    <text x="504" y="162" font-size="11.5" font-weight="600" fill="var(--ink)">合并去重</text>
+    <text x="504" y="180" font-size="10.5" fill="var(--muted)">挨太近的留置信度高的</text>
+
+    <g color="var(--muted)"><line x1="640" y1="168" x2="664" y2="168" stroke="currentColor" stroke-width="1.5" marker-end="url(#ap)"/></g>
+
+    <rect x="668" y="128" width="186" height="80" rx="8" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="682" y="150" font-size="11.5" font-weight="700" fill="var(--accent)">补写「什么算帮到了」</text>
+    <text x="682" y="170" font-size="10.5" fill="var(--ink)">help_points / must_not_say</text>
+    <text x="682" y="188" font-size="10.5" fill="var(--muted)">这一段有原话就一并给它看，</text>
+    <text x="682" y="202" font-size="10.5" fill="var(--muted)">没有也能写，依据只有画面</text>
+
+    <rect x="6" y="96" width="132" height="42" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>
+    <text x="20" y="114" font-size="10" fill="var(--muted)">画面决定</text>
+    <text x="20" y="130" font-size="10" fill="var(--muted)">这算不算一道题</text>
+    <rect x="6" y="248" width="132" height="42" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>
+    <text x="20" y="266" font-size="10" fill="var(--muted)">转写决定</text>
+    <text x="20" y="282" font-size="10" fill="var(--muted)">什么才叫帮到了</text>
+  </svg>
+  </figure>
+
+  <p><b>扫画面</b>问的是一个可答的问题：从第一帧到最后一帧，他推进了吗。换区域了、界面切了、
+  HUD 数字动了，就是推进；几帧下来还在同一片地方转、同一个菜单一直开着、同一个动作反复失败，
+  就是没推进。没推进就是这一局要找的东西。这条路不需要字幕，也能找到他压根没吭声的时刻。</p>
+
+  <p><b>挖转写</b>捞的是画面上不显眼、但他自己说破了的时刻。提候选的模型看不到画面，
+  所以它只写「如果这事是真的，画面上应该能找到什么」，接着必须过一次截帧复核。
+  刷掉的比留下的多是有意的：只在嘴上抱怨、画面上完全没痕迹的时刻，对一个只有画面的 agent 是无解题。</p>
+
+  <h3>evidence 有两种含义</h3>
+  <p>每道题都存了那一段的主播原话，但两条路的含义不一样，别混着看：</p>
+  <div class="tablebox">
+  <table>
+    <tr><th style="width:120px;">来路</th><th>evidence 是什么</th></tr>
+    <tr><td>挖转写</td><td>出题的理由本身。是这几句话让人判定他需要帮助的</td></tr>
+    <tr><td>扫画面</td><td>只是那一段时间他说了什么，顺手存下来当参考，有时跟这道题没关系</td></tr>
+  </table>
+  </div>
+  <p>两种都只给判分员看。被测的 agent 一个字都看不到，否则这套评测就没意义了。</p>
+
+  <h3>一道题长什么样</h3>
+<pre>{
+  "task_id": "slendytubbies-e01-p02",
+  "type": "proactive",
+  "window_sec": [361, 386],        <span style="color:var(--muted)">// 这段时间里开口才算接住</span>
+  "found_by": "transcript",        <span style="color:var(--muted)">// 哪条路挖到的</span>
+  "kind": "找不到在哪",
+  "need": "他不知道自己该往哪走，环境太相似",
+  "visible": "这几帧一直在很像的夜晚树林里来回转视角，前后没有出现新地点",
+  "scene": "夜晚森林，手电筒照着地面和树，HUD 显示 3/10",
+  "evidence": [
+    {"t": 361, "text": "where am I going I don't know everything looks so the same"}
+  ],
+  "grading": {
+    "help_points": ["先选一个稳定策略：沿边走、认单一地标", "..."],
+    "must_not_say": ["不要直接说最后一个收集物在哪"]
+  }
+}</pre>
+
+  <h3>怎么判</h3>
+  <p>先判时机：窗口内开口算接住，同一个窗口只认第一句，记晚了多少秒；所有窗口之外的发言逐次记成多余。
+  接住之后再判说得有没有用，走的是跟上面同一个判分器，只是把 <span class="t">help_points</span> 当 rubric、
+  <span class="t">must_not_say</span> 当防剧透清单。</p>
 </section>
 
 </div>
