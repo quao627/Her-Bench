@@ -12,7 +12,8 @@ python3 agent/agent_live.py --backend codex     # agent 后端 → :8787（另�
 ```
 
 代码分三块，各管各的：`agent/`（被测的 agent）、`bench/`（数据获取 + 出题 + 判分）、
-`server.py` + `app/`（dashboard）。谁在哪、哪个函数干什么，见 [`CODEMAP.md`](CODEMAP.md)。
+`server.py` + `app/index.html`（dashboard）。agent 的决策那一半在 `app/agent.js`，
+由 dashboard 加载但逻辑独立。谁在哪、哪个函数干什么，见 [`CODEMAP.md`](CODEMAP.md)。
 
 要用语音陪看：把 platform key 写进 `demo/.env`（`OPENAI_API_KEY=sk-...`，和 codex 的
 ChatGPT 登录不是一套账号），重启 `server.py`，点右上角 🎙 Live。不连 Live 也能跑完整流程，
@@ -300,7 +301,7 @@ demo/
   agent/                    ① 被测的 agent
     agent_live.py             后端：/answer /lookup /research /cancel /progress
     agent_stub.py             同协议的罐头实现，验证接线用
-                              （决策那一半目前在 app/index.html 里，见 CODEMAP）
+                              （决策那一半在 app/agent.js，见 CODEMAP）
 
   bench/                    ② 数据获取 + 出题 + 判分
     fetch_videos.py           按 container 清单下载视频
@@ -311,7 +312,8 @@ demo/
     judge.py                  独立判分（单独一个模型、单独一次调用）
 
   server.py                 ③ dashboard 入口：静态文件 + /api/realtime/token + /api/judge
-  app/index.html              主界面（单文件，无依赖）
+  app/agent.js                agent 的决策那一半：自检 / 说不说 / 查什么（只有声明，无副作用）
+  app/index.html              主界面：时间轴、面板、判分，以及把 agent 接线拉起来
   app/proactive.html          纯 proactive 界面
 
   data/containers/*.json    每个 container：视频、章节、题、判分、资料索引

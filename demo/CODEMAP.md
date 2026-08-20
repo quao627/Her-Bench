@@ -7,7 +7,7 @@ demo/
   agent/     被测的那个 agent：说话的一端 + 查证的一端
   bench/     数据获取 + 出题 + 判分：把视频变成题，把回答变成分
   server.py  dashboard 入口（发静态文件 + 两个 API）
-  app/       dashboard 前端
+  app/       前端：agent.js（agent 的决策逻辑）+ index.html / proactive.html（dashboard）
   data/      素材与题库（三部分共用）
 ```
 
@@ -27,9 +27,12 @@ agent 不知道题是怎么出的，判分不知道 agent 是怎么想的。这�
                                                       （无状态，能读资料/搜网）
 ```
 
-### 决策在浏览器这端
+### 决策在浏览器这端（`app/agent.js`）
 
-代码目前还在 `app/index.html` 里，按注释分区隔开（搜 `═══`），标着 `agent ·` 的那几块：
+单独一个文件，**只有声明、没有任何顶层副作用**——定时器、按钮绑定、初始化都在
+`app/index.html` 那边由 dashboard 拉起，所以 agent.js 先加载，两边共享同一个全局作用域。
+它向 dashboard 借 `$` / `video` / `C` / `liveLine` / `bcallStart` / `captureFrame` 这些，
+都是运行时才解析（文件头的注释里列全了）。
 
 | 环节 | 函数 | 关键点 |
 |---|---|---|
@@ -41,9 +44,6 @@ agent 不知道题是怎么出的，判分不知道 agent 是怎么想的。这�
 | 让路 | `yieldBgToUser()` | 主播一开口就掐掉后台请求，并让后端 kill 掉子进程 |
 | 画面 buffer | `pushFrameBuf()` / `framesAround()` | 每 5 秒存一帧（384px，留 5 分钟），取用时近处密远处稀 |
 | 传输层 | `liveConnect()` / `handleLiveEvent()` / `handleToolCall()` | WebRTC、音频图、事件分派 |
-
-> agent 的决策逻辑和 dashboard UI 现在同处一个文件，只靠注释分区隔开。拆成
-> `app/agent.js` 是下一步，但那是 ~380 行的搬运，得单独做、单独验。
 
 ### 查证在后端（`agent/agent_live.py`）
 
@@ -119,10 +119,10 @@ proactive 题由 `bench/mine_proactive.py` 两段式挖出来：
 | 文件 | 是什么 |
 |---|---|
 | `server.py` | 静态文件（带 HTTP Range，视频拖动要用）+ `/api/realtime/token`（换 ephemeral key，浏览器拿不到真 key）+ `/api/judge` |
-| `app/index.html` | 主界面：时间轴 + 题 + 判分 + 后台面板 |
+| `app/index.html` | 主界面：时间轴 + 题 + 判分 + 后台面板。**只剩 dashboard 的活**，agent 的决策在 `app/agent.js` |
 | `app/proactive.html` | 纯 proactive 界面：只给画面，没有声音也没人提问 |
 
-`app/index.html` 里标着 `查看器 ·` 的分区：
+`app/index.html` 里的分区（搜 `═══`）：
 
 | 分区 | 干什么 |
 |---|---|
