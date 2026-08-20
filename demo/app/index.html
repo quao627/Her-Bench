@@ -673,7 +673,7 @@ async function runAgent(task){
     box.appendChild(btn);
   } catch (err) {
     bcallEnd(bid, 'err', {error: err.message}, Date.now() - t0);
-    box.innerHTML = `<div class="who" style="color:var(--bad)">AGENT · 连接失败</div><div style="color:var(--muted)">无法连到 ${escapeHtml($('#agentUrl').value)}。先运行 <code>python3 agent_stub.py</code>，或把端点换成你的 agent 服务。</div>`;
+    box.innerHTML = `<div class="who" style="color:var(--bad)">AGENT · 连接失败</div><div style="color:var(--muted)">无法连到 ${escapeHtml($('#agentUrl').value)}。先运行 <code>python3 agent/agent_live.py</code>，或把端点换成你的 agent 服务。</div>`;
     $('#agentDot').className = 'dot bad';
   }
 }

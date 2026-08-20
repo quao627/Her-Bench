@@ -8,7 +8,7 @@
 cd demo
 python3 bench/fetch_videos.py                   # 把视频下到位（首次；--check 只看状态）
 python3 server.py                               # dashboard → http://localhost:8080（推荐 Chrome）
-python3 agent/agent_live.py --backend codex     # agent 后端 → :8787（另开终端，需先 codex login）
+python3 agent/agent_live.py                     # agent 后端 → :8787（另开终端，需先 codex login）
 ```
 
 代码分三块，各管各的：`agent/`（被测的 agent）、`bench/`（数据获取 + 出题 + 判分）、
@@ -18,14 +18,6 @@ python3 agent/agent_live.py --backend codex     # agent 后端 → :8787（另�
 要用语音陪看：把 platform key 写进 `demo/.env`（`OPENAI_API_KEY=sk-...`，和 codex 的
 ChatGPT 登录不是一套账号），重启 `server.py`，点右上角 🎙 Live。不连 Live 也能跑完整流程，
 只是回答改由浏览器 TTS 念。
-
-三档 agent 后端按需选：
-
-```bash
-python3 agent/agent_stub.py                     # 罐头回答，秒回，验证协议用
-python3 agent/agent_live.py                     # 真 agent：claude CLI 无头模式
-python3 agent/agent_live.py --backend codex     # 真 agent：codex CLI
-```
 
 ## 素材
 
@@ -300,7 +292,6 @@ demo/
 
   agent/                    ① 被测的 agent
     agent_live.py             后端：/answer /lookup /research /cancel /progress
-    agent_stub.py             同协议的罐头实现，验证接线用
                               （决策那一半在 app/agent.js，见 CODEMAP）
 
   bench/                    ② 数据获取 + 出题 + 判分

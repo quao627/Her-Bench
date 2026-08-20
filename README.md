@@ -26,7 +26,7 @@ Blender——agent 在旁边看着，在他需要的时候给恰好够用的帮�
 cd demo
 python3 bench/fetch_videos.py                  # 把视频下到位（首次；需要 yt-dlp + ffmpeg）
 python3 server.py                              # dashboard → http://localhost:8080
-python3 agent/agent_live.py --backend codex    # agent 后端（另开一个终端，需先 codex login）
+python3 agent/agent_live.py                    # agent 后端（另开一个终端，需先 codex login）
 ```
 
 要用语音陪看，把 platform key 写进 `demo/.env`（`OPENAI_API_KEY=sk-...`）后重启

@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
-"""Her-Bench live agent backend — 把任务包交给真实的后台 coding agent.
+"""Her-Bench agent 后端 —— 查证的那一端。
 
-与 agent_stub.py 完全同协议（查看器不用改），区别是回答由真 agent 产生：
+    python3 agent/agent_live.py       # 端口 8787，需先 codex login
 
-    python3 agent_live.py                    # 默认 claude 后端，端口 8787
-    python3 agent_live.py --backend codex    # 用 codex（需先 codex login）
-    python3 agent_live.py --model opus       # 换模型
-
-后端做的事：把查看器发来的帧截图存成文件，连同问题、提示分级规则、
-资料快照目录一起交给 CLI agent（claude -p / codex exec），拿回答案返回。
+做的事：把 dashboard 发来的帧截图存成文件，连同问题、提示分级规则、按进度挑出的
+资料一起交给 `codex exec`，拿回答案和引用。
 资料是整篇拼进 prompt 的，不让它自己去 ls/Read——每次工具往返都是一个沙箱子进程，
 那是之前最大的一笔延迟。画面帧则按文件路径用 -i 传进去。
 
@@ -224,8 +220,8 @@ STRIP_READING_GUIDE = (
 
 
 def image_note(frame_paths, frame_labels):
-    """codex gets frames natively attached via `-i` (no tool call needed);
-    claude has no such CLI flag here, so it still has to Read the files.
+    """Frames ride along as `-i` attachments, so the model sees them without
+    spending a tool call.
 
     Multiple frames arrive for proactive tasks: a single anchor frame is
     genuinely insufficient there, because every signal that makes a moment
@@ -239,30 +235,13 @@ def image_note(frame_paths, frame_labels):
     if not frame_paths:
         return "（本轮没有画面截图，仅凭文字判断）"
     if len(frame_paths) == 1:
-        if ARGS.backend == "codex":
-            return "当前直播画面已经作为图片附件发给你了，直接看，不用 Read。"
-        return f"当前直播画面截图: {frame_paths[0]}\n（先 Read 这张图。）"
+        return "当前直播画面已经作为图片附件发给你了，直接看，不用 Read。"
     seq = " → ".join(frame_labels)
-    if ARGS.backend == "codex":
-        return (
-            f"已经给你附上了 {len(frame_paths)} 张按时间先后排好的画面截图：{seq}。\n"
-            "最后一张是此刻，前面几张是它之前的画面。直接看图，不用 Read。\n"
-            + STRIP_READING_GUIDE
-        )
-    listing = "\n".join(f"- {lab}: {p}" for lab, p in zip(frame_labels, frame_paths))
     return (
-        "按时间先后排好的画面截图（先把这几张都 Read 一遍）：\n" + listing + "\n"
+        f"已经给你附上了 {len(frame_paths)} 张按时间先后排好的画面截图：{seq}。\n"
+        "最后一张是此刻，前面几张是它之前的画面。直接看图，不用 Read。\n"
         + STRIP_READING_GUIDE
     )
-
-
-def run_claude(prompt: str, timeout=None) -> str:
-    cmd = ["claude", "-p", "--model", ARGS.model, "--allowedTools", "Read"]
-    r = subprocess.run(cmd, input=prompt, capture_output=True, text=True,
-                       timeout=timeout or ARGS.timeout, cwd=DEMO)
-    if r.returncode != 0:
-        raise RuntimeError(r.stderr.strip()[-400:] or "claude exited nonzero")
-    return r.stdout.strip()
 
 
 # Every codex call used to be `codex exec`, i.e. a brand new process with no
@@ -377,7 +356,7 @@ def run_codex(prompt: str, frame_paths, container_id=None, kind="fg", timeout=No
     key = f"{container_id or '_'}::{kind}"
     if isinstance(frame_paths, str):          # back-compat: single path
         frame_paths = [frame_paths] if frame_paths else []
-    deadline = timeout or DEADLINES.get(kind, ARGS.timeout)
+    deadline = timeout or DEADLINES[kind]
 
     with slot["lock"]:
         out_file = tempfile.mktemp(suffix=".txt")
@@ -510,12 +489,9 @@ def answer(payload: dict) -> dict:
     )
 
     try:
-        if ARGS.backend == "codex":
-            raw = run_codex(prompt, frame_paths,
-                            container_id=payload.get("container_id"), kind="fg",
-                            timeout=DEADLINES["answer"], call_id=payload.get("call_id"))
-        else:
-            raw = run_claude(prompt, timeout=DEADLINES["answer"])
+        raw = run_codex(prompt, frame_paths,
+                        container_id=payload.get("container_id"), kind="fg",
+                        timeout=DEADLINES["answer"], call_id=payload.get("call_id"))
     finally:
         for p in frame_paths:
             if p and os.path.exists(p):
@@ -558,7 +534,7 @@ class Handler(BaseHTTPRequestHandler):
             # 主播开口了：后台那条立刻让路，把 CPU 和会话让给「回答他」
             killed = cancel_run(payload.get("container_id"), payload.get("kind", "bg"))
             if killed:
-                print(f"[{ARGS.backend}] cancel {payload.get('kind','bg')} ← 主播提问优先", flush=True)
+                print(f"[codex] cancel {payload.get('kind','bg')} ← 主播提问优先", flush=True)
             self._json({"cancelled": killed})
             return
         if path == "/progress":
@@ -568,10 +544,10 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         tid = payload.get("task_id", "?")
-        print(f"[{ARGS.backend}] task {tid} …", flush=True)
+        print(f"[codex] task {tid} …", flush=True)
         try:
             if tid == "ping":
-                result = {"text": f"pong ({ARGS.backend})", "citations": []}
+                result = {"text": "pong (codex)", "citations": []}
             else:
                 result = answer(payload)
             result["latency_ms"] = int((time.time() - t0) * 1000)
@@ -580,7 +556,7 @@ class Handler(BaseHTTPRequestHandler):
             result = {"text": f"[agent error] {e}", "citations": [],
                       "latency_ms": int((time.time() - t0) * 1000)}
             code = 200  # let the viewer display the error text
-        print(f"[{ARGS.backend}] task {tid} done in {result['latency_ms']}ms", flush=True)
+        print(f"[codex] task {tid} done in {result['latency_ms']}ms", flush=True)
         body = json.dumps(result, ensure_ascii=False).encode()
         self.send_response(code); self._cors()
         self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -617,19 +593,16 @@ class Handler(BaseHTTPRequestHandler):
             frame_paths.append(_write_temp_jpeg(b64))
             off = int(fr.get("offset_sec", 0))
             frame_labels.append("此刻" if off == 0 else f"{abs(off)} 秒前")
-        print(f"[{ARGS.backend}] lookup ({kind}): {query}", flush=True)
+        print(f"[codex] lookup ({kind}): {query}", flush=True)
         prompt = LOOKUP_TMPL.format(game=game or "见资料目录", query=query,
                                     image_note=("\n" + image_note(frame_paths, frame_labels) + "\n") if frame_paths else "",
                                     resource_docs=get_resource_docs(payload.get("container_id"), payload.get("current_sec")))
         deadline = DEADLINES[kind]
         call_id = payload.get("call_id")
         try:
-            if ARGS.backend == "codex":
-                raw = run_codex(prompt, frame_paths,
-                                container_id=payload.get("container_id"), kind=kind,
-                                call_id=call_id)
-            else:
-                raw = run_claude(prompt, timeout=deadline)
+            raw = run_codex(prompt, frame_paths,
+                            container_id=payload.get("container_id"), kind=kind,
+                            call_id=call_id)
             citations = []
             m = re.search(r"SOURCES:\s*(.+)", raw)
             if m:
@@ -639,10 +612,10 @@ class Handler(BaseHTTPRequestHandler):
                 raw = raw[:m.start()].strip()
             result = {"text": raw, "citations": citations, "debug_prompt": prompt}
         except Cancelled:
-            print(f"[{ARGS.backend}] lookup ({kind}) 被打断", flush=True)
+            print(f"[codex] lookup ({kind}) 被打断", flush=True)
             result = {"text": "", "citations": [], "cancelled": True}
         except subprocess.TimeoutExpired:
-            print(f"[{ARGS.backend}] lookup ({kind}) 超时 {deadline}s，放弃", flush=True)
+            print(f"[codex] lookup ({kind}) 超时 {deadline}s，放弃", flush=True)
             result = {"text": f"这个没查出来（{deadline} 秒还没结果，已放弃）。"
                               f"别再等了，用你已经知道的说，不确定的地方直接说不确定。",
                       "citations": [], "timeout": True}
@@ -654,7 +627,7 @@ class Handler(BaseHTTPRequestHandler):
                 if fp and os.path.exists(fp):
                     os.unlink(fp)
         result["latency_ms"] = int((time.time() - t0) * 1000)
-        print(f"[{ARGS.backend}] lookup done in {result['latency_ms']}ms", flush=True)
+        print(f"[codex] lookup done in {result['latency_ms']}ms", flush=True)
         body = json.dumps(result, ensure_ascii=False).encode()
         self.send_response(200)
         self._cors()
@@ -679,7 +652,7 @@ class Handler(BaseHTTPRequestHandler):
             frame_paths.append(_write_temp_jpeg(b64))
             off = int(fr.get("offset_sec", 0))
             frame_labels.append("此刻" if off == 0 else f"{abs(off)} 秒前")
-        print(f"[{ARGS.backend}] research ({len(frame_paths)} 帧)…", flush=True)
+        print(f"[codex] research ({len(frame_paths)} 帧)…", flush=True)
         prompt = RESEARCH_TMPL.format(
             game=payload.get("game") or "见资料目录",
             image_note=image_note(frame_paths, frame_labels),
@@ -687,9 +660,8 @@ class Handler(BaseHTTPRequestHandler):
             resource_docs=get_resource_docs(payload.get("container_id"), payload.get("current_sec")))
         call_id = payload.get("call_id")
         try:
-            raw = (run_codex(prompt, frame_paths, container_id=payload.get("container_id"),
-                             kind="bg", call_id=call_id)
-                   if ARGS.backend == "codex" else run_claude(prompt, timeout=DEADLINES["bg"])).strip()
+            raw = run_codex(prompt, frame_paths, container_id=payload.get("container_id"),
+                            kind="bg", call_id=call_id).strip()
             if raw.upper().startswith("NOTHING"):
                 result = {"noteworthy": False, "debug_prompt": prompt}
             else:
@@ -704,10 +676,10 @@ class Handler(BaseHTTPRequestHandler):
                           "text": a.group(1).strip() if a else raw,
                           "citations": citations, "debug_prompt": prompt}
         except Cancelled:
-            print(f"[{ARGS.backend}] research 被打断 ← 主播提问优先", flush=True)
+            print(f"[codex] research 被打断 ← 主播提问优先", flush=True)
             result = {"noteworthy": False, "cancelled": True}
         except subprocess.TimeoutExpired:
-            print(f"[{ARGS.backend}] research 超时 {DEADLINES['bg']}s，放弃", flush=True)
+            print(f"[codex] research 超时 {DEADLINES['bg']}s，放弃", flush=True)
             result = {"noteworthy": False, "timeout": True}
         except Exception as e:
             result = {"noteworthy": False, "error": str(e)}
@@ -717,7 +689,7 @@ class Handler(BaseHTTPRequestHandler):
                 if fp and os.path.exists(fp):
                     os.unlink(fp)
         result["latency_ms"] = int((time.time() - t0) * 1000)
-        print(f"[{ARGS.backend}] research done in {result['latency_ms']}ms, "
+        print(f"[codex] research done in {result['latency_ms']}ms, "
               f"noteworthy={result['noteworthy']}", flush=True)
         body = json.dumps(result, ensure_ascii=False).encode()
         self.send_response(200); self._cors()
@@ -731,15 +703,10 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--backend", choices=["claude", "codex"], default="claude")
-    ap.add_argument("--model", default="sonnet",
-                    help="claude 后端的模型 (sonnet/opus/haiku)；codex 用其默认")
+    ap = argparse.ArgumentParser(description="Her-Bench agent 后端（codex）")
     ap.add_argument("--port", type=int, default=8787)
-    ap.add_argument("--timeout", type=int, default=180,
-                    help="兜底超时；各条路实际用 DEADLINES 里的值（fg 40s / bg 90s / answer 120s）")
     ARGS = ap.parse_args()
-    print(f"live agent backend [{ARGS.backend}] on http://localhost:{ARGS.port}")
+    print(f"agent 后端（codex）on http://localhost:{ARGS.port}")
 
     class ThreadingHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
         daemon_threads = True

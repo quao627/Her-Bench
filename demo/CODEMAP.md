@@ -59,8 +59,6 @@ agent 不知道题是怎么出的，判分不知道 agent 是怎么想的。这�
 `DEADLINES`（前台 40s / 后台 90s / 锚点题 120s）、`get_resource_docs()`（按进度挑该给哪几篇资料）、
 三个提示词模板 `PROMPT_TMPL` / `LOOKUP_TMPL` / `RESEARCH_TMPL`。
 
-`agent/agent_stub.py` 是同协议的罐头实现，秒回，用来验证接线。
-
 ---
 
 ## 二、bench：数据获取 + 出题 + 判分
