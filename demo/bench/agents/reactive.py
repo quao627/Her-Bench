@@ -1,7 +1,10 @@
-"""只有前台的 agent：不备料，不用后台通道，被问到才去查。
+"""什么都不做，直到被问：不看画面，不备料，不用后台通道。
 
-存在的意义是对照组。它跟 prepared 跑同一个 harness、同一批题、同一套判分，
-差别只在它没有后台这一半，所以两者的分差就是「后台到底值多少」。
+harness 每 5 秒推一帧，但这个类根本没有 on_frame，所以那些帧它一眼都没看。
+被问到时手上只有锚点那一帧。
+
+这是最底下那一档。跟 watching 比，多出来的是「看视频」；watching 跟 prepared 比，
+多出来的才是「后台备料」。少了中间那档，分差说不清是哪一半的功劳。
 """
 
 import json
@@ -10,7 +13,7 @@ import urllib.request
 
 class Agent:
     name = "reactive"
-    desc = "只有前台，不备料，被问到才现查"
+    desc = "不看画面，被问到才现查"
 
     def __init__(self, backend="http://localhost:8787"):
         self.backend = backend

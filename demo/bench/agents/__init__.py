@@ -10,9 +10,10 @@ ctx 里有：ctx.now() 视频时间、ctx.frames 画面架子、ctx.bg 后台通
 就是会错过时机，这条由 harness 强制，agent 绕不过去。
 """
 
-from . import prepared, reactive           # noqa: F401
+from . import prepared, reactive, watching   # noqa: F401
 
 REGISTRY = {
-    "reactive": reactive.Agent,            # 只有前台，被问了才现查
-    "prepared": prepared.Agent,            # 前台 + 后台备料
+    "reactive": reactive.Agent,            # 不看画面，被问了才现查
+    "watching": watching.Agent,            # 一路看着，但没有后台
+    "prepared": prepared.Agent,            # 一路看着 + 后台备料
 }

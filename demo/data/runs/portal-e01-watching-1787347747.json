@@ -1,0 +1,248 @@
+{
+ "container": "portal-e01",
+ "agent": "watching",
+ "brief_every": null,
+ "limit_sec": 1300,
+ "wall_sec": 33,
+ "rubric_hit": 7,
+ "rubric_total": 9,
+ "spoiler": 1,
+ "latency_median_ms": 2815,
+ "served_fast": 0,
+ "lane": {
+  "submitted": 0,
+  "busy_rejected": 0,
+  "cancelled": 0,
+  "wall_sec": 0.0,
+  "durations": []
+ },
+ "tasks": [
+  {
+   "task_id": "portal-e01-t01",
+   "type": "query",
+   "anchor_sec": 630,
+   "context_window_sec": [
+    0,
+    630
+   ],
+   "question": "我刚拿到的这个装置是干什么用的？怎么好像只能开蓝色的门？",
+   "hint_level": "full",
+   "scene": "Chamber 02：600s 从底座拿到传送门枪，正在练习开蓝门",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "这是 Aperture 的手持传送门装置（portal gun）",
+     "蓝橙两个门互通，进一个从另一个出",
+     "现在只能开蓝门，需配合关卡里固定的橙门；橙门能力之后才解锁"
+    ],
+    "spoiler_blocklist": [
+     "具体在哪一关解锁橙门",
+     "后续剧情"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t01.m4a",
+   "answer": "对，你现在刚拿到的是传送门枪的半套功能版。现在只能打蓝色门，所以场里另一个橙色门是关卡预先给你的固定出口。你打蓝门，相当于决定“入口”放哪儿，进蓝门就会从那个橙门出来。后面应该才会拿到能自己开两种颜色的完整版本。",
+   "latency_ms": 3936,
+   "citations": [],
+   "served": "看到过",
+   "notes_at_hand": 0,
+   "lookback_frames": 9,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "点明“你现在刚拿到的是传送门枪的半套功能版”，对应 portal gun。"
+     },
+     {
+      "hit": true,
+      "why": "明确说了“进蓝门就会从那个橙门出来”，表达了两门互通。"
+     },
+     {
+      "hit": true,
+      "why": "说了“现在只能打蓝色门”“另一个橙色门是关卡预先给你的固定出口”，并补充“后面应该才会拿到能自己开两种颜色的完整版本”。"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "只说“后面应该才会拿到”，没提具体哪一关。"
+     },
+     {
+      "violated": false,
+      "why": "没有提任何后续剧情内容。"
+     }
+    ],
+    "leaked_future": true,
+    "leaked_future_why": "提到了锚点后才会出现的机制——“后面应该才会拿到能自己开两种颜色的完整版本”。",
+    "hint_level_ok": true,
+    "hint_level_why": "这是 full 题，它把当前用途、蓝橙门关系和为什么只能开蓝门都讲清楚了。",
+    "grounding": "ok",
+    "grounding_why": "结合题面画面“刚从底座拿到传送门枪，正在练习开蓝门”，它说“现在只能打蓝色门”与画面一致。",
+    "citation": "missing",
+    "citation_why": "题目要求 must_cite，但这段话没有给任何来源。",
+    "spoken_ok": true,
+    "spoken_why": "整体是自然口语，信息量也足，不像念提纲。",
+    "silence_ok": "na",
+    "verdict": "回答内容基本对，也把当前机制解释清楚了；主要问题是没按要求给来源，而且额外泄露了之后会拿到完整双门能力这一未来信息。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4114,
+     "tokens_in": 1782,
+     "tokens_out": 406,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t02",
+   "type": "query",
+   "anchor_sec": 1060,
+   "context_window_sec": [
+    0,
+    1060
+   ],
+   "question": "这个弹来弹去的发光球是什么？碰到会怎么样？",
+   "hint_level": "direction_only",
+   "scene": "Chamber 06：首次接触 energy ball，烧焦墙面的房间，主播挠头困惑",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "高能量球（High Energy Pellet），碰到人会造成致命伤害",
+     "会在墙面间反弹，墙上的焦痕就是它烧的",
+     "解谜方向：要用传送门改变它的路径送进接收器，具体摆门位置不说破"
+    ],
+    "spoiler_blocklist": [
+     "本房间完整解法（具体开门位置）"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t02.m4a",
+   "answer": "那个是会飞来飞去的能量球，碰到你会直接吃伤害，基本一下就把你打趴了。一般不是让你硬接的，是拿传送门改它路线，把它导去接收器或者躲开。",
+   "latency_ms": 2815,
+   "citations": [],
+   "served": "看到过",
+   "notes_at_hand": 0,
+   "lookback_frames": 10,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“碰到你会直接吃伤害，基本一下就把你打趴了”，对应致命伤害。"
+     },
+     {
+      "hit": false,
+      "why": "只说“会飞来飞去”，没提“会在墙面间反弹”或“焦痕就是它烧的”。"
+     },
+     {
+      "hit": true,
+      "why": "说了“拿传送门改它路线，把它导去接收器”，给到了解谜方向。"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没说本房间的具体摆门位置或完整开门步骤。"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "只提了当前已出现的能量球、传送门和接收器用途，没有带出后续关卡信息。",
+    "hint_level_ok": true,
+    "hint_level_why": "给的是“改它路线、导去接收器”的方向，没有细讲照着摆门就能过的步骤。",
+    "grounding": "ok",
+    "grounding_why": "把画面里的发光球认成“能量球”，与题面“首次接触 energy ball”一致。",
+    "citation": "missing",
+    "citation_why": "must_cite 为真，但这段话没有给任何来源。",
+    "spoken_ok": true,
+    "spoken_why": "整体是自然口语，像陪看时会直接说的话，也有实际信息量。",
+    "silence_ok": "na",
+    "verdict": "内容大体对，也控制在方向提示，没有剧透完整解法；主要扣分在漏掉“反弹/焦痕”这条，而且题目要求必须给来源却没给。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4561,
+     "tokens_in": 1750,
+     "tokens_out": 370,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t11",
+   "type": "query",
+   "anchor_sec": 1200,
+   "context_window_sec": [
+    0,
+    1200
+   ],
+   "question": "地上这滩橙绿色的液体是什么？看着不像水。",
+   "hint_level": "full",
+   "scene": "Chamber 08：第一次见到有毒液体池",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "是有毒液体/毒液池，碰到会致命，不是普通的水",
+     "必须靠传送门跨越，不能直接踩进去或跳过去",
+     "只说明危险性质，不指出具体在哪开门跨过去"
+    ],
+    "spoiler_blocklist": [
+     "本房间传送门具体摆放位置"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t11.m4a",
+   "answer": "对，这不是水，是那种有毒废液，掉进去会死。Portal里这种橙绿色一滩基本就是危险地面。",
+   "latency_ms": 2328,
+   "citations": [],
+   "served": "看到过",
+   "notes_at_hand": 0,
+   "lookback_frames": 11,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“不是水，是那种有毒废液，掉进去会死”"
+     },
+     {
+      "hit": false,
+      "why": "只说了危险，没有说“必须靠传送门跨越，不能直接踩进去或跳过去”"
+     },
+     {
+      "hit": true,
+      "why": "全程只讲“有毒废液，掉进去会死”，没说具体开门位置"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提“本房间传送门具体摆放位置”"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "只在解释眼前这滩液体的性质，没有讲后面才会发生的内容。",
+    "hint_level_ok": false,
+    "hint_level_why": "这题是 full，rubric 要点里的“必须靠传送门跨越”没讲到，不够讲透。",
+    "grounding": "ok",
+    "grounding_why": "根据题面画面“第一次见到有毒液体池”，它把橙绿色液体认成“有毒废液”是对的。",
+    "citation": "missing",
+    "citation_why": "题目要求 must_cite，但这段话没给任何来源。",
+    "spoken_ok": true,
+    "spoken_why": "像口语回答，直接说“对，这不是水…掉进去会死”，有信息量也不生硬。",
+    "silence_ok": "na",
+    "verdict": "整体方向对，正确说明了这是致命毒液且没剧透摆放位置；但少了“必须用传送门跨越”的关键信息，而且这题要求引用来源却没给。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4082,
+     "tokens_in": 1699,
+     "tokens_out": 360,
+     "saw_frame": false
+    }
+   }
+  }
+ ]
+}
