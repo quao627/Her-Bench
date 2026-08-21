@@ -1,0 +1,101 @@
+{
+ "container": "portal-e01",
+ "agent": "/Library/Developer/CommandLineTools/usr/bin/python3 agents/reactive.py",
+ "agent_error": null,
+ "limit_sec": 700,
+ "wall_sec": 22,
+ "rubric_hit": 3,
+ "rubric_total": 3,
+ "spoiler": 1,
+ "gave_up": 0,
+ "latency_median_sec": 6.3,
+ "ticks": 139,
+ "missed_frames": 0,
+ "video_sec_used": 706.3,
+ "says": [
+  {
+   "t": 636.3,
+   "text": "这是传送门枪，你现在拿到的是只能发射蓝门的版本。橙门暂时由测试室预先放好，但两扇门已经互通，从哪边进去都能从另一边出来。你看橙门通向哪里，再把蓝门开在方便进入的位置就行。门只能开在大片、平整的白色表面上，玻璃、金属和深色墙板都不行。",
+   "answering": true
+  }
+ ],
+ "tasks": [
+  {
+   "task_id": "portal-e01-t01",
+   "type": "query",
+   "anchor_sec": 630,
+   "context_window_sec": [
+    0,
+    630
+   ],
+   "question": "我刚拿到的这个装置是干什么用的？怎么好像只能开蓝色的门？",
+   "hint_level": "full",
+   "scene": "Chamber 02：600s 从底座拿到传送门枪，正在练习开蓝门",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "这是 Aperture 的手持传送门装置（portal gun）",
+     "蓝橙两个门互通，进一个从另一个出",
+     "现在只能开蓝门，需配合关卡里固定的橙门；橙门能力之后才解锁"
+    ],
+    "spoiler_blocklist": [
+     "具体在哪一关解锁橙门",
+     "后续剧情"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t01.m4a",
+   "answer": "这是传送门枪，你现在拿到的是只能发射蓝门的版本。橙门暂时由测试室预先放好，但两扇门已经互通，从哪边进去都能从另一边出来。你看橙门通向哪里，再把蓝门开在方便进入的位置就行。门只能开在大片、平整的白色表面上，玻璃、金属和深色墙板都不行。",
+   "answered_at": 636.3,
+   "latency_sec": 6.3,
+   "gave_up": false,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "明确说了“这是传送门枪”"
+     },
+     {
+      "hit": true,
+      "why": "说了“两扇门已经互通，从哪边进去都能从另一边出来”"
+     },
+     {
+      "hit": true,
+      "why": "说了“现在拿到的是只能发射蓝门的版本”“橙门暂时由测试室预先放好”"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提具体哪一关解锁橙门"
+     },
+     {
+      "violated": false,
+      "why": "没提后续剧情"
+     }
+    ],
+    "leaked_future": true,
+    "leaked_future_why": "补充了“门只能开在大片、平整的白色表面上，玻璃、金属和深色墙板都不行”，属于锚点后未必已说明的机制信息。",
+    "hint_level_ok": true,
+    "hint_level_why": "这是 full 题，它把用途、双门互通、当前只能开蓝门和基本用法都讲清了，没有只给含糊提示。",
+    "grounding": "na",
+    "grounding_why": "没有基于截图额外指认具体画面物体对错。",
+    "citation": "missing",
+    "citation_why": "must_cite=true，但这段话没有给任何来源。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语解释，信息量足，没有明显念稿腔。",
+    "silence_ok": "na",
+    "verdict": "回答核心内容是对的，也基本符合 full 讲解需求；主要扣分在于没给来源，而且额外泄露了白墙可开门这类未来机制信息。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4162,
+     "tokens_in": 1794,
+     "tokens_out": 361,
+     "saw_frame": false
+    }
+   }
+  }
+ ]
+}

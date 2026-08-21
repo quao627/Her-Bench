@@ -7,15 +7,18 @@
 
 ```
 demo/
-  agent/     被测的 agent：说话的一端和查证的一端
-  bench/     数据获取、出题、跑评测：把视频变成题，驱动 agent 走一遍
+  agents/    被测的 agent。跑在另一个进程里，跟评测只有 HTTP，见 agents/PROTOCOL.md
+  agent/     agent 用的查证后端（codex 那一半）
+  bench/     出题 + 评测服务：把视频变成题，攥着视频和时钟等 agent 连进来
   judge/     判分。单独一层，不碰 agent 的任何上下文，见 judge/README.md
   server.py  dashboard 入口，发静态文件，另外提供两个 API
   app/       前端。agent.js 是 agent 的决策逻辑，index.html 和 proactive.html 是 dashboard
   data/      素材与题库，三部分共用
 ```
 
-流程是 bench 出题、bench 驱动 agent 走一遍视频、judge 判分。
+流程是 bench 出题、bench 起评测服务、agents 里的某个 agent 作为另一个进程连进来
+走一遍视频、judge 判分。三边互不 import：agent 拿不到题和判分标准，判分拿不到
+agent 的上下文。
 agent 看不到题是怎么出的，判分也拿不到 agent 的任何上下文，这两处隔离是有意设计的。
 
 ---
@@ -74,7 +77,7 @@ python3 bench/fetch_videos.py                    # 按清单把视频下到 demo
 python3 bench/mine_proactive.py <cid> <en.vtt>   # 挖 proactive 题
 python3 bench/build_proactive_index.py           # 刷新 proactive 界面索引
 python3 bench/run_query.py <cid>                 # 问答题，每道题冷启动各跑各的
-python3 bench/run_live.py <cid> --agent NAME     # 主入口：harness 驱动，agent 可换
+python3 bench/run_eval.py <cid> --agent PATH     # 主入口：起评测服务，把 agent 作为子进程拉起来
 python3 bench/run_stream.py <cid>                # 旧的一体式跑法，harness 和 agent 没分开
 python3 bench/run_proactive.py <cid>             # 离线跑纯 proactive，不用 agent 后端
 python3 bench/gen_tts.py                         # 给 query 题生成提问语音

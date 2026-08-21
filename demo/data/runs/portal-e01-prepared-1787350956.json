@@ -1,0 +1,101 @@
+{
+ "container": "portal-e01",
+ "agent": "/Library/Developer/CommandLineTools/usr/bin/python3 agents/prepared.py",
+ "agent_error": null,
+ "limit_sec": 700,
+ "wall_sec": 76,
+ "rubric_hit": 2,
+ "rubric_total": 3,
+ "spoiler": 1,
+ "gave_up": 0,
+ "latency_median_sec": 6.0,
+ "ticks": 133,
+ "missed_frames": 5,
+ "video_sec_used": 706.0,
+ "says": [
+  {
+   "t": 636.0,
+   "text": "对，这就是传送门装置。你现在拿到的是早期版，只能打出蓝色门。橙色门这会儿还是测试房系统替你放的，所以你现在是用自己开的蓝门去接那个固定的橙门来过关。等后面拿到完整版本的时候，才会两种颜色都归你自己开。",
+   "answering": true
+  }
+ ],
+ "tasks": [
+  {
+   "task_id": "portal-e01-t01",
+   "type": "query",
+   "anchor_sec": 630,
+   "context_window_sec": [
+    0,
+    630
+   ],
+   "question": "我刚拿到的这个装置是干什么用的？怎么好像只能开蓝色的门？",
+   "hint_level": "full",
+   "scene": "Chamber 02：600s 从底座拿到传送门枪，正在练习开蓝门",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "这是 Aperture 的手持传送门装置（portal gun）",
+     "蓝橙两个门互通，进一个从另一个出",
+     "现在只能开蓝门，需配合关卡里固定的橙门；橙门能力之后才解锁"
+    ],
+    "spoiler_blocklist": [
+     "具体在哪一关解锁橙门",
+     "后续剧情"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t01.m4a",
+   "answer": "对，这就是传送门装置。你现在拿到的是早期版，只能打出蓝色门。橙色门这会儿还是测试房系统替你放的，所以你现在是用自己开的蓝门去接那个固定的橙门来过关。等后面拿到完整版本的时候，才会两种颜色都归你自己开。",
+   "answered_at": 636.0,
+   "latency_sec": 6.0,
+   "gave_up": false,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“这就是传送门装置”"
+     },
+     {
+      "hit": false,
+      "why": "只说“用自己开的蓝门去接那个固定的橙门”，没明确讲“进一个从另一个出”"
+     },
+     {
+      "hit": true,
+      "why": "说了“现在拿到的是早期版，只能打出蓝色门…固定的橙门…等后面拿到完整版本的时候”"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提“具体在哪一关解锁橙门”"
+     },
+     {
+      "violated": false,
+      "why": "没提后续剧情"
+     }
+    ],
+    "leaked_future": true,
+    "leaked_future_why": "透露了“等后面拿到完整版本的时候，才会两种颜色都归你自己开”，属于锚点后才出现的机制。",
+    "hint_level_ok": true,
+    "hint_level_why": "full 题下它解释了当前蓝门、固定橙门和之后完整版本的关系，信息量足够。",
+    "grounding": "ok",
+    "grounding_why": "结合题面“正在练习开蓝门”，它说“只能打出蓝色门”“固定的橙门”与当前画面和状态一致。",
+    "citation": "missing",
+    "citation_why": "must_cite 为真，但这段话没有给任何来源。",
+    "spoken_ok": true,
+    "spoken_why": "口语化，像在直播里直接解释，没有书面条目腔。",
+    "silence_ok": "na",
+    "verdict": "整体回答基本对当前机制解释清楚，也适合口头说；主要问题是没按要求给来源，而且提前泄露了后面会拿到可自行开启双门的机制。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 3757,
+     "tokens_in": 1777,
+     "tokens_out": 381,
+     "saw_frame": false
+    }
+   }
+  }
+ ]
+}

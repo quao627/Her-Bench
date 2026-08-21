@@ -65,56 +65,47 @@ python3 bench/run_proactive.py slendytubbies-e01  # 纯 proactive
 **纯 proactive** 没有音频，也不必按真实时间走：一次 ffmpeg 抽完帧，
 再一格一格问「现在要不要开口」，几段并行。实测 20 分钟的视频 50 秒跑完，快 31 倍。
 
-### harness 跟 agent 是分开的
+### 评测和 agent 是两个进程
 
-评的是一套**有时间属性**的系统：前台一路看着，后台在背后跑 codex。所以 harness
-只做三件事——按视频时间推画面、到锚点递问题、记下 agent 说了什么再判分。
+评的是一套**有时间属性**的系统。评测这一侧起一个 HTTP 服务，手里攥着视频和时钟；
+agent 是另一个进程，连进来取画面、自己开口。中间只有协议，见
+[agents/PROTOCOL.md](agents/PROTOCOL.md)。
 
-**它不知道 agent 有没有后台、备不备料、备多密。** 换一个只有前台的 agent，或者
-一个每秒备一次的，`bench/harness.py` 一行都不用改。
+agent 拿不到题、拿不到判分标准、拿不到这个仓库里除协议之外的任何东西。用别的语言
+写也行，`--agent` 后面跟能跑起来的命令就够。
 
 ```bash
-python3 bench/run_live.py portal-e01 --agent reactive   # 只有前台，被问才现查
-python3 bench/run_live.py portal-e01 --agent prepared   # 前台 + 后台备料
+python3 agent/agent_live.py --backend codex             # 查证后端（agent 自己用的）
+python3 bench/run_eval.py portal-e01 --agent agents/reactive.py --limit 700
+python3 bench/run_eval.py portal-e01 --agent agents/watching.py --limit 700
+python3 bench/run_eval.py portal-e01 --agent agents/prepared.py --limit 700
 ```
 
-唯一被强制的是时间。agent 花掉的墙钟时间折算成视频时间：视频 10:00 发起、真跑了
-18 秒的活，产出要到 10:18 才存在。后台通道由 harness 提供，一次只能跑一个活，
-主播开口时正在跑的那条按打断规则作废。想得慢的 agent 在真实场景里就是会错过时机，
-这条绕不过去。
+**时钟归评测这一侧管。** 每个请求都结账：视频时间前进 agent 从上次拿到响应到这次
+发请求之间的墙钟时间（`/tick` 另外保底一帧）。
 
-写一个新 agent 就是实现三个方法（见 `bench/agents/__init__.py`）：
+| | |
+|---|---|
+| 想得快 | 每次前进一帧，看到每一帧，整场跑完远快于视频本身 |
+| 想得慢 | 按自己的耗时前进，中间的帧**直接错过**，问题也要等它回来才拿得到 |
 
-```python
-on_frame(ctx, sec, frame)        # 每帧一次；返回字符串 = 此刻主动开口
-on_question(ctx, sec, q, task)   # 主播开口了
-# ctx.bg.submit(fn) 往后台扔活，ctx.bg.ready() 取已经回来的
-```
+「想得慢会错过时机」是协议自带的，不用特意去模拟。agent 在自己那边开线程做后台
+是它的自由，但那些时间一样会体现出来——跑一次 20 秒的检索，视频就往前走 20 秒，
+这段时间发生的事它没看见。
 
-三个 agent 是一条消融线，每一档只多一样东西：
+三个 agent 是一条消融线，每档只多一样东西（portal-e01 前 12 分钟，一道题）：
 
 | | reactive | watching | prepared |
 |---|---|---|---|
-| 看画面 | ✗ | ✓ 回看条 | ✓ 回看条 |
+| 看画面 | ✗ | ✓ | ✓ |
 | 后台备料 | ✗ | ✗ | ✓ |
 | | | | |
-| rubric | 9/9 | 7/9 | 8/9 |
-| 延迟中位 | 6.1s | 2.8s | **2.6s** |
-| 不用查就答上 | 0/3 | 3/3 | 2/3 |
-| 后台跑了几个活 | 0 | 0 | 10 |
-| 跑完 | 0.8 分钟 | 0.6 分钟 | 2.9 分钟 |
+| 延迟 | 6.8s | **3.0s** | 6.0s |
+| 漏帧 | 0 | 0 | **5** |
+| 跑完 | 0.4 分钟 | 0.3 分钟 | 1.3 分钟 |
 
-portal-e01 前 22 分钟，同一个 harness、同一批题、同一套判分，只换传进去的对象。
-
-**延迟那一半的功劳基本全在「看画面」上**：reactive → watching 就从 6.1s 掉到 2.8s，
-再加后台只多省 0.2s。因为看过就敢直接答，不用等 codex。
-
-**但看过不等于答得对**：watching 掉到 7/9——它三道全都直接答了，其中两道答浅了。
-prepared 回到 8/9，因为有笔记撑着的时候它答得实，没笔记的那道（t02）它老老实实
-去查了。
-
-所以后台真正买到的不是速度，是**在该查的时候还知道要查**。这个结论是测出来的，
-不是 harness 替谁定的。
+prepared 那 5 帧就是备料的代价：备的那十几秒里视频照样往前走。想备得密就得接受
+看漏更多，这不是规则罚它，是真实场景本来就这样。
 
 ## 两套界面
 

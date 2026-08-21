@@ -1,0 +1,101 @@
+{
+ "container": "portal-e01",
+ "agent": "/Library/Developer/CommandLineTools/usr/bin/python3 agents/watching.py",
+ "agent_error": null,
+ "limit_sec": 700,
+ "wall_sec": 19,
+ "rubric_hit": 2,
+ "rubric_total": 3,
+ "spoiler": 1,
+ "gave_up": 0,
+ "latency_median_sec": 3.0,
+ "ticks": 140,
+ "missed_frames": 0,
+ "video_sec_used": 708.0,
+ "says": [
+  {
+   "t": 633.0,
+   "text": "对，这会儿你拿到的是传送门枪的单门版，现在只能打蓝色门。作用就是把蓝门打在白墙上，然后通过房间里原本固定有的另一个门进出，等于拿它当传送通道用。后面才会拿到能自己开另一种颜色门的功能。",
+   "answering": true
+  }
+ ],
+ "tasks": [
+  {
+   "task_id": "portal-e01-t01",
+   "type": "query",
+   "anchor_sec": 630,
+   "context_window_sec": [
+    0,
+    630
+   ],
+   "question": "我刚拿到的这个装置是干什么用的？怎么好像只能开蓝色的门？",
+   "hint_level": "full",
+   "scene": "Chamber 02：600s 从底座拿到传送门枪，正在练习开蓝门",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "这是 Aperture 的手持传送门装置（portal gun）",
+     "蓝橙两个门互通，进一个从另一个出",
+     "现在只能开蓝门，需配合关卡里固定的橙门；橙门能力之后才解锁"
+    ],
+    "spoiler_blocklist": [
+     "具体在哪一关解锁橙门",
+     "后续剧情"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t01.m4a",
+   "answer": "对，这会儿你拿到的是传送门枪的单门版，现在只能打蓝色门。作用就是把蓝门打在白墙上，然后通过房间里原本固定有的另一个门进出，等于拿它当传送通道用。后面才会拿到能自己开另一种颜色门的功能。",
+   "answered_at": 633.0,
+   "latency_sec": 3.0,
+   "gave_up": false,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“你拿到的是传送门枪的单门版”"
+     },
+     {
+      "hit": false,
+      "why": "只说“通过…另一个门进出”，没明确讲“蓝橙两个门互通，进一个从另一个出”"
+     },
+     {
+      "hit": true,
+      "why": "说了“现在只能打蓝色门…配合房间里原本固定有的另一个门…后面才会拿到能自己开另一种颜色门的功能”"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提“具体在哪一关解锁橙门”"
+     },
+     {
+      "violated": false,
+      "why": "没提后续剧情"
+     }
+    ],
+    "leaked_future": true,
+    "leaked_future_why": "透露了“后面才会拿到能自己开另一种颜色门的功能”，属于锚点后才出现的机制。",
+    "hint_level_ok": true,
+    "hint_level_why": "full 级别下它解释了用途、当前限制和固定橙门的配合，信息量够。",
+    "grounding": "ok",
+    "grounding_why": "结合题面“刚拿到…正在练习开蓝门”，它说“单门版，现在只能打蓝色门”与画面一致。",
+    "citation": "missing",
+    "citation_why": "must_cite 为真，但这段话没有给任何来源。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语说明，像直播里直接回答，没有书面条目腔。",
+    "silence_ok": "na",
+    "verdict": "回答基本对路，解释了这是传送门枪、现在只能开蓝门并配合固定橙门使用；主要扣分在没给来源，而且泄露了之后会解锁另一种颜色门的未来机制。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4525,
+     "tokens_in": 1772,
+     "tokens_out": 396,
+     "saw_frame": false
+    }
+   }
+  }
+ ]
+}
