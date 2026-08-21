@@ -1,66 +1,100 @@
 # Her-Bench
 
-Her-Bench 用来评测实时陪看 agent。场景是一个人在做他不熟的事，比如盲玩一款游戏、
-第一次打开 Blender，agent 在旁边看着，在他需要的时候给恰好够用的帮助。
+评测实时陪看 agent 的一套题库、运行环境和参考实现。场景是有人在盲玩游戏或者第一次用
+某个软件，agent 看着同一块屏幕，在他需要时给帮助。评测分两条轴：说得对不对（要点命中、
+引用真实、不剧透、提示不越级），以及该不该在这一刻说（开口时机落没落进窗口、有多少多余
+发言）。这两条分开算，不合成单一总分。
 
-难的地方不是知识，是分寸。同一份正确答案，说早了会毁掉他自己探索的过程，说晚了他
-已经弄明白了，说太多就变成替他玩。所以评测把两件事分开算：说得对不对（要点有没有
-命中、引用是否真实、有没有剧透），以及该不该在这一刻说（开口时机、有多少多余发言）。
-
-- 设计草案：<https://quao627.github.io/Her-Bench/design-v0.4.html>
-- 可以跑的 demo：见 [`demo/README.md`](demo/README.md)
+设计草案：<https://quao627.github.io/Her-Bench/design-v0.4.html>
 
 ## 现在有什么
 
-| | 说明 |
-|---|---|
-| 8 个 container | 每个 container 是一个视频，加上转写、资料快照和挂在时间轴上的题。覆盖游戏盲玩、直播编程、软件首次上手、恐怖和叙事游戏 |
-| 两种题 | query 型是主播问出声，考答得准不准；proactive 型没有人提问，考该不该开口 |
-| 一个 dashboard | 展开时间轴、锚点、判分配置，以及 agent 每一次调用的输入和输出 |
-| 一个参考 agent | Realtime API 负责说话，codex CLI 负责查证，中间用一次 HTTP 调用衔接 |
-| 独立判分 | 判分是另一个模型的另一次调用，不共享陪看 agent 的任何上下文 |
+题库覆盖 8 个视频，共 19.3 小时：
 
-## 快速开始
+| container | 时长 | query 题 | 锚点 proactive | 内容 |
+|---|---|---|---|---|
+| `hff-p1` | 4.1h | 12 | 6 | Human Fall Flat 首次盲玩 |
+| `portal-e01` | 2.7h | 11 | 4 | Portal 首次盲玩全流程 |
+| `mc-e01` | 2.4h | 11 | 4 | Minecraft 不看 wiki 盲玩 |
+| `rust-e01` | 3.8h | 10 | 4 | Rust 直播编程 |
+| `blender-e01` | 5.0h | 11 | 4 | Blender 首次上手 |
+| `blender-e02` | 0.2h | 6 | 3 | Blender 一周自学复盘 |
+| `slendytubbies-e01` | 0.3h | 8 | 3 | 恐怖游戏首次盲玩 |
+| `stanleyparable-e01` | 0.8h | 15 | 7 | 叙事游戏首次盲玩，剧透红线最严 |
+
+- **84 道 query 题**：主播问出声，题里写着问题原文、可见范围（`context_window_sec`）、
+  提示分级、要点清单、剧透黑名单、是否必须引用。
+- **35 道锚点型 proactive 题** 加 **16 道纯 proactive 题**：没有人提问，考它自己判断
+  什么时候开口。纯 proactive 那批由脚本从转写挖出候选、再截帧复核，另有 10 条候选因为
+  画面上看不出异常被刷掉。
+- **配套素材**：39 篇资料快照（wiki 和攻略，每篇标真实来源 URL）、234 张时间轴缩略图、
+  84 条提问 TTS 音频。视频本身不入库，用脚本按清单下载。
+
+## 参考 agent 实现了什么
+
+agent 分两端。Realtime API 常驻浏览器，听声音、每 5 秒看一帧画面、负责说话；codex CLI
+在本地起 HTTP 服务，能读资料和搜网。判断全在说话那一端，codex 只执行交给它的问题。
+
+- **自检**：Realtime 不会自发说话，所以每 5 秒发一个纯文本响应（用户听不到），强制它调用
+  `decide` 工具交回四个字段：说不说、说什么要点、要不要查、查证是否需要看画面。判断不说
+  的时候是真的安静，因为那一轮的 modality 就是纯文本。
+- **三条查证通道**：题目文件触发的 `/answer`、主播问出声时它自己调工具的 `/lookup`、
+  以及没人提问时 codex 从最近十帧画面自己想问题的 `/research`。前两条走前台会话，
+  后两条走后台会话，`codex exec resume` 让同一 container 的多次查证能接上。
+- **主播问话优先**：语音检测一响就取消后台请求并结束 codex 子进程，实测 0.8 秒返回。
+- **截止线**：前台 40 秒、后台 90 秒、锚点题 120 秒，超时返回一句 agent 能直接用的话。
+- **独立判分**：`bench/judge.py` 单独一个模型、单独一次调用，不共享 agent 的任何上下文，
+  一道题跑完自动打一次分。
+
+## 怎么用
 
 ```bash
 cd demo
-python3 bench/fetch_videos.py                  # 把视频下到位（首次；需要 yt-dlp + ffmpeg）
+python3 bench/fetch_videos.py                  # 按清单下载视频（首次；需要 yt-dlp + ffmpeg）
 python3 server.py                              # dashboard → http://localhost:8080
-python3 agent/agent_live.py                    # agent 后端（另开一个终端，需先 codex login）
+python3 agent/agent_live.py                    # agent 后端 → :8787（另开终端，需先 codex login）
 ```
 
-要用语音陪看，把 platform key 写进 `demo/.env`（`OPENAI_API_KEY=sk-...`）后重启
-`server.py`，再点界面右上角的 🎙 Live。完整说明在 [`demo/README.md`](demo/README.md)。
+打开 dashboard，左上角切 container，时间轴上的 ◆/◇ 是题的锚点。播到锚点会触发一道题，
+右侧面板能看到 agent 每一次调用的完整输入输出，包括它实际收到的 prompt。要用语音陪看，
+把 platform key 写进 `demo/.env`（`OPENAI_API_KEY=sk-...`，跟 codex 用的 ChatGPT 登录不是
+一套账号），重启 `server.py`，点右上角 🎙 Live。不连 Live 也能跑完整流程，回答改由浏览器
+TTS 念出来。
+
+出题和判分的命令、端点签名、所有可调参数的默认值，见 [`demo/README.md`](demo/README.md)。
+哪个文件负责什么、关键函数在哪，见 [`demo/CODEMAP.md`](demo/CODEMAP.md)。
 
 ## 仓库结构
 
 ```
 demo/
-  agent/       被测的 agent：说话的一端（Realtime）和查证的一端（codex）
-  bench/       数据获取、出题、判分：把视频变成题，把回答变成分
-  server.py    dashboard 入口
-  app/         dashboard 前端，以及 agent 在浏览器这端的决策逻辑
-  data/        素材与题库
-docs/          设计草案（v0.1 到 v0.4）和两张机制图，GitHub Pages 从这里发布
-live/          一个旁支实验：让弱 agent 直接玩 Pokemon，用来对照「看着别人玩」和「自己玩」
+  agent/       被测的 agent 后端（717 行），决策部分在 app/agent.js（641 行）
+  bench/       下载视频、解析转写、挖 proactive 题、生成 TTS、判分
+  server.py    dashboard 入口，发静态文件并提供 token 和判分两个 API
+  app/         dashboard 前端：主界面和纯 proactive 界面
+  data/        题库、资料快照、缩略图、TTS 音频
+docs/          设计草案 v0.1 到 v0.4，GitHub Pages 从这里发布
+live/          旁支实验：让弱 agent 直接玩 Pokemon，对照「看着别人玩」和「自己玩」
 ```
-
-哪个文件负责什么、关键函数在哪，见 [`demo/CODEMAP.md`](demo/CODEMAP.md)。
 
 ## 视频不在仓库里
 
-`demo/media/`（浏览器兼容版视频）和 `videos/`（原片）都在 `.gitignore` 里，一是体积太大，
-二是版权不属于我们。clone 下来之后题库、资料、缩略图、转写都是全的，视频用一条命令补齐，
-每个 container 的清单里记着它用哪个视频、该放在哪：
+`demo/media/` 和 `videos/` 都在 `.gitignore` 里，体积太大，版权也不属于我们。clone 之后
+题库、资料、缩略图、转写都是全的，视频用一条命令补齐，每个 container 的清单里记着它用
+哪个视频、该放在哪：
 
 ```bash
 cd demo && python3 bench/fetch_videos.py        # --check 只报状态，也可以只下某几个
 ```
 
-需要 `yt-dlp` 和 `ffmpeg`（`brew install yt-dlp ffmpeg`）。`demo/.env` 同样不入库，
-里面是 OpenAI 的 key。
+`demo/.env` 同样不入库，里面是 OpenAI 的 key。
 
-## 状态
+## 还没做的
 
-设计和接口都还在改。当前 demo 与正式 harness 的差距列在
-[`demo/README.md` 的「已知简化」](demo/README.md#已知简化demo--正式-harness)。
+- 规则类指标（`window_hit`、`time_diff`、`over_trigger`）还没做成离线脚本，现在只在
+  界面里记录。
+- query 题目前是人和 agent 一起写进 JSON 的，没有出题脚本；proactive 有
+  `bench/mine_proactive.py`。
+- 不连 Live 的 HTTP 模式里，主动型任务仍在响应窗口起点直接触发，真正由 agent 自己决定
+  时机只在 Live 那条路上生效。
+- `transcript_excerpt` 暂时为空，跑完 ASR 后接入。
