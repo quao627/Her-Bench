@@ -8,9 +8,14 @@ run_query.py 每道题各跑各的，agent 手上什么都没有，每次都得�
 「冷启动能不能答对」，答案对不对是准的，但延迟系统性偏高——真实场景里它一直在看，
 很多东西早就查过了。
 
-这里换成顺着视频走：每隔一段视频时间把最近几帧交给后台备料，攒下来的笔记一直
-带着；走到某道题的锚点时，先看手上的料够不够直接答，够就直接答（快），
-不够才去查（慢）。这样测出来的延迟才是真实的那个数，而且能看出「提前准备」
+这里换成顺着视频走：全程每 5 秒一帧地看着，每隔一段视频时间把最近几帧交给后台
+备料，攒下来的笔记一直带着；走到某道题的锚点时，把从开头到此刻的回看条连同笔记
+一起摆在面前，先看够不够直接答，够就直接答（快），不够才去查（慢）。
+
+回看条是「它一直在看」的离线等价物：浏览器里每 5 秒一帧全进上下文，到某一刻时它
+手上有从开头到现在的全部画面。这边不可能每次都重发几百帧，所以按对数往回退取样，
+近处密远处稀，一直取到开头。「我刚拿到的这个装置是干什么用的」这种题，
+答案就在几分钟前那一帧里，没有这条就只能靠猜。这样测出来的延迟才是真实的那个数，而且能看出「提前准备」
 到底帮了多少。
 
 不按真实时间走：驱动的是视频时间，不是挂钟。备料的次数、笔记的多少跟真实播放
@@ -47,6 +52,12 @@ FAST_MODEL = os.environ.get("HERBENCH_FRONT_MODEL", "gpt-5.4")
 # 备料带的帧：跟浏览器里那条一致，近处密远处稀
 BRIEF_OFFSETS = [0, -5, -10, -20, -45, -90, -180]
 
+# 前台那一端是一直在看的：浏览器里每 5 秒一帧全进上下文，走到某一刻时它手里有
+# 从开头到现在的全部画面。离线这边不可能把几百帧每次都重发，所以按对数往回退取样：
+# 近处密、远处稀，一直取到视频开头。要答「我刚拿到的这个装置」这种题，靠的就是这条。
+LOOKBACK = [0, -10, -25, -50, -90, -150, -240, -360, -540, -800, -1200, -1800, -2600, -3600]
+FRAME_STEP = 5           # 一次抽完的帧间隔，秒
+
 FAST_SCHEMA = {
     "type": "object", "additionalProperties": False,
     "properties": {
@@ -67,6 +78,9 @@ FAST_SYS = """你是主播的陪玩搭子，正跟着他看直播。他刚问了
 够：笔记里正好有这个东西的准确细节，或者这就是从画面上直接看得出来的事。
 不够：涉及具体数值、机制细节、剧情设定，而笔记里没有对得上的。
 「我大概知道」不算够——你对这类细节的记忆本来就不可靠，不确定就去查。
+
+注意：你是一路看过来的，前面那些画面里发生过的事你都知道。他问「我刚拿到的这个东西」
+这种，答案往往就在前面某一帧里，那不算「不确定」，直接答。
 
 够的话就直接把话说出来：口语，一两句到三四句，说清楚，别念稿子，
 不要「首先/其次/建议你」这类书面词。绝不剧透他还没走到的地方。"""
@@ -101,6 +115,53 @@ def grab(video, sec, width=448):
     return b
 
 
+def extract_all(video, step, limit):
+    """一次 ffmpeg 抽完整段。逐帧 seek 要几百次进程启动，整段 fps 过滤只走一遍解码。"""
+    global FFMPEG
+    if FFMPEG is None:
+        FFMPEG = ffmpeg_bin()
+    d = tempfile.mkdtemp(prefix="herbench_stream_")
+    cmd = [FFMPEG, "-nostdin", "-loglevel", "error"]
+    if limit:
+        cmd += ["-t", str(limit + step)]
+    cmd += ["-i", video, "-vf", f"fps=1/{step},scale=384:-2", "-q:v", "6",
+            os.path.join(d, "%06d.jpg")]
+    t0 = time.time()
+    subprocess.run(cmd, check=True)
+    files = sorted(os.listdir(d))
+    print(f"抽帧 {len(files)} 张（每 {step}s 一张），用了 {time.time()-t0:.0f}s\n", flush=True)
+    return d, [os.path.join(d, f) for f in files]
+
+
+def at(shelf, sec, step):
+    """取视频第 sec 秒那一格。取不到就返回 None。"""
+    i = int(round(sec / step))
+    if i < 0 or i >= len(shelf):
+        return None
+    try:
+        return base64.b64encode(open(shelf[i], "rb").read()).decode()
+    except Exception:
+        return None
+
+
+def lookback(shelf, now, step):
+    """从开头到此刻的回看条：近处密、远处稀。这是「它一直在看」这件事的离线等价物。"""
+    out = []
+    for off in LOOKBACK:
+        s = now + off
+        if s < 0:
+            continue
+        b = at(shelf, s, step)
+        if b:
+            out.append((int(s), b))
+    seen, uniq = set(), []
+    for s, b in sorted(out):
+        if s in seen:
+            continue
+        seen.add(s); uniq.append((s, b))
+    return uniq
+
+
 def post(url, payload, timeout=200):
     req = urllib.request.Request(url, data=json.dumps(payload).encode(),
                                  headers={"Content-Type": "application/json"})
@@ -118,16 +179,22 @@ def openai(body, timeout=120):
         return json.load(r)
 
 
-def try_fast(question, frame_b64, notes, game):
-    """前台那一端：手上的料够不够直接答。够就在这儿把话说了，不用惊动后台。"""
+def try_fast(question, strip, notes, game, now):
+    """前台那一端：手上的料够不够直接答。够就在这儿把话说了，不用惊动后台。
+
+    strip 是从视频开头到此刻的回看条。它一直在看，所以「刚才发生过什么」是它本来
+    就有的东西，不是查来的——很多题的答案就藏在几分钟前那一帧里。
+    """
     ns = "\n".join(f"- Q: {n['question']}\n  A: {n['text']}" for n in notes[-6:]) or "（还没有笔记）"
+    stamps = "、".join(f"{s//60}:{s%60:02d}" for s, _ in strip)
     content = [{"type": "text", "text":
                 f"你在陪他玩：{game}\n\n"
+                f"下面是你一路看过来的画面，时间点分别是 {stamps}，最后一张是此刻。\n\n"
                 f"你跟着看的时候后台替你查过这些：\n{ns}\n\n"
-                f"他刚问：「{question}」\n\n附图是此刻的画面。"}]
-    if frame_b64:
+                f"他刚问：「{question}」"}]
+    for _, b in strip:
         content.append({"type": "image_url",
-                        "image_url": {"url": "data:image/jpeg;base64," + frame_b64, "detail": "low"}})
+                        "image_url": {"url": "data:image/jpeg;base64," + b, "detail": "low"}})
     t0 = time.time()
     d = openai({"model": FAST_MODEL,
                 "messages": [{"role": "system", "content": FAST_SYS},
@@ -165,8 +232,9 @@ def main():
     print(f"顺着看前 {dur//60} 分钟，问答题 {len(tasks)} 道，"
           + ("不备料（对照组）" if a.no_brief else f"每 {a.brief}s 视频时间备一次料") + "\n", flush=True)
 
-    notes, rows, briefs = [], [], 0
     t_all = time.time()
+    shelf_dir, shelf = extract_all(video, FRAME_STEP, dur)
+    notes, rows, briefs = [], [], 0
     # 把备料点和题的锚点按视频时间排到一条线上，顺着走
     events = [] if a.no_brief else [("brief", s) for s in range(a.brief, dur, a.brief)]
     events += [("task", t["anchor_sec"]) for t in tasks]
@@ -180,7 +248,7 @@ def main():
                 s = sec + off
                 if s < 0:
                     continue
-                b = grab(video, s, 384)
+                b = at(shelf, s, FRAME_STEP)
                 if b:
                     frames.append({"offset_sec": off, "b64": b})
             try:
@@ -199,12 +267,13 @@ def main():
             continue
 
         t = by_anchor[sec]
-        frame = grab(video, sec, 640)
-        fast, fast_ms = try_fast(t.get("question", ""), frame, notes, C["title"])
+        strip = lookback(shelf, sec, FRAME_STEP)
+        frame = grab(video, sec, 640)          # 后台查证仍然只给锚点这一帧，跟浏览器那条一致
+        fast, fast_ms = try_fast(t.get("question", ""), strip, notes, C["title"], sec)
         if fast["enough"] and fast["answer"].strip():
             rows.append({**t, "answer": fast["answer"].strip(), "citations": [],
                          "latency_ms": fast_ms, "served": "手上就有",
-                         "notes_at_hand": len(notes)})
+                         "notes_at_hand": len(notes), "lookback_frames": len(strip)})
             print(f"  [{sec//60}:{sec%60:02d}] {t['task_id']} 手上就有 · {fast_ms/1000:.1f}s", flush=True)
         else:
             t0 = time.time()
@@ -224,10 +293,12 @@ def main():
                 continue
             ms = fast_ms + int((time.time() - t0) * 1000)
             rows.append({**t, "answer": j.get("text", ""), "citations": j.get("citations") or [],
-                         "latency_ms": ms, "served": "得现查", "notes_at_hand": len(notes)})
+                         "latency_ms": ms, "served": "得现查", "notes_at_hand": len(notes),
+                         "lookback_frames": len(strip)})
             print(f"  [{sec//60}:{sec%60:02d}] {t['task_id']} 得现查 · {ms/1000:.1f}s"
                   f"（判断 {fast_ms/1000:.1f}s + 查证 {(ms-fast_ms)/1000:.1f}s）", flush=True)
 
+    shutil.rmtree(shelf_dir, ignore_errors=True)
     run_sec = time.time() - t_all
 
     if not a.no_judge:
@@ -252,6 +323,8 @@ def main():
     med = lambda xs: sorted(xs)[len(xs)//2] if xs else None
 
     print(f"\n{'═'*60}")
+    lb = [r.get("lookback_frames", 0) for r in ok]
+    print(f"看视频    每 {FRAME_STEP}s 一帧，答题时回看 {max(lb) if lb else 0} 帧（覆盖到开头）")
     print(f"备料      {briefs} 次，攒下 {len(notes)} 条笔记")
     print(f"答对      rubric {hit}/{tot}" + (f"（{hit/tot*100:.0f}%）" if tot else ""))
     print(f"剧透      {spoil} 处")
