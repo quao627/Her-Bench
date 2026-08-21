@@ -14,8 +14,8 @@ import sys
 import mimetypes
 import urllib.request
 
-# 判分在 bench/ 那一侧：它是评测的一部分，不属于 dashboard，也绝不能跟 agent 共享上下文
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench"))
+# 判分单独一层：它是评测的一部分，不属于 dashboard，也绝不能跟 agent 共享上下文。
+# 细节见 judge/README.md
 import judge as judge_mod
 import urllib.error
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler

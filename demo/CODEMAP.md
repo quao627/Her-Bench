@@ -8,13 +8,14 @@
 ```
 demo/
   agent/     被测的 agent：说话的一端和查证的一端
-  bench/     数据获取、出题、判分：把视频变成题，把回答变成分
+  bench/     数据获取、出题、跑评测：把视频变成题，驱动 agent 走一遍
+  judge/     判分。单独一层，不碰 agent 的任何上下文，见 judge/README.md
   server.py  dashboard 入口，发静态文件，另外提供两个 API
   app/       前端。agent.js 是 agent 的决策逻辑，index.html 和 proactive.html 是 dashboard
   data/      素材与题库，三部分共用
 ```
 
-流程是 bench 出题，dashboard 把题喂给 agent 并记录它说了什么，再由 bench 判分。
+流程是 bench 出题、bench 驱动 agent 走一遍视频、judge 判分。
 agent 看不到题是怎么出的，判分也拿不到 agent 的任何上下文，这两处隔离是有意设计的。
 
 ---
@@ -66,7 +67,7 @@ index.html 里定义，运行时才解析，文件头的注释列出了完整清
 
 ---
 
-## 二、bench：数据获取、出题、判分
+## 二、bench：数据获取、出题、跑评测
 
 ```bash
 python3 bench/fetch_videos.py                    # 按清单把视频下到 demo/media/
@@ -115,16 +116,34 @@ proactive 题由 `bench/mine_proactive.py` 分两段挖出来：
 刷掉的比留下的多是有意的。只在嘴上抱怨、画面上完全没有痕迹的时刻，对一个只有画面的
 agent 来说是无解题。被刷掉的候选写进 `<id>.dropped.json`，方便回头复盘。
 
-### 判分
+---
 
-`bench/judge.py` 对外只有 `judge_run()` 一个入口。它不碰 codex，也不碰 Realtime 会话，
-不共享任何上下文，只拿题面和 agent 实际说出的话去问一个纯文本模型。让同一条会话既作答
-又给自己打分等于自己验自己，所以这条路必须独立。dashboard 在一道题跑完后自动调一次
-（`POST /api/judge`），模型可以用 `HERBENCH_JUDGE_MODEL` 覆盖。
+## 三、judge：判分
+
+单独一层，`judge/README.md` 里写全了。要点：
+
+`judge_run(task, run)` 是唯一入口。它不碰 codex、不碰 Realtime 会话、不接收 agent 的
+任何上下文，只拿题面和 agent 实际说出的那段话去问一个纯文本模型。让同一条会话既作答
+又给自己打分等于自己验自己，而且它手里还留着刚查到的资料，会顺着自己的话往下认，
+所以这条路必须独立。
+
+一次调用判八项：rubric 逐条命中、防剧透清单逐条、有没有说锚点之后的事、提示分级有没有
+越级、画面指认对不对、该引用时有没有给对来源、是不是在念稿、proactive 没开口时该不该
+沉默。每项都要给一句引原话的依据。
+
+```
+judge/
+  __init__.py   对外只有 judge_run / JUDGE_MODEL
+  core.py       输出 schema、调用、兜底
+  prompt.py     判分员是谁、给他什么材料、要他判什么。改这里会让历史分数不可比
+```
+
+调用方：dashboard 的 `POST /api/judge`（一道题跑完自动判，或点「⚖ 重判」），
+以及 `bench/run_*.py` 跑完之后的批量判分。判分无状态，可以并发。
 
 ---
 
-## 三、dashboard
+## 四、dashboard
 
 | 文件 | 内容 |
 |---|---|

@@ -33,6 +33,7 @@ import urllib.error
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import judge as judge_mod
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

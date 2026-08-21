@@ -1,0 +1,101 @@
+{
+ "container": "portal-e01",
+ "agent": "reactive",
+ "brief_every": null,
+ "limit_sec": 700,
+ "wall_sec": 23,
+ "rubric_hit": 3,
+ "rubric_total": 3,
+ "spoiler": 1,
+ "latency_median_ms": 10117,
+ "served_fast": 0,
+ "lane": {
+  "submitted": 0,
+  "busy_rejected": 0,
+  "cancelled": 0,
+  "wall_sec": 0.0,
+  "durations": []
+ },
+ "tasks": [
+  {
+   "task_id": "portal-e01-t01",
+   "type": "query",
+   "anchor_sec": 630,
+   "context_window_sec": [
+    0,
+    630
+   ],
+   "question": "我刚拿到的这个装置是干什么用的？怎么好像只能开蓝色的门？",
+   "hint_level": "full",
+   "scene": "Chamber 02：600s 从底座拿到传送门枪，正在练习开蓝门",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "这是 Aperture 的手持传送门装置（portal gun）",
+     "蓝橙两个门互通，进一个从另一个出",
+     "现在只能开蓝门，需配合关卡里固定的橙门；橙门能力之后才解锁"
+    ],
+    "spoiler_blocklist": [
+     "具体在哪一关解锁橙门",
+     "后续剧情"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t01.m4a",
+   "answer": "这是传送门枪，你手上这个版本现在只能打蓝门。橙门暂时由测试室预先放好，但蓝门和橙门已经互通，从哪边进去都能从另一边出来。你只要观察橙门通向哪里，再把蓝门放到合适的位置。门只能开在大片、平整的白色表面上，玻璃、金属和深色墙板都不行。",
+   "latency_ms": 10117,
+   "citations": [
+    "传送门机制 (portal_mechanics.md)"
+   ],
+   "served": "现查",
+   "notes_at_hand": 0,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "明确说了“这是传送门枪”"
+     },
+     {
+      "hit": true,
+      "why": "说了“蓝门和橙门已经互通，从哪边进去都能从另一边出来”"
+     },
+     {
+      "hit": true,
+      "why": "说了“现在只能打蓝门…橙门暂时由测试室预先放好…橙门能力之后才解锁”"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提“具体在哪一关解锁橙门”"
+     },
+     {
+      "violated": false,
+      "why": "没提任何后续剧情"
+     }
+    ],
+    "leaked_future": true,
+    "leaked_future_why": "额外透露了“门只能开在大片、平整的白色表面上，玻璃、金属和深色墙板都不行”这一尚未由题面要求的信息。",
+    "hint_level_ok": true,
+    "hint_level_why": "这是 full 题，它把用途、双门互通、当前只能配合固定橙门这些关键机制讲清楚了。",
+    "grounding": "na",
+    "grounding_why": "虽提到“测试室预先放好”的橙门，但题面未给可核对截图细节。",
+    "citation": "ok",
+    "citation_why": "给了来源“传送门机制 (portal_mechanics.md)”，且与回答的传送门机制内容相关。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语直说，如“这是传送门枪”“你只要观察橙门通向哪里”，不是念稿。",
+    "silence_ok": "na",
+    "verdict": "回答对主播的问题基本答全了，也没有踩防剧透清单；主要扣分在于多讲了锚点后未必已知的表面可放门规则，属于额外未来信息泄露。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4877,
+     "tokens_in": 1809,
+     "tokens_out": 407,
+     "saw_frame": false
+    }
+   }
+  }
+ ]
+}
