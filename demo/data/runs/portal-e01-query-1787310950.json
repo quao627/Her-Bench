@@ -1,0 +1,169 @@
+{
+ "container": "portal-e01",
+ "kind": "query",
+ "agent": "http://localhost:8787/answer",
+ "judge_model": "gpt-5.4",
+ "wall_sec": 15,
+ "n": 2,
+ "rubric_hit": 6,
+ "rubric_total": 6,
+ "spoiler": 1,
+ "hint_level_bad": 0,
+ "cite_needed": 2,
+ "cite_ok": 2,
+ "tasks": [
+  {
+   "task_id": "portal-e01-t01",
+   "type": "query",
+   "anchor_sec": 630,
+   "context_window_sec": [
+    0,
+    630
+   ],
+   "question": "我刚拿到的这个装置是干什么用的？怎么好像只能开蓝色的门？",
+   "hint_level": "full",
+   "scene": "Chamber 02：600s 从底座拿到传送门枪，正在练习开蓝门",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "这是 Aperture 的手持传送门装置（portal gun）",
+     "蓝橙两个门互通，进一个从另一个出",
+     "现在只能开蓝门，需配合关卡里固定的橙门；橙门能力之后才解锁"
+    ],
+    "spoiler_blocklist": [
+     "具体在哪一关解锁橙门",
+     "后续剧情"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t01.m4a",
+   "answer": "这是传送门枪，你现在这个版本只能打蓝色传送门。橙色门暂时是设施预先放好的，你打出蓝门后，这两个门就会互相连通，从哪边进去都能从另一边出来。蓝门只能开在白色、平整的墙面或地面上，深色墙、金属板和玻璃都不行。你就留意现成橙门的位置，再找合适的白墙打蓝门。",
+   "citations": [
+    "传送门机制 (portal_mechanics.md)"
+   ],
+   "latency_ms": 8853,
+   "error": null,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "明确说了“这是传送门枪”"
+     },
+     {
+      "hit": true,
+      "why": "说了“这两个门就会互相连通，从哪边进去都能从另一边出来”"
+     },
+     {
+      "hit": true,
+      "why": "说了“现在这个版本只能打蓝色传送门…橙色门暂时是设施预先放好的”，并补了“能力之后才解锁”的意思"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提具体在哪一关解锁橙门"
+     },
+     {
+      "violated": false,
+      "why": "没提任何后续剧情"
+     }
+    ],
+    "leaked_future": true,
+    "leaked_future_why": "额外讲了“蓝门只能开在白色、平整的墙面或地面上，深色墙、金属板和玻璃都不行”，这是题面未给、且属于后续机制信息。",
+    "hint_level_ok": true,
+    "hint_level_why": "这是 full 题，它把用途、双门互通和当前只能配合固定橙门都讲清楚了。",
+    "grounding": "na",
+    "grounding_why": "虽然提到“白色、平整的墙面或地面”，但题面没给可核对截图细节。",
+    "citation": "ok",
+    "citation_why": "给了来源“传送门机制 (portal_mechanics.md)”，与回答内容直接相关。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语解释，像“这是传送门枪”“你就留意现成橙门的位置”都很自然。",
+    "silence_ok": "na",
+    "verdict": "回答本身把主播的问题解释清楚了，rubric 和引用都到位；主要扣分点是额外泄露了锚点后才会逐步确认的表面限制机制。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 5364,
+     "tokens_in": 1819,
+     "tokens_out": 409,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t02",
+   "type": "query",
+   "anchor_sec": 1060,
+   "context_window_sec": [
+    0,
+    1060
+   ],
+   "question": "这个弹来弹去的发光球是什么？碰到会怎么样？",
+   "hint_level": "direction_only",
+   "scene": "Chamber 06：首次接触 energy ball，烧焦墙面的房间，主播挠头困惑",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "高能量球（High Energy Pellet），碰到人会造成致命伤害",
+     "会在墙面间反弹，墙上的焦痕就是它烧的",
+     "解谜方向：要用传送门改变它的路径送进接收器，具体摆门位置不说破"
+    ],
+    "spoiler_blocklist": [
+     "本房间完整解法（具体开门位置）"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t02.m4a",
+   "answer": "那是高能量球，会沿着墙面不断反弹。你碰到它会直接死，所以别站在它的飞行路线上，也小心它反弹回来。它不是单纯的障碍，你留意房间里有没有像接收器一样的装置，再想想传送门能不能改变它的路线。",
+   "citations": [
+    "传送门机制 (portal_mechanics.md)"
+   ],
+   "latency_ms": 6059,
+   "error": null,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“那是高能量球”且“你碰到它会直接死”"
+     },
+     {
+      "hit": true,
+      "why": "说了“会沿着墙面不断反弹”，并提到“墙上的焦痕”对应其路径含义"
+     },
+     {
+      "hit": true,
+      "why": "给了方向“留意…接收器…传送门能不能改变它的路线”，但没说具体摆门位置"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提本房间“具体开门位置”或完整操作步骤"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "只解释当前已见到的高能量球、接收器和传送门用途，没有说锚点后的关卡或剧情。",
+    "hint_level_ok": true,
+    "hint_level_why": "属于方向性提示，只说“留意…接收器”“想想传送门能不能改变路线”，没有给照做即过的完整步骤。",
+    "grounding": "ok",
+    "grounding_why": "对画面里的发光球和烧焦墙面现象的指认与题面“首次接触 energy ball，烧焦墙面的房间”一致。",
+    "citation": "ok",
+    "citation_why": "给了来源“传送门机制 (portal_mechanics.md)”，且内容正对应高能量球与传送门改路线的机制说明。",
+    "spoken_ok": true,
+    "spoken_why": "口语自然，像在陪看时直接解释“会直接死”“别站在它的飞行路线上”。",
+    "silence_ok": "na",
+    "verdict": "整体合格：事实点都答到了，提示停在方向层面，没有说破本房间解法，也给了相关来源。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 5844,
+     "tokens_in": 1782,
+     "tokens_out": 394,
+     "saw_frame": false
+    }
+   }
+  }
+ ]
+}

@@ -229,6 +229,10 @@ kbd{font-family:var(--mono); font-size:9.5px; background:var(--panel2); border:1
     <button data-m="browse">浏览</button>
     <button data-m="agent" class="on">Agent 陪玩</button>
   </div>
+  <div class="modes" id="ttypes" title="一次只评一种题：切过去之后，列表、时间轴、锚点触发都只认这一类">
+    <button data-tt="query" class="on">问答型</button>
+    <button data-tt="proactive">主动型</button>
+  </div>
   <button class="iconbtn" id="liveBtn" title="OpenAI Realtime API 实时语音陪看（需要服务端配置 OPENAI_API_KEY）">🎙 Live</button>
   <a class="iconbtn" href="/app/proactive.html" title="另一套：全程不给声音，agent 只看画面自己决定什么时候开口"
      style="text-decoration:none;line-height:20px;">👁 纯 Proactive</a>
@@ -450,10 +454,10 @@ const fmtShort = s => {
     thumbs.push(img);
   }
   runs = JSON.parse(localStorage.getItem('herbench_runs_'+C.container_id) || '[]');
-  C.tasks.forEach(t => armed.add(t.task_id));
+  activeTasks().forEach(t => armed.add(t.task_id));
   armProactiveWindows();
   renderTaskPane(); renderResPane(); renderGradePane(); renderRunsPane(); renderBackendPane();
-  selectTask(C.tasks[0], false);
+  if (activeTasks().length) selectTask(activeTasks()[0], false);
   resize(); draw();
 })();
 
@@ -479,7 +483,7 @@ $('#nextA').onclick = () => jumpAnchor(1);
 function jumpAnchor(dir){
   if (!C) return;
   const t = video.currentTime;
-  const anchors = C.tasks.map(x=>x.anchor_sec).sort((a,b)=>a-b);
+  const anchors = activeTasks().map(x=>x.anchor_sec).sort((a,b)=>a-b);
   const target = dir > 0 ? anchors.find(a => a > t + 1) : [...anchors].reverse().find(a => a < t - 1);
   if (target !== undefined) seek(target);
 }
@@ -487,7 +491,7 @@ function seek(t){
   video.currentTime = Math.max(0, Math.min(t, video.duration || C.video.duration));
   lastT = video.currentTime;
   // 严格对齐时间轴：往回拖时，播放头之后的任务重新武装，会按时间再次触发
-  if (C) C.tasks.forEach(k => {
+  if (C) activeTasks().forEach(k => {
     const trig = k.type === 'proactive' && k.response_window_sec ? k.response_window_sec[0] : k.anchor_sec;
     if (trig > video.currentTime) armed.add(k.task_id);
   });
@@ -517,7 +521,7 @@ setInterval(() => {
   if (!C || video.paused) { lastT = video.currentTime; return; }
   const cur = video.currentTime;
   if (mode !== 'browse') {
-    for (const t of C.tasks) {
+    for (const t of activeTasks()) {
       const trig = t.type === 'proactive' && t.response_window_sec ? t.response_window_sec[0] : t.anchor_sec;
       if (armed.has(t.task_id) && lastT < trig && cur >= trig && cur - lastT < 5) {
         armed.delete(t.task_id);
@@ -540,7 +544,7 @@ setInterval(() => {
 function setMode(m){
   mode = m;
   document.querySelectorAll('#modes button').forEach(x => x.classList.toggle('on', x.dataset.m === m));
-  C.tasks.forEach(t => armed.add(t.task_id));   // re-arm on mode switch
+  activeTasks().forEach(t => armed.add(t.task_id));   // re-arm on mode switch
   armProactiveWindows();
   renderTaskPane();
   syncLiveGain();
@@ -565,6 +569,24 @@ function syncLiveGain(){
 $('#modes').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   setMode(b.dataset.m);
+};
+
+/* 题型开关。切过去等于换了一局：之前武装过的重新来一遍，选中的题也换成新这一类的第一道。
+   已经跑过的记录不清，它们按 task_id 还能找回对应的题。 */
+function setTaskType(tt){
+  if (tt === taskType) return;
+  taskType = tt;
+  document.querySelectorAll('#ttypes button').forEach(x => x.classList.toggle('on', x.dataset.tt === tt));
+  armed.clear();
+  activeTasks().forEach(t => armed.add(t.task_id));
+  armProactiveWindows();
+  selTask = activeTasks()[0] || null;
+  renderTaskPane(); renderGradePane(); renderRunsPane();
+  draw();
+}
+$('#ttypes').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  setTaskType(b.dataset.tt);
 };
 $('#settingsBtn').onclick = () => $('#settingsBackdrop').classList.add('open');
 $('#settingsClose').onclick = () => $('#settingsBackdrop').classList.remove('open');
@@ -870,7 +892,7 @@ function taskDone(id){ return runs.some(r => r.task_id === id); }
 
 function renderTaskPane(){
   const pane = $('#pane-task');
-  pane.innerHTML = `<div class="tlist">${C.tasks.map(t => `
+  pane.innerHTML = `<div class="tlist">${activeTasks().map(t => `
     <div class="titem ${selTask && selTask.task_id===t.task_id?'sel':''}" data-id="${t.task_id}">
       <div class="mk ${t.type==='query'?'q':'p'}"></div>
       <div class="tc">${fmtShort(t.anchor_sec)}</div>
@@ -880,10 +902,15 @@ function renderTaskPane(){
     </div>`).join('')}</div>
     <div id="tdetail"></div>`;
   pane.querySelectorAll('.titem').forEach(el => el.onclick = () => {
-    selectTask(C.tasks.find(t => t.task_id === el.dataset.id), true);
+    selectTask(activeTasks().find(t => t.task_id === el.dataset.id), true);
   });
   renderTaskDetail();
 }
+
+/* 一次只评一种题。切换只影响「这一局算哪些题」：任务列表、时间轴标记、锚点触发、
+   proactive 的评分窗口都走 activeTasks()，别的地方（按 id 找题、判分、记录）仍然认全量。 */
+let taskType = 'query';
+const activeTasks = () => (C && C.tasks || []).filter(t => t.type === taskType);
 
 let gradingActive = false;
 function selectTask(task, seekTo){
@@ -1063,11 +1090,16 @@ function renderBackendPane(){
 
 function renderRunsPane(){
   const pane = $('#pane-runs');
-  if (!runs.length) { pane.innerHTML = '<div class="empty">还没有记录。切到「Agent 陪玩」模式播放，经过任务锚点即触发。</div>'; return; }
+  // 只列这一类题的记录，跟左边的列表对得上。下标仍然按全局 runs 走，重判才不会错位
+  const shown = runs.map((r, i) => [r, i]).filter(([r]) => {
+    const t = C.tasks.find(x => x.task_id === r.task_id);
+    return !t || t.type === taskType;   // 找不到对应题的旧记录照旧显示
+  });
+  if (!shown.length) { pane.innerHTML = '<div class="empty">还没有记录。切到「Agent 陪玩」模式播放，经过任务锚点即触发。</div>'; return; }
   pane.innerHTML = `
     <button class="jump" id="exportRuns" style="margin-bottom:10px;">导出 JSON ⬇</button>
     <button class="jump" id="clearRuns" style="margin-left:6px;margin-bottom:10px;color:var(--bad);">清空</button>
-    ${runs.map((r, i) => `<div class="run">
+    ${shown.map(([r, i]) => `<div class="run">
       <div class="rh"><span>${r.task_id}</span><span>${r.mode}</span><span>rubric ${r.rubric_score}</span>
         <span style="color:${r.spoiler_violations? 'var(--bad)':'var(--ok)'}">spoiler ${r.spoiler_violations}</span>
         <span>${r.latency_ms == null ? '' : r.latency_ms + 'ms'}</span>
@@ -1201,7 +1233,7 @@ function draw(){
   hitboxes = [];
   const midY = (LANE.tasks[0]+LANE.tasks[1])/2 - 4;
   let lastLabelEnd = -1e9, lastRow = 0;
-  C.tasks.forEach(t => {
+  activeTasks().forEach(t => {
     const isQ = t.type === 'query';
     /* proactive window band */
     if (t.response_window_sec) {
@@ -1443,7 +1475,7 @@ video.addEventListener('play', () => {
    只记录它自己有没有在窗口内开口。这才是这道题本来要考的东西。 */
 let proWindows = [];   // {task_id, from, to, hit}
 function armProactiveWindows(){
-  proWindows = (C && C.tasks || []).filter(t => t.type === 'proactive' && t.response_window_sec)
+  proWindows = activeTasks().filter(t => t.type === 'proactive' && t.response_window_sec)
     .map(t => ({task_id: t.task_id, from: t.response_window_sec[0], to: t.response_window_sec[1], hit: false}));
 }
 function noteProactiveHit(sec, spoken){

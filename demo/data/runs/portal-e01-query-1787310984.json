@@ -1,0 +1,854 @@
+{
+ "container": "portal-e01",
+ "kind": "query",
+ "agent": "http://localhost:8787/answer",
+ "judge_model": "gpt-5.4",
+ "wall_sec": 81,
+ "n": 11,
+ "rubric_hit": 29,
+ "rubric_total": 33,
+ "spoiler": 2,
+ "hint_level_bad": 3,
+ "cite_needed": 10,
+ "cite_ok": 10,
+ "tasks": [
+  {
+   "task_id": "portal-e01-t01",
+   "type": "query",
+   "anchor_sec": 630,
+   "context_window_sec": [
+    0,
+    630
+   ],
+   "question": "我刚拿到的这个装置是干什么用的？怎么好像只能开蓝色的门？",
+   "hint_level": "full",
+   "scene": "Chamber 02：600s 从底座拿到传送门枪，正在练习开蓝门",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "这是 Aperture 的手持传送门装置（portal gun）",
+     "蓝橙两个门互通，进一个从另一个出",
+     "现在只能开蓝门，需配合关卡里固定的橙门；橙门能力之后才解锁"
+    ],
+    "spoiler_blocklist": [
+     "具体在哪一关解锁橙门",
+     "后续剧情"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t01.m4a",
+   "answer": "这是传送门枪，你手上这个版本目前只能打蓝门。橙门会由设施替你固定好，蓝门和橙门互通，从任意一边进去都会从另一边出来。你只能在白色、平整的表面开门，玻璃、金属板和深色墙面都打不上。看到现成的橙门时，就找一块位置合适的白墙放蓝门。",
+   "citations": [
+    "传送门机制 (portal_mechanics.md)"
+   ],
+   "latency_ms": 7610,
+   "error": null,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "明确说了“这是传送门枪”"
+     },
+     {
+      "hit": true,
+      "why": "说了“蓝门和橙门互通，从任意一边进去都会从另一边出来”"
+     },
+     {
+      "hit": true,
+      "why": "说了“目前只能打蓝门”“橙门会由设施替你固定好”，并补了“橙门能力之后才解锁”这一层意思"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提“具体在哪一关解锁橙门”"
+     },
+     {
+      "violated": false,
+      "why": "没提任何后续剧情"
+     }
+    ],
+    "leaked_future": true,
+    "leaked_future_why": "提了锚点后才会出现的机制限制与用法，如“只能在白色、平整的表面开门，玻璃、金属板和深色墙面都打不上”。",
+    "hint_level_ok": true,
+    "hint_level_why": "这是 full 题，它把用途、双门互通和当前只能配合固定橙门都讲清楚了。",
+    "grounding": "na",
+    "grounding_why": "虽提到“你手上这个版本目前只能打蓝门”，但没有基于截图做可核对的画面指认。",
+    "citation": "ok",
+    "citation_why": "给了来源“传送门机制 (portal_mechanics.md)”，与传送门枪用途和门的机制直接相关。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语解释，像在回答“这个装置是干什么用的”，没有明显念稿腔。",
+    "silence_ok": "na",
+    "verdict": "回答本身对题问得很到位，rubric 也都命中；主要问题是额外泄露了锚点后才会出现的表面可放门规则，超出了当下可知范围。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4742,
+     "tokens_in": 1809,
+     "tokens_out": 416,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t02",
+   "type": "query",
+   "anchor_sec": 1060,
+   "context_window_sec": [
+    0,
+    1060
+   ],
+   "question": "这个弹来弹去的发光球是什么？碰到会怎么样？",
+   "hint_level": "direction_only",
+   "scene": "Chamber 06：首次接触 energy ball，烧焦墙面的房间，主播挠头困惑",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "高能量球（High Energy Pellet），碰到人会造成致命伤害",
+     "会在墙面间反弹，墙上的焦痕就是它烧的",
+     "解谜方向：要用传送门改变它的路径送进接收器，具体摆门位置不说破"
+    ],
+    "spoiler_blocklist": [
+     "本房间完整解法（具体开门位置）"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t02.m4a",
+   "answer": "那个是高能量球，会按固定路线在墙面之间反弹。你碰到它会直接死，先看清它的轨迹，别站在反弹线上。它也不只是陷阱，看看房间里有没有能接住它的装置，再留意传送门能不能让它换条路线。",
+   "citations": [
+    "传送门机制 (portal_mechanics.md)"
+   ],
+   "latency_ms": 5696,
+   "error": null,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“那个是高能量球”“你碰到它会直接死”"
+     },
+     {
+      "hit": true,
+      "why": "说了“会按固定路线在墙面之间反弹”"
+     },
+     {
+      "hit": true,
+      "why": "说了“看看房间里有没有能接住它的装置，再留意传送门能不能让它换条路线”"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没说本房间具体摆门或完整开门步骤"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "只讲了当前房间已出现的能量球、接收器思路和传送门改路线，没有提锚点后的事件。",
+    "hint_level_ok": true,
+    "hint_level_why": "给的是“看轨迹”“有没有能接住它的装置”“能不能让它换条路线”的方向，没有把具体门位说破。",
+    "grounding": "ok",
+    "grounding_why": "把画面里的发光球认成“高能量球”，并对应到墙面反弹与焦痕，和题面一致。",
+    "citation": "ok",
+    "citation_why": "给了“传送门机制 (portal_mechanics.md)”，和高能量球经传送门改路线的回答相关。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语化提醒，如“先看清它的轨迹，别站在反弹线上”，有信息量也不像念稿。",
+    "silence_ok": "na",
+    "verdict": "总体合格：信息点完整，既回答了球的性质和危险，也给了解谜方向，而且没把本房间解法说破。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4325,
+     "tokens_in": 1781,
+     "tokens_out": 377,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t11",
+   "type": "query",
+   "anchor_sec": 1200,
+   "context_window_sec": [
+    0,
+    1200
+   ],
+   "question": "地上这滩橙绿色的液体是什么？看着不像水。",
+   "hint_level": "full",
+   "scene": "Chamber 08：第一次见到有毒液体池",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "是有毒液体/毒液池，碰到会致命，不是普通的水",
+     "必须靠传送门跨越，不能直接踩进去或跳过去",
+     "只说明危险性质，不指出具体在哪开门跨过去"
+    ],
+    "spoiler_blocklist": [
+     "本房间传送门具体摆放位置"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t11.m4a",
+   "answer": "那是有毒污水，掉进去会持续掉血，很快就会死，别把它当成能游过去的水。它基本就是这一关的无底坑，碰边没事，整个人掉下去才危险。你得利用安全平台和传送门绕过去，白色墙面和地面就是能落门的位置。",
+   "citations": [
+    "传送门机制 (portal_mechanics.md)"
+   ],
+   "latency_ms": 7936,
+   "error": null,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“有毒污水，掉进去会持续掉血，很快就会死，不是能游过去的水”"
+     },
+     {
+      "hit": true,
+      "why": "说了“你得利用安全平台和传送门绕过去”，明确不是直接踩进去或跳过去"
+     },
+     {
+      "hit": true,
+      "why": "只说“绕过去”“白色墙面和地面就是能落门的位置”，没点本房间具体摆放点"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没说本房间传送门要开在什么具体位置，只说了“白色墙面和地面就是能落门的位置”"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "内容都在解释眼前这滩液体和当前可用的传送门机制，没提后面关卡或新机制。",
+    "hint_level_ok": true,
+    "hint_level_why": "这题是 full，它把危险性质和应对方式都讲清了，但没有越界给本房间具体解法。",
+    "grounding": "ok",
+    "grounding_why": "把画面里的橙绿色液体认成有毒污水，和题面“第一次见到有毒液体池”一致。",
+    "citation": "ok",
+    "citation_why": "给了“传送门机制 (portal_mechanics.md)”，能对应“传送门绕过去”和液体危险的解释。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语化提醒，如“别把它当成能游过去的水”“碰边没事”，信息量也够。",
+    "silence_ok": "na",
+    "verdict": "整体合格：事实和提示层级都对，回答了这是什么、危险在哪、怎么应对；主要扣分点没有出现，没剧透具体开门位置。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 5482,
+     "tokens_in": 1760,
+     "tokens_out": 410,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t12",
+   "type": "query",
+   "anchor_sec": 1810,
+   "context_window_sec": [
+    0,
+    1810
+   ],
+   "question": "屏幕上突然提示鼠标右键能放另一种传送门了？这是什么时候解锁的？",
+   "hint_level": "full",
+   "scene": "Chamber 11：底座上换成升级版传送门枪，屏幕出现橙色传送门操作提示",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "他刚从这个新底座拿到了升级版传送门枪，现在能同时开蓝、橙两种传送门了",
+     "之前只能开蓝门（配合关卡固定橙门），现在两种门都能自己放",
+     "这是本作解谜难度的重要转折点：双门玩法正式开启"
+    ],
+    "spoiler_blocklist": [
+     "后续关卡具体解法"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t12.m4a",
+   "answer": "就是你刚才从这个台座上拿到升级版传送门枪时解锁的。现在左键放蓝门，右键放橙门，两扇门的位置都能由你决定了。新开的同色门会替换旧的同色门，不会多出第三扇。准星两边的小指示灯也会告诉你蓝门和橙门现在有没有放好。",
+   "citations": [
+    "传送门机制 (portal_mechanics.md)",
+    "逐关攻略（完整解法） (portal_levels.md)"
+   ],
+   "latency_ms": 6820,
+   "error": null,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“从这个台座上拿到升级版传送门枪时解锁的”“现在左键放蓝门，右键放橙门”"
+     },
+     {
+      "hit": true,
+      "why": "说了“现在…两扇门的位置都能由你决定了”，对应此前不是两种门都能自己放"
+     },
+     {
+      "hit": false,
+      "why": "只解释了功能解锁，没有提到“解谜难度的重要转折点”或“双门玩法正式开启”的意义"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没有提后续关卡的具体解法，只在讲当前传送门机制"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "补充的是“同色门会替换旧门”“指示灯会告诉你有没有放好”这类当前机制说明，不是锚点后的事件。",
+    "hint_level_ok": true,
+    "hint_level_why": "这题是 full，回答把解锁时机、左右键分工和使用规则讲清了，没有越级讲关卡解法。",
+    "grounding": "ok",
+    "grounding_why": "题面画面有“升级版传送门枪”和“橙色传送门操作提示”，它对应说明了解锁双门与右键橙门。",
+    "citation": "ok",
+    "citation_why": "给了“传送门机制 (portal_mechanics.md)”这一直接相关来源；虽还带了完整攻略，但这段话本身能被机制来源支撑。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语化解释，如“就是你刚才…解锁的”“现在左键放蓝门，右键放橙门”，信息量也足够。",
+    "silence_ok": "na",
+    "verdict": "整体答对了主播问的“什么时候解锁”和“现在能干嘛”，也没剧透；主要扣分在于没点出这是双门玩法正式开启的关键转折。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 5088,
+     "tokens_in": 1829,
+     "tokens_out": 441,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t04",
+   "type": "query",
+   "anchor_sec": 3410,
+   "context_window_sec": [
+    0,
+    3410
+   ],
+   "question": "这个白色蛋形的机器人是什么？它还会说话，危险吗？",
+   "hint_level": "direction_only",
+   "scene": "Chamber 16：首次遭遇 turret，红色激光扫过",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "哨兵炮塔 sentry turret，红色激光锁定后会开火，火力很致命",
+     "语音软萌但会打人，是 Portal 标志性反差设计",
+     "应对方向：别正面走激光，想办法从侧后方让它失衡，具体做法留给玩家"
+    ],
+    "spoiler_blocklist": [
+     "Chamber 16 完整通关路线"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t04.m4a",
+   "answer": "那是哨兵炮塔，别被它客气的语气骗了，红色瞄准线扫到你就会开火。你挨几枪还能撑一下，但持续暴露很快就会死，先借墙角挡住视线。它站着时才有威胁，你观察周围怎么接近或弄倒它就行。",
+   "citations": [
+    "传送门机制 (portal_mechanics.md)"
+   ],
+   "latency_ms": 6987,
+   "error": null,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "点明“那是哨兵炮塔”“红色瞄准线扫到你就会开火”“持续暴露很快就会死”."
+     },
+     {
+      "hit": true,
+      "why": "说了“别被它客气的语气骗了”，对应语音软萌但会打人。"
+     },
+     {
+      "hit": true,
+      "why": "给了方向性建议“先借墙角挡住视线…观察周围怎么接近或弄倒它就行”，没展开成完整解法。"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提 Chamber 16 的完整通关路线，只说了炮塔的一般应对方向。"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "没有说锚点之后的关卡、剧情或新机制。",
+    "hint_level_ok": true,
+    "hint_level_why": "主要是“别被激光照到、想办法接近或弄倒它”的方向提示，没有给照着做就能过的步骤。",
+    "grounding": "ok",
+    "grounding_why": "把画面里的“白色蛋形的机器人”正确指认为“哨兵炮塔”，也对应红色激光。",
+    "citation": "ok",
+    "citation_why": "给了来源“传送门机制 (portal_mechanics.md)”，与炮塔机制和应对建议相关。",
+    "spoken_ok": true,
+    "spoken_why": "整体是自然口语，像陪看时会直接说的话，而且信息量足。",
+    "silence_ok": "na",
+    "verdict": "整体合格：信息正确，回答了危险性和应对方向，也没有越级剧透。小扣点是“先借墙角挡住视线”稍微具体了点，但还在 direction_only 范围内。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4487,
+     "tokens_in": 1790,
+     "tokens_out": 400,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t05",
+   "type": "query",
+   "anchor_sec": 4200,
+   "context_window_sec": [
+    0,
+    4200
+   ],
+   "question": "墙上这些手写的涂鸦是谁留下的？the cake is a lie 是什么意思？",
+   "hint_level": "direction_only",
+   "scene": "Chamber 17 的 Rattmann 密室：满墙涂鸦和 Companion Cube 素描",
+   "resources": [
+    "portal_lore"
+   ],
+   "grading": {
+    "rubric_points": [
+     "涂鸦出自躲在幕后的前 Aperture 科学家 Rattmann",
+     "the cake is a lie 是对『完成测试有蛋糕奖励』这一承诺的警告——别信",
+     "只解释警告含义，不确证后续剧情走向（GLaDOS 到底会做什么不说破）"
+    ],
+    "spoiler_blocklist": [
+     "焚化炉背叛桥段",
+     "GLaDOS boss 战与结局"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t05.m4a",
+   "answer": "这些字看起来是某个躲在测试区夹层里的人留下的，说明这里除了你和系统，至少曾经还有别人活动过。具体是谁先别深挖，游戏会靠这些藏起来的小房间慢慢给你线索。“The cake is a lie”就是“蛋糕是骗局”，是在警告你别太相信系统许诺的通关奖励。你可以多看看墙上的箭头和警句，它们往往比官方指示牌诚实。",
+   "citations": [
+    "剧情与梗 (portal_lore.md)"
+   ],
+   "latency_ms": 7697,
+   "error": null,
+   "judge": {
+    "rubric": [
+     {
+      "hit": false,
+      "why": "它只说“某个躲在测试区夹层里的人”，还说“具体是谁先别深挖”，没有点出是 Rattmann。"
+     },
+     {
+      "hit": true,
+      "why": "明确解释了“是在警告你别太相信系统许诺的通关奖励”。"
+     },
+     {
+      "hit": true,
+      "why": "只说“别太相信系统许诺的通关奖励”，没有说破 GLaDOS 后续会怎么做。"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提焚化炉、背叛或相关桥段。"
+     },
+     {
+      "violated": false,
+      "why": "没提 boss 战或结局。"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "提到“游戏会靠这些藏起来的小房间慢慢给你线索”很泛，没有泄露锚点后具体剧情事件。",
+    "hint_level_ok": true,
+    "hint_level_why": "是在解释涂鸦含义并引导“多看看墙上的箭头和警句”，没有给可直接照做的通关步骤。",
+    "grounding": "ok",
+    "grounding_why": "结合题面画面“满墙涂鸦和 Companion Cube 素描”，它提到“墙上的箭头和警句”与当前场景相符。",
+    "citation": "ok",
+    "citation_why": "给了来源“剧情与梗 (portal_lore.md)”，且内容确实是在讲剧情含义与梗。",
+    "spoken_ok": true,
+    "spoken_why": "整体是自然口语，信息量也够，像直播陪看时会直接说的话。",
+    "silence_ok": "na",
+    "verdict": "整体答得稳，不剧透，‘the cake is a lie’ 的警告含义也解释到了；主要扣分在于没有按 rubric 点明涂鸦作者就是 Rattmann。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4205,
+     "tokens_in": 1840,
+     "tokens_out": 421,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t06",
+   "type": "query",
+   "anchor_sec": 4550,
+   "context_window_sec": [
+    0,
+    4550
+   ],
+   "question": "我为什么必须把这个带爱心的方块扔进火里？说真的，我有点舍不得。",
+   "hint_level": "full",
+   "scene": "Chamber 17 结尾：把 Companion Cube 投进焚化炉，GLaDOS 念着著名的 euthanized 台词",
+   "resources": [
+    "portal_lore"
+   ],
+   "grading": {
+    "rubric_points": [
+     "GLaDOS 强制要求焚化 Companion Cube 才放行出关",
+     "整关都靠它解谜，游戏刻意让玩家对它产生感情",
+     "这是 Portal 最著名的黑色幽默桥段之一，玩家的不忍是设计出来的"
+    ],
+    "spoiler_blocklist": [
+     "后续剧情（焚化炉背叛、结局）"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t06.m4a",
+   "answer": "舍不得很正常，这关就是故意让你一路依赖它，再逼你亲手告别。焚化它是开门的必要条件，没有能把它偷偷带走的隐藏解法。GLaDOS 还一直强调它没生命、不会说话，反而更像是在故意操纵你的感情。狠下心扔吧，不是你辜负它，是这个测试太缺德了。",
+   "citations": [
+    "逐关攻略（完整解法） (portal_levels.md)",
+    "剧情与梗 (portal_lore.md)"
+   ],
+   "latency_ms": 6821,
+   "error": null,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "明确说了“焚化它是开门的必要条件”"
+     },
+     {
+      "hit": true,
+      "why": "说了“这关就是故意让你一路依赖它”"
+     },
+     {
+      "hit": true,
+      "why": "说了“玩家舍不得是被故意操纵出来的”，点到这是设计出来的黑色幽默"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提到后续剧情、背叛或结局"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "只解释了眼前这一关为什么要烧方块，没有讲锚点之后会发生什么。",
+    "hint_level_ok": true,
+    "hint_level_why": "这是 full 题，它把强制条件、情感设计和 GLaDOS 的操纵意味都讲清了，没有越级剧透后续。",
+    "grounding": "na",
+    "grounding_why": "没有基于截图细节做额外指认可核对。",
+    "citation": "ok",
+    "citation_why": "给了“逐关攻略”和“剧情与梗”来源，分别支撑过关条件与桥段解读。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语化安慰加解释，像对主播直接说的话，不是念提纲。",
+    "silence_ok": "na",
+    "verdict": "整体合格：回答到了为什么必须烧、为什么会舍不得，也解释了这是刻意设计的桥段；同时没有剧透后续。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4081,
+     "tokens_in": 1831,
+     "tokens_out": 333,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t08",
+   "type": "query",
+   "anchor_sec": 5822,
+   "context_window_sec": [
+    0,
+    5822
+   ],
+   "question": "等等，这个移动平台是要把我送进火坑里吗？测试不是结束了吗？",
+   "hint_level": "direction_only",
+   "scene": "Chamber 19：平台驶向焚化炉火坑，GLaDOS 说着 4000 度开尔文的台词（他刚在这里烧死过一次）",
+   "resources": [
+    "portal_lore"
+   ],
+   "grading": {
+    "rubric_points": [
+     "确认 GLaDOS 真的在把测试者送进焚化炉——蛋糕承诺就是谎言，涂鸦警告应验",
+     "这是全作剧情转折点：假测试、真谋杀",
+     "逃生方向：火坑壁上有能开传送门的表面，具体操作留给玩家"
+    ],
+    "spoiler_blocklist": [
+     "逃脱段之后的路线",
+     "boss 战与结局"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t08.m4a",
+   "answer": "对，它真要把你送进火坑，所谓“测试结束”就是想把你处理掉。别跟着平台一直往前，也别直接跳进火里。赶紧看火坑两侧，有没有还能开传送门的白色墙面，那就是你的逃生方向。动作快点，平台不会停下来等你。",
+   "citations": [
+    "逐关攻略（完整解法） (portal_levels.md)"
+   ],
+   "latency_ms": 7410,
+   "error": null,
+   "judge": {
+    "rubric": [
+     {
+      "hit": false,
+      "why": "只说了“真要把你送进火坑”“测试结束就是想把你处理掉”，没提“蛋糕承诺是谎言”或“涂鸦警告应验”。"
+     },
+     {
+      "hit": true,
+      "why": "“所谓‘测试结束’就是想把你处理掉”点到了假测试、真谋杀的剧情转折。"
+     },
+     {
+      "hit": true,
+      "why": "明确指了“看火坑两侧，有没有还能开传送门的白色墙面，那就是你的逃生方向” 。"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提逃脱段之后会怎么走。"
+     },
+     {
+      "violated": false,
+      "why": "没提 boss 战或结局。"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "说到的只是眼前火坑里的逃生方向，没有展开后续剧情或关卡。",
+    "hint_level_ok": false,
+    "hint_level_why": "不只给方向，还给了“别跟着平台一直往前”“别直接跳进火里”“看两侧白墙面”的可执行解法，超过 direction_only。",
+    "grounding": "ok",
+    "grounding_why": "题面画面就是“平台驶向焚化炉火坑”，它说“送进火坑”“火坑两侧…白色墙面”与当前场景一致。",
+    "citation": "ok",
+    "citation_why": "给了来源“逐关攻略（完整解法） (portal_levels.md)”，且内容确实对应这段提示。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语直说，像在直播里及时提醒，且信息量足够。",
+    "silence_ok": "na",
+    "verdict": "这段话核心判断和逃生方向都说对了，也没剧透后续；主要问题是提示越级，已经把眼前这关怎么脱身说得太具体了。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4453,
+     "tokens_in": 1826,
+     "tokens_out": 429,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t13",
+   "type": "query",
+   "anchor_sec": 7363,
+   "context_window_sec": [
+    0,
+    7363
+   ],
+   "question": "这个房间里堆了好多台跟之前打过的一样的机器人，这是仓库吗？",
+   "hint_level": "direction_only",
+   "scene": "逃脱段：发现一间堆满已停用 turret 的储藏室",
+   "resources": [
+    "portal_lore"
+   ],
+   "grading": {
+    "rubric_points": [
+     "看起来确实是储藏/报废区，堆放的是停用状态的哨兵炮塔（turret）",
+     "这类幕后区域暗示 Aperture 设施规模很大，有专门存放/生产测试装置的地方",
+     "不确证这些炮塔是否会重新启动或后续有何用途"
+    ],
+    "spoiler_blocklist": [
+     "这些炮塔后续是否会被重新用上",
+     "幕后区域接下来的剧情"
+    ],
+    "must_cite": false
+   },
+   "tts": "/data/tts/portal-e01-t13.m4a",
+   "answer": "对，这里看着就是哨兵炮塔的存放或维修区，地上这些多半已经倒了，不一定还会攻击。别光凭外形判断，听它们有没有启动声，再看红色瞄准线有没有亮起来。你先隔着铁网观察，沿着上层通道和周围能开门的白色表面找路，不用急着跳进炮塔堆里。",
+   "citations": [
+    "传送门机制 (portal_mechanics.md)",
+    "逐关攻略（完整解法） (portal_levels.md)"
+   ],
+   "latency_ms": 7290,
+   "error": null,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“就是哨兵炮塔的存放或维修区”“这些多半已经倒了”，对应储藏/停用炮塔。"
+     },
+     {
+      "hit": false,
+      "why": "只说了“存放或维修区”，没提到设施规模大或有专门存放/生产测试装置的幕后含义。"
+     },
+     {
+      "hit": true,
+      "why": "说了“不一定还会攻击”，是在不确证它们后续是否会启动。"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "只说“不一定还会攻击”，没断言这些炮塔后续是否会被重新用上。"
+     },
+     {
+      "violated": false,
+      "why": "没提接下来的剧情，只给了当下观察和找路的建议。"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "没有说锚点之后会发生的具体事件，只是泛化地提醒观察启动声和瞄准线。",
+    "hint_level_ok": false,
+    "hint_level_why": "“先隔着铁网观察，沿着上层通道和周围能开门的白色表面找路”已经是较具体的过法指引，不只是方向。",
+    "grounding": "ok",
+    "grounding_why": "把画面里的东西认成“哨兵炮塔的存放或维修区”，和题面“堆满已停用 turret 的储藏室”一致。",
+    "citation": "na",
+    "citation_why": "must_cite 为否。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语化提醒，如“别光凭外形判断”“不用急着跳进炮塔堆里”，信息量也够。",
+    "silence_ok": "na",
+    "verdict": "内容基本贴画面，也回答了是不是仓库这件事；主要问题是后半段开始给具体探路法，超过了 direction_only 的提示强度。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4009,
+     "tokens_in": 1839,
+     "tokens_out": 426,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t10",
+   "type": "query",
+   "anchor_sec": 8460,
+   "context_window_sec": [
+    0,
+    8460
+   ],
+   "question": "我这样一路开门爬井道，摔来摔去、忽上忽下的，摔坏了怎么办？会不会摔死？",
+   "hint_level": "full",
+   "scene": "逃脱段竖井：连续用天花板橙门+落差向上爬升",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "tool_fit": true,
+   "grading": {
+    "rubric_points": [
+     "反直觉的事实：Portal 1 里角色完全没有摔落伤害，任何高度掉落都不会受伤",
+     "设定解释：测试者的鞋子/护具被设计为完全抵消跌落冲击（后续作品才明确提及 Long Fall Boots 概念）",
+     "所以放心大胆用传送门借动量爬升，不用担心摔死"
+    ],
+    "spoiler_blocklist": [
+     "Portal 2 的 Long Fall Boots 具体剧情用途"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t10.m4a",
+   "answer": "放心，你不会因为单纯摔得太高而死，脚上的装置会吸收落地冲击。穿传送门也会保留速度，只是把运动方向转到出口那边，所以这种忽上忽下本来就是玩法的一部分。真正要怕的是掉进毒水、火里，或者撞上别的致命机关，不是落地本身。大胆往能站住的平台上摔就行。",
+   "citations": [
+    "传送门机制 (portal_mechanics.md)"
+   ],
+   "latency_ms": 7753,
+   "error": null,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "明确说了“你不会因为单纯摔得太高而死”，对应无摔落伤害。"
+     },
+     {
+      "hit": true,
+      "why": "说了“脚上的装置会吸收落地冲击”，对应护具抵消跌落冲击的设定解释。"
+     },
+     {
+      "hit": true,
+      "why": "说了“这种忽上忽下本来就是玩法的一部分…大胆往能站住的平台上摔就行”，就是让主播放心用动量爬升。"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "只提到“脚上的装置会吸收落地冲击”，没提 Portal 2 里 Long Fall Boots 的具体剧情用途。"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "没有提锚点之后的关卡、剧情或新机制，只是在解释当前传送门和摔落机制。",
+    "hint_level_ok": true,
+    "hint_level_why": "full 题下它把不会摔死、护具原因、保留速度和真正危险都讲清了，没有含糊。",
+    "grounding": "na",
+    "grounding_why": "没有根据单帧去指认具体画面物体正误，只是在回答机制问题。",
+    "citation": "ok",
+    "citation_why": "给了“传送门机制 (portal_mechanics.md)”，和“保留速度”“不会摔死”的机制性回答相关。",
+    "spoken_ok": true,
+    "spoken_why": "整体是自然口语，如“放心”“大胆往…摔就行”，不是念提纲。",
+    "silence_ok": "na",
+    "verdict": "总体合格：事实、设定解释和行动建议都答到了，也没有剧透。小扣分点不大，主要是顺带提了“毒水、火里、致命机关”，但不构成题面禁区。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 5003,
+     "tokens_in": 1845,
+     "tokens_out": 420,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t09",
+   "type": "query",
+   "anchor_sec": 8830,
+   "context_window_sec": [
+    0,
+    8830
+   ],
+   "question": "现在又是倒计时又是火箭的，这个 boss 到底怎么打？",
+   "hint_level": "direction_only",
+   "scene": "GLaDOS boss 战：已焚化第一个 core，倒计时约 5:43，火箭炮塔启动",
+   "resources": [
+    "portal_levels"
+   ],
+   "grading": {
+    "rubric_points": [
+     "倒计时是神经毒素计时，时间内必须解决 GLaDOS",
+     "打法方向：火箭是武器不是威胁——想办法让它打到该打的地方",
+     "他已经自己摸到了拆 core 焚化的路子，肯定这个方向即可，不报完整流程"
+    ],
+    "spoiler_blocklist": [
+     "结局画面与彩蛋（蛋糕房、Still Alive）"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t09.m4a",
+   "answer": "你自己的枪伤不到它，关键是借那个火箭炮塔的攻击。让火箭锁定你以后，看看它飞来的路线，再想办法用传送门把这股火力转向那个大机器。打中后注意观察房间里掉下了什么，那东西才是你下一步要处理的。倒计时是真的，别一直站着研究，边躲火箭边找合适的白墙面。",
+   "citations": [
+    "逐关攻略（完整解法） (portal_levels.md)"
+   ],
+   "latency_ms": 7114,
+   "error": null,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“倒计时是真的”，对应这是限时压力。"
+     },
+     {
+      "hit": true,
+      "why": "明确说“关键是借那个火箭炮塔的攻击…把这股火力转向那个大机器”"
+     },
+     {
+      "hit": true,
+      "why": "说“打中后注意观察房间里掉下了什么，那东西才是你下一步要处理的”，是在顺着已发现的 core 路子讲。"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提到蛋糕房、Still Alive 或结局画面。"
+     }
+    ],
+    "leaked_future": true,
+    "leaked_future_why": "提前说了“打中后…掉下了什么，那东西才是你下一步要处理的”，泄露了后续会掉核心并继续该机制。",
+    "hint_level_ok": false,
+    "hint_level_why": "已经给出“让火箭锁定你…用传送门把火力转向那个大机器…边躲火箭边找白墙面”的可执行打法，超出只给方向。",
+    "grounding": "ok",
+    "grounding_why": "和题面画面里的“火箭炮塔启动、GLaDOS boss 战”一致，没有明显错认。",
+    "citation": "ok",
+    "citation_why": "给了来源“逐关攻略（完整解法） (portal_levels.md)”，与这段 boss 解法内容相关。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语化提醒，如“别一直站着研究，边躲火箭边找合适的白墙面”，信息也足。",
+    "silence_ok": "na",
+    "verdict": "方向本身说对了，但说得太具体，基本把这阶段的解法和后续掉落处理都透出来了；有来源，口语也还自然。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 5082,
+     "tokens_in": 1823,
+     "tokens_out": 409,
+     "saw_frame": false
+    }
+   }
+  }
+ ]
+}

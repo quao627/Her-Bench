@@ -45,6 +45,33 @@ python3 agent/agent_live.py                     # agent 后端 → :8787（另�
 才可以共存。触发时机这一条是因为 query 题会暂停视频等作答，而 proactive 题有 30 到 100 秒
 的响应窗口。
 
+
+## 一条命令跑完，不用开浏览器
+
+两套题各有一个离线跑法，都不需要按视频时长等。
+
+```bash
+python3 agent/agent_live.py --backend codex     # 问答题要它在跑
+python3 bench/run_query.py portal-e01           # 问答题
+python3 bench/run_proactive.py slendytubbies-e01  # 纯 proactive
+```
+
+**问答题**根本不需要实时：每道题就是「在锚点这一刻主播问了这么一句，你怎么答」，
+跟视频播到哪儿没关系。截锚点那一帧，连题包一起发给 agent 后端，拿回答案送去判分。
+实测 portal-e01 的 11 道题 1.4 分钟跑完，瓶颈是 codex 每道 7 到 8 秒。
+
+**纯 proactive** 没有音频，也不必按真实时间走：一次 ffmpeg 抽完帧，
+再一格一格问「现在要不要开口」，几段并行。实测 20 分钟的视频 50 秒跑完，快 31 倍。
+
+| | `run_query.py` | `run_proactive.py` |
+|---|---|---|
+| 题从哪来 | `data/containers/` 里 `type: query` 的 | `data/proactive/` |
+| 谁来答 | agent 后端 `/answer`（codex） | 直接调模型看帧条 |
+| 常用参数 | `--limit N` `--tasks id1,id2` | `--tick N` `--workers N` `--limit N` |
+| 都支持 | `--no-judge` `--out PATH` | 同左 |
+
+跑完在 `data/runs/` 落一份 JSON，控制台打一份汇总。
+
 ## 两套界面
 
 | 入口 | 给 agent 什么 | 考什么 |
