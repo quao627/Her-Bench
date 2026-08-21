@@ -1,5 +1,7 @@
 # 代码地图
 
+**中文** · [English](CODEMAP.en.md)
+
 代码分成三部分：被测的 agent、出题和判分用的 bench、给人看的 dashboard。下面的锚点
 用函数名而不是行号，行号会随着修改漂移，名字不会（`grep -n <名字> <文件>`）。
 
@@ -74,6 +76,9 @@ python3 bench/run_query.py <cid>                 # 问答题，每道题冷启�
 python3 bench/run_stream.py <cid>                # 问答题，顺着视频看、边看边备料
 python3 bench/run_proactive.py <cid>             # 离线跑纯 proactive，不用 agent 后端
 python3 bench/gen_tts.py                         # 给 query 题生成提问语音
+python3 bench/run_query.py <cid>                 # 离线跑完一个 container 的 query 题
+python3 bench/run_proactive.py <cid>             # 离线跑纯 proactive
+python3 bench/run_stream.py <cid>                # 顺着视频从头跑，带回看条和备料
 python3 bench/vtt.py <file.vtt> [n]              # 看 VTT 解析结果
 ```
 

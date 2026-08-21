@@ -1,5 +1,7 @@
 # Her-Bench Demo
 
+**中文** · [English](README.en.md)
+
 这里有两样东西：一个 dashboard，用来展开时间轴、题、判分配置和 agent 每一次调用的
 输入输出；一个参考 agent 后端，由 Realtime API 负责说话、codex CLI 负责查证。两者之间
 只有一个 HTTP 端点，换成别的后端实现也能接。
@@ -51,7 +53,7 @@ python3 agent/agent_live.py                     # agent 后端 → :8787（另�
 两套题各有一个离线跑法，都不需要按视频时长等。
 
 ```bash
-python3 agent/agent_live.py --backend codex     # 问答题要它在跑
+python3 agent/agent_live.py                     # 问答题要它在跑
 python3 bench/run_query.py portal-e01           # 问答题
 python3 bench/run_proactive.py slendytubbies-e01  # 纯 proactive
 ```
@@ -65,11 +67,11 @@ python3 bench/run_proactive.py slendytubbies-e01  # 纯 proactive
 
 ### 冷启动和顺着看，测的不是一回事
 
-`run_query.py` 每道题各跑各的，agent 手上什么都没有，每次现查。这测的是
+`bench/run_query.py` 每道题各跑各的，agent 手上什么都没有，每次现查。这测的是
 「冷启动能不能答对」——答案对不对是准的，但**延迟系统性偏高**：真实场景里它一直在看，
 很多东西早就查过了。
 
-`run_stream.py` 顺着视频从头走：全程每 5 秒一帧地看着，每隔一段视频时间把最近几帧
+`bench/run_stream.py` 顺着视频从头走：全程每 5 秒一帧地看着，每隔一段视频时间把最近几帧
 交给后台备料；走到锚点时，把从开头到此刻的回看条连同攒下的笔记一起摆在面前，
 先看够不够直接答，够就直接答，不够才去查。
 
