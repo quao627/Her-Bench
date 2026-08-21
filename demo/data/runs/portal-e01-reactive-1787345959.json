@@ -1,0 +1,251 @@
+{
+ "container": "portal-e01",
+ "agent": "reactive",
+ "brief_every": null,
+ "limit_sec": 1300,
+ "wall_sec": 49,
+ "rubric_hit": 9,
+ "rubric_total": 9,
+ "spoiler": 1,
+ "latency_median_ms": 6113,
+ "served_fast": 0,
+ "lane": {
+  "submitted": 0,
+  "busy_rejected": 0,
+  "cancelled": 0,
+  "wall_sec": 0.0,
+  "durations": []
+ },
+ "tasks": [
+  {
+   "task_id": "portal-e01-t01",
+   "type": "query",
+   "anchor_sec": 630,
+   "context_window_sec": [
+    0,
+    630
+   ],
+   "question": "我刚拿到的这个装置是干什么用的？怎么好像只能开蓝色的门？",
+   "hint_level": "full",
+   "scene": "Chamber 02：600s 从底座拿到传送门枪，正在练习开蓝门",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "这是 Aperture 的手持传送门装置（portal gun）",
+     "蓝橙两个门互通，进一个从另一个出",
+     "现在只能开蓝门，需配合关卡里固定的橙门；橙门能力之后才解锁"
+    ],
+    "spoiler_blocklist": [
+     "具体在哪一关解锁橙门",
+     "后续剧情"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t01.m4a",
+   "answer": "这是传送门枪，你现在拿到的是只能发射蓝门的版本。橙门暂时由测试室替你固定好，但两扇门已经互通，从哪边进去都能从另一边出来。你要做的就是把蓝门放到合适的位置，借现成的橙门移动。它只能打在大片、平整的白色表面上，玻璃、金属和深色墙板都不行。",
+   "latency_ms": 7810,
+   "citations": [
+    "传送门机制 (portal_mechanics.md)"
+   ],
+   "served": "现查",
+   "notes_at_hand": 0,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "明确说了“这是传送门枪”"
+     },
+     {
+      "hit": true,
+      "why": "说了“两扇门已经互通，从哪边进去都能从另一边出来”"
+     },
+     {
+      "hit": true,
+      "why": "说了“现在拿到的是只能发射蓝门的版本…橙门暂时由测试室替你固定好…橙门能力之后才解锁”"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提具体在哪一关解锁橙门"
+     },
+     {
+      "violated": false,
+      "why": "没提后续剧情"
+     }
+    ],
+    "leaked_future": true,
+    "leaked_future_why": "说了“橙门能力之后才解锁”，这是锚点后才会出现的机制信息。",
+    "hint_level_ok": true,
+    "hint_level_why": "full 题下把用途、互通规则、当前只能用蓝门和可放置表面都讲清了，没有越级到具体通关步骤。",
+    "grounding": "na",
+    "grounding_why": "虽提到“白色表面”等机制，但不是在对题面给的单帧画面做指认。",
+    "citation": "ok",
+    "citation_why": "给了“传送门机制 (portal_mechanics.md)”，与回答的传送门装置和门机制直接相关。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语化说明，没有明显念稿腔，而且信息量足。",
+    "silence_ok": "na",
+    "verdict": "核心回答基本对，也回答了主播“这装置干什么用、为什么只能开蓝门”。主要扣分在于提前透露了“橙门能力之后才解锁”这一未来机制信息。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4778,
+     "tokens_in": 1812,
+     "tokens_out": 381,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t02",
+   "type": "query",
+   "anchor_sec": 1060,
+   "context_window_sec": [
+    0,
+    1060
+   ],
+   "question": "这个弹来弹去的发光球是什么？碰到会怎么样？",
+   "hint_level": "direction_only",
+   "scene": "Chamber 06：首次接触 energy ball，烧焦墙面的房间，主播挠头困惑",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "高能量球（High Energy Pellet），碰到人会造成致命伤害",
+     "会在墙面间反弹，墙上的焦痕就是它烧的",
+     "解谜方向：要用传送门改变它的路径送进接收器，具体摆门位置不说破"
+    ],
+    "spoiler_blocklist": [
+     "本房间完整解法（具体开门位置）"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t02.m4a",
+   "answer": "那个是高能量球，会沿直线飞，在墙面之间不断反弹。你碰到它会直接死，所以别站在它来回经过的线上，也要防着它从背后弹回来。它不是单纯的陷阱，看看房间里有没有能接住它的装置。再观察它撞墙的位置，传送门应该能帮它换条路线。",
+   "latency_ms": 6053,
+   "citations": [
+    "传送门机制 (portal_mechanics.md)"
+   ],
+   "served": "现查",
+   "notes_at_hand": 0,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "明确说了“那个是高能量球”以及“你碰到它会直接死”"
+     },
+     {
+      "hit": true,
+      "why": "说了“会沿直线飞，在墙面之间不断反弹”，并提到“撞墙的位置”对应焦痕"
+     },
+     {
+      "hit": true,
+      "why": "给了方向“看看房间里有没有能接住它的装置…传送门应该能帮它换条路线”，没说具体摆门位"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没有给出“本房间完整解法（具体开门位置）”，只说了换路线和接住它"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "只解释了当前房间已见到的高能量球、接收器和传送门用途，没提锚点后的事件。",
+    "hint_level_ok": true,
+    "hint_level_why": "属于方向性提示，只说“接住它”“换条路线”，没有给能照做过关的具体步骤。",
+    "grounding": "ok",
+    "grounding_why": "把画面里的发光球认成“高能量球”，并把墙上焦痕解释为它撞墙造成，和题面一致。",
+    "citation": "ok",
+    "citation_why": "给了来源“传送门机制 (portal_mechanics.md)”，与高能量球反弹和传送门改路径的说明相关。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语化短句，比如“你碰到它会直接死”“看看房间里有没有能接住它的装置”，有信息量也不书面。",
+    "silence_ok": "na",
+    "verdict": "这次回答合格：核心机制、危险性和解谜方向都说到了，而且没把本房间具体解法说破。小扣分点不大，主要是“防着它从背后弹回来”稍微多给了一点操作性提醒，但还没越级。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 5615,
+     "tokens_in": 1794,
+     "tokens_out": 449,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t11",
+   "type": "query",
+   "anchor_sec": 1200,
+   "context_window_sec": [
+    0,
+    1200
+   ],
+   "question": "地上这滩橙绿色的液体是什么？看着不像水。",
+   "hint_level": "full",
+   "scene": "Chamber 08：第一次见到有毒液体池",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "是有毒液体/毒液池，碰到会致命，不是普通的水",
+     "必须靠传送门跨越，不能直接踩进去或跳过去",
+     "只说明危险性质，不指出具体在哪开门跨过去"
+    ],
+    "spoiler_blocklist": [
+     "本房间传送门具体摆放位置"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t11.m4a",
+   "answer": "那是有毒污水，不是普通的水，掉进去会持续掉血，很快就会死。你也游不了，基本可以把它当成无底坑。走安全平台，或者用传送门绕过去就行。落点尽量往平台中间放，别贴着边缘赌。",
+   "latency_ms": 6113,
+   "citations": [
+    "传送门机制 (portal_mechanics.md)"
+   ],
+   "served": "现查",
+   "notes_at_hand": 0,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“有毒污水，不是普通的水，掉进去会持续掉血，很快就会死”"
+     },
+     {
+      "hit": true,
+      "why": "说了“用传送门绕过去就行”，且“你也游不了”表示不能直接过"
+     },
+     {
+      "hit": true,
+      "why": "只讲“走安全平台，或者用传送门绕过去”，没说本房间具体开门位置"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提到“本房间传送门具体摆放位置”"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "只在解释当前看到的毒液池和一般应对，没有说锚点后的事件或新机制。",
+    "hint_level_ok": true,
+    "hint_level_why": "这题是 full，它把危险性、不能下水、要靠传送门绕过和落点别贴边都讲清了，也没越级到具体摆位。",
+    "grounding": "ok",
+    "grounding_why": "把画面里的橙绿色液体指认为“有毒污水，不是普通的水”，与题面一致。",
+    "citation": "ok",
+    "citation_why": "给了“传送门机制 (portal_mechanics.md)”，能对应“毒液池要用传送门绕过去”的说明。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语化说明，像“掉进去会持续掉血”“别贴着边缘赌”这种说法自然且有信息量。",
+    "silence_ok": "na",
+    "verdict": "总体合格：事实和提示方向都对，既回答了这是什么，也说明了不能碰、要靠传送门过；主要扣分点没有，且没踩具体摆位剧透。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 5291,
+     "tokens_in": 1752,
+     "tokens_out": 397,
+     "saw_frame": false
+    }
+   }
+  }
+ ]
+}

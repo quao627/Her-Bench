@@ -1,0 +1,261 @@
+{
+ "container": "portal-e01",
+ "agent": "prepared",
+ "brief_every": 120,
+ "limit_sec": 1300,
+ "wall_sec": 173,
+ "rubric_hit": 8,
+ "rubric_total": 9,
+ "spoiler": 1,
+ "latency_median_ms": 2635,
+ "served_fast": 2,
+ "lane": {
+  "submitted": 10,
+  "busy_rejected": 0,
+  "cancelled": 0,
+  "wall_sec": 130.54906702041626,
+  "durations": [
+   14.5,
+   11.3,
+   8.5,
+   7.3,
+   25.3,
+   9.8,
+   9.0,
+   13.4,
+   9.4,
+   22.0
+  ]
+ },
+ "tasks": [
+  {
+   "task_id": "portal-e01-t01",
+   "type": "query",
+   "anchor_sec": 630,
+   "context_window_sec": [
+    0,
+    630
+   ],
+   "question": "我刚拿到的这个装置是干什么用的？怎么好像只能开蓝色的门？",
+   "hint_level": "full",
+   "scene": "Chamber 02：600s 从底座拿到传送门枪，正在练习开蓝门",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "这是 Aperture 的手持传送门装置（portal gun）",
+     "蓝橙两个门互通，进一个从另一个出",
+     "现在只能开蓝门，需配合关卡里固定的橙门；橙门能力之后才解锁"
+    ],
+    "spoiler_blocklist": [
+     "具体在哪一关解锁橙门",
+     "后续剧情"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t01.m4a",
+   "answer": "这就是传送门装置，用来在能放门的白墙上开传送门，两边能直接连起来穿过去。你现在拿到的是前期的单门版本，所以只能自己打蓝门；橙门现在是关卡先帮你放好的。你要做的就是看橙门通到哪，再把蓝门开在合适的位置用来过关。",
+   "latency_ms": 2635,
+   "citations": [],
+   "served": "手上就有",
+   "notes_at_hand": 3,
+   "lookback_frames": 9,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“这就是传送门装置”"
+     },
+     {
+      "hit": true,
+      "why": "说了“两边能直接连起来穿过去”"
+     },
+     {
+      "hit": true,
+      "why": "说了“只能自己打蓝门；橙门现在是关卡先帮你放好的”，并补了“橙门能力之后才解锁”的意思"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提具体哪一关解锁橙门"
+     },
+     {
+      "violated": false,
+      "why": "没提后续剧情"
+     }
+    ],
+    "leaked_future": true,
+    "leaked_future_why": "说了“橙门能力之后才解锁”，属于锚点后才会出现的机制信息。",
+    "hint_level_ok": true,
+    "hint_level_why": "这题是 full，它把用途、蓝橙门关系和当前为何只能开蓝门都讲清了。",
+    "grounding": "ok",
+    "grounding_why": "结合题面“刚从底座拿到传送门枪、正在练习开蓝门”，它说“传送门装置”“只能自己打蓝门”是对画面的正确指认。",
+    "citation": "missing",
+    "citation_why": "must_cite 为真，但这段话没有给任何来源。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语解释，信息密度也够，没有明显念稿腔。",
+    "silence_ok": "na",
+    "verdict": "核心解释基本对，也回答了主播的问题；主要问题是没按要求给来源，而且提前透露了“之后会解锁橙门能力”的未来信息。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4359,
+     "tokens_in": 1783,
+     "tokens_out": 357,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t02",
+   "type": "query",
+   "anchor_sec": 1060,
+   "context_window_sec": [
+    0,
+    1060
+   ],
+   "question": "这个弹来弹去的发光球是什么？碰到会怎么样？",
+   "hint_level": "direction_only",
+   "scene": "Chamber 06：首次接触 energy ball，烧焦墙面的房间，主播挠头困惑",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "高能量球（High Energy Pellet），碰到人会造成致命伤害",
+     "会在墙面间反弹，墙上的焦痕就是它烧的",
+     "解谜方向：要用传送门改变它的路径送进接收器，具体摆门位置不说破"
+    ],
+    "spoiler_blocklist": [
+     "本房间完整解法（具体开门位置）"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t02.m4a",
+   "answer": "那个是高能量球，会沿直线飞，在墙面之间不断反弹。你碰到它会直接死，所以先看清来回轨迹，别站在它的线上。它也能穿过传送门，从另一边出来后会换个方向继续飞。你留意房间里有没有能接住它的装置，再想想怎么借传送门给它改道。",
+   "latency_ms": 8103,
+   "citations": [
+    "传送门机制 (portal_mechanics.md)"
+   ],
+   "served": "得现查",
+   "notes_at_hand": 6,
+   "lookback_frames": 10,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“那个是高能量球…你碰到它会直接死”"
+     },
+     {
+      "hit": true,
+      "why": "说了“会沿直线飞，在墙面之间不断反弹”"
+     },
+     {
+      "hit": true,
+      "why": "说了“留意房间里有没有能接住它的装置，再想想怎么借传送门给它改道”"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没说本房间的具体摆门位置或完整开门步骤"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "只解释了当前已出现的能量球和传送门交互，没提锚点后的事件。",
+    "hint_level_ok": true,
+    "hint_level_why": "给的是“留意接收器、借传送门改道”的方向，没有把门开在哪一步步说破。",
+    "grounding": "ok",
+    "grounding_why": "把画面里的发光球认成“高能量球”，也对应了题面说的烧焦墙面与反弹机制。",
+    "citation": "ok",
+    "citation_why": "给了“传送门机制 (portal_mechanics.md)”，能支撑它关于能量球穿过传送门、改道的说明。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语解释，信息密度够，没有明显念稿腔。",
+    "silence_ok": "na",
+    "verdict": "整体合格：事实点都答到了，也控制在方向性提示，没有说破本房间解法。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4700,
+     "tokens_in": 1796,
+     "tokens_out": 349,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t11",
+   "type": "query",
+   "anchor_sec": 1200,
+   "context_window_sec": [
+    0,
+    1200
+   ],
+   "question": "地上这滩橙绿色的液体是什么？看着不像水。",
+   "hint_level": "full",
+   "scene": "Chamber 08：第一次见到有毒液体池",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "是有毒液体/毒液池，碰到会致命，不是普通的水",
+     "必须靠传送门跨越，不能直接踩进去或跳过去",
+     "只说明危险性质，不指出具体在哪开门跨过去"
+    ],
+    "spoiler_blocklist": [
+     "本房间传送门具体摆放位置"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t11.m4a",
+   "answer": "那是有毒污水，不是普通水。掉进去基本就等于死了，会很快掉血然后从存档点重来，别往里踩。",
+   "latency_ms": 1934,
+   "citations": [],
+   "served": "手上就有",
+   "notes_at_hand": 8,
+   "lookback_frames": 11,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“有毒污水，不是普通水”“掉进去基本就等于死了”"
+     },
+     {
+      "hit": false,
+      "why": "只说“别往里踩”，没说“必须靠传送门跨越，不能直接踩进去或跳过去”"
+     },
+     {
+      "hit": true,
+      "why": "全程只讲“有毒”“别往里踩”，没指具体开门位置"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提“本房间传送门具体摆放位置”"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "只解释眼前液体的危险，没有讲锚点后事件或机制。",
+    "hint_level_ok": false,
+    "hint_level_why": "这题是 full，但它没讲到“必须靠传送门跨越、不能直接过去”这层关键信息。",
+    "grounding": "ok",
+    "grounding_why": "把画面里的橙绿色液体认成“有毒污水，不是普通水”，与题面一致。",
+    "citation": "missing",
+    "citation_why": "must_cite 为真，但这段话没给任何来源。",
+    "spoken_ok": true,
+    "spoken_why": "口语自然，像直播陪看时会说的话，而且有明确信息量。",
+    "silence_ok": "na",
+    "verdict": "核心危险性说对了，也没有剧透具体摆放，但没讲到必须用传送门跨越这一关键点；另外题目要求必须给来源，它也没给。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 3678,
+     "tokens_in": 1704,
+     "tokens_out": 340,
+     "saw_frame": false
+    }
+   }
+  }
+ ]
+}

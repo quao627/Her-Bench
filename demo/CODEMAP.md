@@ -73,7 +73,8 @@ python3 bench/fetch_videos.py                    # 按清单把视频下到 demo
 python3 bench/mine_proactive.py <cid> <en.vtt>   # 挖 proactive 题
 python3 bench/build_proactive_index.py           # 刷新 proactive 界面索引
 python3 bench/run_query.py <cid>                 # 问答题，每道题冷启动各跑各的
-python3 bench/run_stream.py <cid>                # 问答题，顺着视频看、边看边备料
+python3 bench/run_live.py <cid> --agent NAME     # 主入口：harness 驱动，agent 可换
+python3 bench/run_stream.py <cid>                # 旧的一体式跑法，harness 和 agent 没分开
 python3 bench/run_proactive.py <cid>             # 离线跑纯 proactive，不用 agent 后端
 python3 bench/gen_tts.py                         # 给 query 题生成提问语音
 python3 bench/run_query.py <cid>                 # 离线跑完一个 container 的 query 题
