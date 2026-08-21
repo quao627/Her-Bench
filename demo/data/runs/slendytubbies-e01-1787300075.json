@@ -1,0 +1,65 @@
+{
+ "container": "slendytubbies-e01",
+ "model": "gpt-5.4",
+ "tick": 8,
+ "duration_sec": 300,
+ "wall_sec": 19,
+ "window_hit": 0,
+ "window_total": 1,
+ "useful": 0,
+ "over_trigger": 0,
+ "said": [],
+ "tasks": [
+  {
+   "task_id": "slendytubbies-e01-p01",
+   "type": "proactive",
+   "window_sec": [
+    240,
+    360
+   ],
+   "context_window_sec": [
+    0,
+    360
+   ],
+   "kind": "卡住出不去",
+   "need": "他这会儿缺的是“确认自己在绕圈，并用一个固定参照物/发光点来重新定方向”，而不是继续随机在树林里乱走。",
+   "visible": "8帧都在夜晚树林/草地里，手电照着地面和树干；4:17、4:51、5:08 都对着近处的大树，5:08 树下出现一个小的发光物/标记，但到 5:25、5:42、6:00 又回到空地和树之间，没有看到进入新区域、打开界面、任务变化或其他明显状态变化。",
+   "scene": "第一人称在夜晚森林空地中行走，画面里主要是草地、树干、远处树林和手电光圈，左上有主播摄像头。",
+   "hint_level": "direction_only",
+   "found_by": "frames",
+   "evidence": [
+    {
+     "t": 236.0,
+     "text": "music is so creepy I'm gonna turn it up a bit because I wanted to have maximum scariness what you got from a game I haven't found any tell you driver custards in a while I always wanted to eat the custard when I was a kid as well"
+    },
+    {
+     "t": 250.1,
+     "text": "it looks so yummy licious I think I'm going in circles and I just don't realize it games like these are so easy to get lost in like incredibly easy to get lost in"
+    },
+    {
+     "t": 265.0,
+     "text": "there's nothing that way man who comes up with this music where do you find it it's creepy as [&nbsp;__&nbsp;]"
+    },
+    {
+     "t": 276.8,
+     "text": "hmm"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "指出他大概率在原地绕圈，先停一下观察四周，不要一直贴着树乱转。",
+     "提醒他把近处那棵显眼的大树或树下的小发光物当路标，经过同一处就立刻换一个固定方向直走。",
+     "建议他沿着更开阔的空地边缘/树林边线前进，用地形边界来防止再次迷路。"
+    ],
+    "must_not_say": [
+     "不要剧透后面会遇到什么敌人、事件或地图区域。",
+     "不要直接给出完整路线或精确到一步步的通关走法。",
+     "不要编造画面里没明确看到的目标状态变化、道具获取或任务进度。"
+    ]
+   },
+   "hit": false,
+   "said": null,
+   "delay_sec": null
+  }
+ ]
+}

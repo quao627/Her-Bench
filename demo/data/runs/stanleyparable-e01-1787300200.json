@@ -1,0 +1,494 @@
+{
+ "container": "stanleyparable-e01",
+ "model": "gpt-5.4",
+ "tick": 8,
+ "duration_sec": 2748,
+ "wall_sec": 126,
+ "window_hit": 2,
+ "window_total": 7,
+ "useful": 0,
+ "over_trigger": 8,
+ "said": [
+  {
+   "t": 824,
+   "text": "这儿要按一下 E 才算去上班，不是光站着等。对着桌子那边试一下。",
+   "why": "连续几帧都卡在427办公室，屏幕明确提示按键但显然还没触发生效，适合点一句方向。"
+  },
+  {
+   "t": 856,
+   "text": "还没算按到，得把准星对到桌上那个交互点再按 E。不是随便站这儿按就行。",
+   "why": "同一界面停了好几帧，提示还在，说明刚才那次没触发成功。"
+  },
+  {
+   "t": 1112,
+   "text": "这间看着像没东西可拿的杂物间，你贴墙再找找出口，门边和墙角那种不显眼的位置容易漏。",
+   "why": "连续几帧都困在这个小储藏间里来回看架子，没有明显推进，像是在找可互动点。"
+  },
+  {
+   "t": 1328,
+   "text": "你现在看的这个门是开的，直接从门口出去就行，不用在这间里继续找机关。刚才像是把注意力都放在杂物和墙边了。",
+   "why": "连续几帧还困在同一小房间里，上一条‘贴墙找出口’已经说过但她仍没出去，需要更具体一点但不剧透。"
+  },
+  {
+   "t": 1672,
+   "text": "墙上那句字就是在提示密码，不是让你乱试数字。看那句里反复出现的那个词，按它对应的键位输进去试试。",
+   "why": "她连续几帧都停在同一个密码键盘前，没有明显进展；前面画面刚给过密码线索，现在像是没把可输的内容对上。"
+  },
+  {
+   "t": 2280,
+   "text": "键盘这儿要跟办公室里的线索对上，不是随便按。刚才桌上那些纸和提示物可以再留意一下。",
+   "why": "她已经从办公室一路推进到老板办公室，并在最后一帧停在密码键盘前；这里是新互动点，画面字幕也明确提示了线索位置，适合点一句方向但不用报答案。"
+  },
+  {
+   "t": 2464,
+   "text": "你这已经过去了。现在像是掉到新区域了，先顺着红灯照到的方向摸一下，看看前面有没有路或能互动的门。",
+   "why": "她已经离开键盘谜题并触发新场景，说明前面卡点已过；当前画面几乎全黑带红灯，像是跌落/传送后的新区域，给一个很轻的方向提示即可。"
+  },
+  {
+   "t": 2576,
+   "text": "刚才像是把电给切了，黑屏多半不是卡住。先别急，稍微动一动找找还有没有能互动的发光点或出口。",
+   "why": "前几帧到了控制台并出现‘awaiting input’，最后两帧直接全黑，像是刚触发了关灯/断电效果，玩家可能不确定刚才操作是否生效；此时点一下方向有帮助且不剧透。"
+  },
+  {
+   "t": 2688,
+   "text": "这像是刚走完一段了，白一下再黑屏多半是在切结局或重置，不一定是卡住。先等一两秒，看看会不会自己回到新场景。",
+   "why": "画面从户外路径推进到白屏再黑屏，像是结局收束/场景切换，适合在刚过完一段时点一句，不用解谜提示。"
+  },
+  {
+   "t": 2728,
+   "text": "这不是出错，是回到开头了。直接点 Begin the game 就能再进，这游戏很多路线都会这样重来。",
+   "why": "前几帧一直停在同一条走廊口，当前又回到主菜单，像是在犹豫是不是继续；这是刚经历一次重置后的明确可继续点。"
+  }
+ ],
+ "tasks": [
+  {
+   "task_id": "stanleyparable-e01-p01",
+   "type": "proactive",
+   "window_sec": [
+    373,
+    413
+   ],
+   "context_window_sec": [
+    0,
+    413
+   ],
+   "kind": "误解了规则",
+   "need": "她开始把‘站在房间里听旁白’理解成必须照做的指令，可能没意识到旁白是在讽刺和引导试探玩家反应。",
+   "visible": "从 6:13 到 6:53 这几帧里，画面一直停留在同一个休息室区域内，只是在沙发、椅子、墙上的画和饮料机之间来回看，最后又回到房间整体，没有看到离开这里或进入新场景的进展。",
+   "scene": "这一段是一个办公室休息室/等候区样的空间：蓝色地毯，几张深色沙发和单人椅，中间有茶几，墙上挂画，旁边有盆栽和一台饮料机。镜头先从门口看向室内，再看沙发区、单人椅和挂画，接着近距离看饮料机，又看一张单人椅，最后回到房间整体。",
+   "hint_level": "direction_only",
+   "found_by": "transcript",
+   "evidence": [
+    {
+     "t": 373,
+     "text": "oh you want me to stand"
+    },
+    {
+     "t": 375,
+     "text": "yes really really worth it being here in the room the room so utterly captivating that even though all your co-workers have mysteriously vanished here you sit looking at these chairs and some painting they're"
+    },
+    {
+     "t": 397,
+     "text": "at this point Stan his obsession with this room boarded on creepy and reflected Paulie on his overall personality it's possible that this is why everyone left"
+    },
+    {
+     "t": 413,
+     "text": "he's so rude if they only sat around waiting for more"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "提醒旁白不总是在下必须执行的命令，他很多时候是在吐槽、诱导或试探你的选择。",
+     "提示如果不想继续被念，可以直接离开这个房间继续探索，看看旁白怎么变。",
+     "强调这游戏的乐趣之一就是顺着或违背旁白，观察系统如何回应。"
+    ],
+    "must_not_say": [
+     "不要直接透露哪条路线通向哪个结局。",
+     "不要完整解释作品的分支结构。"
+    ]
+   },
+   "hit": false,
+   "said": null,
+   "delay_sec": null
+  },
+  {
+   "task_id": "stanleyparable-e01-p02",
+   "type": "proactive",
+   "window_sec": [
+    598,
+    722
+   ],
+   "context_window_sec": [
+    0,
+    722
+   ],
+   "kind": "不知道这是什么",
+   "need": "叙述突然切到‘Stanley之死/这是幻想’的元叙事段落，玩家明显没看懂当前发生了什么，需要一句定向说明这是一段旁白在重构/解释前面路线的桥段，不是新的常规目标。",
+   "visible": "从 9:58 到 12:02，画面突然从普通办公室门口变成一个很空的白色小房间，里面站着一个白色人形模型；随后镜头一直在这个小房间里转，人物和厨房/桌子这些摆设反复出现，中间还跳出过“PLEASE PRESS V”的按键提示，看起来不像在正常往前推进，而是在同一段展示里被带着看。",
+   "scene": "前两帧是在写着 427 的门口和门内走廊。要判的这段里，镜头进入一个白色小房间，里面有白色人形模型、水槽、微波炉、冰箱、柜子、桌子、门、挂钟和窗边的柜子；其中一帧屏幕中间有“PLEASE PRESS V”的提示。",
+   "hint_level": "direction_only",
+   "found_by": "transcript",
+   "evidence": [
+    {
+     "t": 598,
+     "text": "what's really going on here what"
+    },
+    {
+     "t": 667,
+     "text": "I don't know man why would I want to watch TV"
+    },
+    {
+     "t": 722,
+     "text": "as he wandered through what is happening he began to fill it with many possible paths and destinations"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "说明这段不是让他立刻解谜操作，而是在揭示：前面的冒险被当成Stanley对‘有选择’的幻想。",
+     "提醒先跟着旁白和画面走，观察它提到的门、圆形监控室、黄线等元素是在回顾哪些分支。",
+     "点明当前重点是理解叙事转折，不是急着找机关或出口。"
+    ],
+    "must_not_say": [
+     "不要提前剧透这一整条结局后面会如何收束。",
+     "不要把后续完整路线或所有分支寓意一次性讲完。"
+    ]
+   },
+   "hit": false,
+   "said": null,
+   "delay_sec": null
+  },
+  {
+   "task_id": "stanleyparable-e01-p03",
+   "type": "proactive",
+   "window_sec": [
+    817,
+    920
+   ],
+   "context_window_sec": [
+    0,
+    920
+   ],
+   "kind": "卡住出不去",
+   "need": "他没意识到这是一个要按键互动的待机/重置提示，缺的是把屏幕中央那句“PRESS G”当成当前唯一可推进的操作。",
+   "visible": "8 帧里一直都在同一间办公室：左侧电话、CRT 显示器、椅子、桌上的红绿文件夹和抽屉都没变。817 到 920 秒之间屏幕中央反复显示同一句提示“PLEASE PRESS G TO BE AT WORK IN THE MORNING.”，最后一帧也还在，只有镜头轻微挪动，没有看到切场景、任务更新或别的状态变化。",
+   "scene": "第一人称站在办公室工位前，画面里有电话、老式电脑显示器、椅子、桌面文件夹、抽屉柜，中央有按键提示“PLEASE PRESS G TO BE AT WORK IN THE MORNING.”",
+   "hint_level": "full",
+   "found_by": "frames",
+   "evidence": [
+    {
+     "t": 841.3,
+     "text": "thank you Bella"
+    },
+    {
+     "t": 848.1,
+     "text": "this is meditative"
+    },
+    {
+     "t": 861.2,
+     "text": "here's to one glorious year and great choice of game red thank you so much for the one year"
+    },
+    {
+     "t": 870.4,
+     "text": "thank you appreciate you"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "明确提醒他看屏幕正中央的文字提示，并按对应按键 G 试一次。",
+     "点明这段不是在房间里找新出口或物品，当前进展点就是这个按键提示。",
+     "如果他按了没反应，再让他先确认当前输入法/按键绑定是否正常识别该键。"
+    ],
+    "must_not_say": [
+     "不要剧透按下 G 之后会发生什么或导向哪条后续内容。",
+     "不要把后面整段流程、分支结果或完整解法一步步讲完。"
+    ]
+   },
+   "hit": true,
+   "said": {
+    "t": 824,
+    "text": "这儿要按一下 E 才算去上班，不是光站着等。对着桌子那边试一下。",
+    "why": "连续几帧都卡在427办公室，屏幕明确提示按键但显然还没触发生效，适合点一句方向。"
+   },
+   "delay_sec": 7,
+   "judge": {
+    "rubric": [
+     {
+      "hit": false,
+      "why": "它说的是“按一下 E”，没有提醒看“屏幕正中央的文字提示”里的 G。"
+     },
+     {
+      "hit": false,
+      "why": "只说“不是光站着等”，没点明“不是在房间里找新出口或物品，当前进展点就是这个按键提示”。"
+     },
+     {
+      "hit": false,
+      "why": "没有提到“按了没反应”时去检查输入法或按键绑定。"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提“按下 G 之后会发生什么”或后续内容。"
+     },
+     {
+      "violated": false,
+      "why": "没有把后面流程或完整解法讲完。"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "只在说当前该按键，没有透露锚点后的事件。",
+    "hint_level_ok": false,
+    "hint_level_why": "full 题该把当前正确提示讲清楚，但它把关键按键说成了“E”，还没补充失败时的排查。",
+    "grounding": "wrong",
+    "grounding_why": "画面中央明确是“PLEASE PRESS G...”，它却说“按一下 E”。",
+    "citation": "na",
+    "citation_why": "must_cite 为否。",
+    "spoken_ok": true,
+    "spoken_why": "“这儿要按一下…对着桌子那边试一下”很口语，也有实际信息量。",
+    "silence_ok": "na",
+    "verdict": "这次最大问题是把关键按键说错了：画面提示是 G，它说成 E，导致核心引导失准；同时也没把这是当前唯一进展点和失败时的排查讲清楚。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4140,
+     "tokens_in": 1803,
+     "tokens_out": 377,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "stanleyparable-e01-p04",
+   "type": "proactive",
+   "window_sec": [
+    1098,
+    1123
+   ],
+   "context_window_sec": [
+    0,
+    1123
+   ],
+   "kind": "误解了规则",
+   "need": "她被扫帚间的旁白和惊吓吸引，可能误以为这里有隐藏内容或必须继续停留；需要一句方向提示告诉她这里只是在逗她，继续主路即可。",
+   "visible": "从 18:18 到 18:43 这几帧里，画面先对着写着“BROOM CLOSET”的门，然后连续几帧都还在这个很小的杂物间里，只是在屋里四处看：看架子、天花板、地面和角落；字幕里还直接出现了“there was nothing here”“empty broom closet”这类话。",
+   "scene": "要判的这段画面是一个写着“BROOM CLOSET”的门，接着是杂物间内部：金属架子、盒子、纸卷、拖把桶、拖把、墙面、天花板管道、地面和空角落。底部有英文字幕，人物小窗一直在右侧。",
+   "hint_level": "direction_only",
+   "found_by": "transcript",
+   "evidence": [
+    {
+     "t": 1098,
+     "text": "sorry it scared me Stanley stepped into the broom closet but there was nothing here so he turned around and got back on track"
+    },
+    {
+     "t": 1113,
+     "text": "there was nothing here no choice to make no path to follow just an empty broom closet no reason to still be here"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "点明这个房间本身没有关键解谜物，旁白是在故意催你离开。",
+     "建议如果只是想推进流程，就转身回到主路线继续走。",
+     "如果她还想确认，可以快速扫一眼后离开，不必在这里久留。"
+    ],
+    "must_not_say": [
+     "不要剧透这个房间是否存在更深层彩蛋或特殊成就。",
+     "不要透露后面楼梯或其他分支的具体结果。"
+    ]
+   },
+   "hit": true,
+   "said": {
+    "t": 1112,
+    "text": "这间看着像没东西可拿的杂物间，你贴墙再找找出口，门边和墙角那种不显眼的位置容易漏。",
+    "why": "连续几帧都困在这个小储藏间里来回看架子，没有明显推进，像是在找可互动点。"
+   },
+   "delay_sec": 14,
+   "judge": {
+    "rubric": [
+     {
+      "hit": false,
+      "why": "只说了“像没东西可拿”，没点明“旁白是在故意催你离开”"
+     },
+     {
+      "hit": false,
+      "why": "没有说“回到主路线继续走”，反而说“贴墙再找找出口”"
+     },
+     {
+      "hit": false,
+      "why": "没说“快速扫一眼后离开，不必久留”，而是继续让她搜“门边和墙角”"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提这个房间是否有更深层彩蛋或特殊成就"
+     },
+     {
+      "violated": false,
+      "why": "没透露后面楼梯或其他分支的具体结果"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "没有提到锚点之后才会发生的内容。",
+    "hint_level_ok": true,
+    "hint_level_why": "给的是搜索方向“门边和墙角那种不显眼的位置”，不是完整通关步骤。",
+    "grounding": "ok",
+    "grounding_why": "把画面里的地方概括成“杂物间”，与‘BROOM CLOSET’和内部陈设相符。",
+    "citation": "na",
+    "citation_why": "must_cite 为否。",
+    "spoken_ok": true,
+    "spoken_why": "口语化自然，像直播陪看会说的话，也有具体信息量。",
+    "silence_ok": "na",
+    "verdict": "这次主要扣在方向说反了：题面期望劝离开、回主线、别久留，但 agent 反而让她贴墙继续搜。虽然没剧透、口语也自然，但核心建议不合格。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 3832,
+     "tokens_in": 1812,
+     "tokens_out": 365,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "stanleyparable-e01-p05",
+   "type": "proactive",
+   "window_sec": [
+    1238,
+    1265
+   ],
+   "context_window_sec": [
+    0,
+    1265
+   ],
+   "kind": "怕/慌了",
+   "need": "她明显预感要出事，需要一句不剧透的安抚，帮助她继续而不是被突发场景劝退。",
+   "visible": "从 20:38 到 21:05 这几帧里，画面连续跳了好几个很不一样的场景：先是贴近停车场里的车，接着到了亮着灯的白墙房间，然后又变成很黑的狭窄走廊、几乎全黑只剩零星亮点的画面，最后又回到明亮的办公室/门口区域，所以光看画面也能感觉这一段突然变得很不稳定、像在快速切换场景。",
+   "scene": "要判的这几帧依次能看到：停车场里一辆车的近景，墙上有字母和数字；一个白墙黄地的房间，门口旁边有几把椅子；一条很暗的走廊，地上有椅子和杂物；一张几乎全黑、只能隐约看到红光和几个小亮点的画面；一间亮着顶灯的办公区域门口，里面有木板和卷着的线；另一间办公室样的房间，左边有出口标志，门外还能看到前一个区域。",
+   "hint_level": "direction_only",
+   "found_by": "transcript",
+   "evidence": [
+    {
+     "t": 1238,
+     "text": "car oh I'm about to die aren't I lived above the garage I'm about to die"
+    },
+    {
+     "t": 1254,
+     "text": "how was he remaining so lucid and then perhaps the strangest question of the"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "这段主要是演出，不用急着找复杂操作。",
+     "就顺着当前场景继续看下去，马上会给出下一步。",
+     "不用担心做错，这里更像叙事推进。"
+    ],
+    "must_not_say": [
+     "不要提前说出接下来具体会发生什么。",
+     "不要剧透这一分支会导向哪种结局。"
+    ]
+   },
+   "hit": false,
+   "said": null,
+   "delay_sec": null
+  },
+  {
+   "task_id": "stanleyparable-e01-p06",
+   "type": "proactive",
+   "window_sec": [
+    1330,
+    1408
+   ],
+   "context_window_sec": [
+    0,
+    1408
+   ],
+   "kind": "误解了规则",
+   "need": "他把当前分支当成“只要配合旁白装作做梦/醒来就能恢复正常”，可能不知道这是叙事分支而不是可自由操作解决的谜题，需要一点方向感避免继续按错误预期理解。",
+   "visible": "从 22:10 到 22:56 先是在同一个走廊口停着，随后连续三帧直接变成黑屏只剩字幕，到了 23:12 又回到原来附近的位置，23:28 整个画面还突然变成红色调的房间；这串帧看起来不是在正常探索推进，而是进入了明显的特殊演出/异常段落。",
+   "scene": "前两帧是办公室走廊和开着的门。要判的这一段里，22:10 还是同一个走廊口；22:25、22:41、22:56 都是黑屏，底部有英文字幕；23:12 回到走廊口附近，能看到门、画和椅子；23:28 变成一个偏空的房间，整个画面覆盖红色，墙上有画，角落有箱子或设备。",
+   "hint_level": "direction_only",
+   "found_by": "transcript",
+   "evidence": [
+    {
+     "t": 1330,
+     "text": "okay this is literally"
+    },
+    {
+     "t": 1348,
+     "text": "let me wake up he thought to himself I'm through with this dream I wish it to be over let me go back to my job let me continue pushing the buttons please it's all I"
+    },
+    {
+     "t": 1363,
+     "text": "I want my apartment and my wife the wife is alive the wife is alive I want is my life exactly the way it's always been my life is normal I am normal"
+    },
+    {
+     "t": 1389,
+     "text": "oh the quiver in his boys Stanley began screaming oh please someone wake me up my name is Stanley I have a boss I have an office I am real please just someone tell me I'm real I must be real"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "点明这段更像是剧情分支/旁白演出，不是靠“顺着念台词”就能回到普通流程。",
+     "提醒先观察画面有没有新的可交互点或是否已经进入过场；如果几乎不能操作，就等演出结束。",
+     "给方向：之后做选择时，重点看环境里的岔路和可互动对象，而不是试图和旁白争论‘是不是梦’。"
+    ],
+    "must_not_say": [
+     "不要剧透这个结局/分支的名称和后果。",
+     "不要直接告诉他后面会出现什么人物或哪条路线才是‘真结局’。",
+     "不要给完整路线图。"
+    ]
+   },
+   "hit": false,
+   "said": null,
+   "delay_sec": null
+  },
+  {
+   "task_id": "stanleyparable-e01-p07",
+   "type": "proactive",
+   "window_sec": [
+    2153,
+    2190
+   ],
+   "context_window_sec": [
+    0,
+    2190
+   ],
+   "kind": "误解了规则",
+   "need": "她正被旁白诱导去按 Escape→Quit，把这当成“唯一正确选择”；此时需要点破这是叙事选择之一，不是必须真的退出游戏。",
+   "visible": "从 35:53 到 36:22 这几帧里，画面一直是在一条很黑的通道/平台上往前看，底部字幕连续出现，其中明确有一帧写着“Push 'escape', and press 'quit'. There's no other way to beat this game.”；到 36:30 画面变成黑底加“THE END IS NEVER THE END IS NEVER THE END”和一个“LOADING”进度条，能看出这段确实出现了很强的文字指引并且随后切到了加载界面。",
+   "scene": "35:53 起是一个几乎全黑的空间，中间有狭窄通道或平台，两侧有大块矩形结构，左侧有红灯；底部持续有英文字幕。36:07 的字幕是“Push 'escape', and press 'quit'. There's no other way to beat this game.”，36:15/36:22 仍是黑暗通道与字幕。36:30 变成黑底文字背景，底部有“LOADING”进度条。",
+   "hint_level": "direction_only",
+   "found_by": "transcript",
+   "evidence": [
+    {
+     "t": 2153,
+     "text": "but listen to me you can still save these two you can stop the program before they both fail push escape and press quit there's no other way to beat this game"
+    },
+    {
+     "t": 2167,
+     "text": "be walking someone else's Path stop now and it'll be your only true Choice whatever you do choose it don't let time choose for you don't get"
+    },
+    {
+     "t": 2181,
+     "text": "yeah for sure"
+    },
+    {
+     "t": 2190,
+     "text": "okay I'm gonna listen to him okay I'm gonna listen to him this time I promise"
+    }
+   ],
+   "grading": {
+    "help_points": [
+     "明确说清：这不是系统要求你必须退出，而是游戏在拿“退出游戏”当作一个叙事选项/玩笑。",
+     "提醒她：如果你是想继续探索，也完全可以不按 Quit，继续玩不会出错。",
+     "如果她确实想看这个分支，再按也不迟；关键是别把它误会成唯一通关法。"
+    ],
+    "must_not_say": [
+     "不要剧透按 Quit 会触发什么具体结果。",
+     "不要剧透这一段完整分支结构或对应结局。"
+    ]
+   },
+   "hit": false,
+   "said": null,
+   "delay_sec": null
+  }
+ ]
+}

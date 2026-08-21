@@ -70,6 +70,7 @@ index.html 里定义，运行时才解析，文件头的注释列出了完整清
 python3 bench/fetch_videos.py                    # 按清单把视频下到 demo/media/
 python3 bench/mine_proactive.py <cid> <en.vtt>   # 挖 proactive 题
 python3 bench/build_proactive_index.py           # 刷新 proactive 界面索引
+python3 bench/run_proactive.py <cid>             # 离线跑完一个 container，不用开浏览器
 python3 bench/gen_tts.py                         # 给 query 题生成提问语音
 python3 bench/vtt.py <file.vtt> [n]              # 看 VTT 解析结果
 ```
