@@ -1,0 +1,314 @@
+{
+ "container": "portal-e01",
+ "kind": "stream",
+ "brief_sec": 120,
+ "limit_sec": 1300,
+ "briefs": 10,
+ "notes": [
+  {
+   "question": "我怎么又回到开场休息舱了，刚才的进度没了吗？",
+   "text": "这组画面先出现暂停/读取界面，随后黑屏，再回到 Chamber 00 的玻璃休息舱，说明游戏重新开始了流程或载入了开场存档，并非正常进入下一关。仅凭截图无法判断是主播主动重开还是程序重启；当前状态确实已回到序章，需要重新等待系统生成离开休息舱的传送门。",
+   "at": 120,
+   "ready_at": 133.1587429046631,
+   "took_sec": 13.2
+  },
+  {
+   "question": "玻璃上面那个像控制室的房间是干什么的，里面怎么没人？",
+   "text": "那是测试室的观察与控制区域，Aperture 原本用它让工作人员隔着防护玻璃监看测试对象和设备状态；墙上的摄像头则承担远程监控。现在整个测试流程由 GLaDOS 的电脑系统自动播报、开门和记录，因此眼前看不到现场操作员。游戏此刻只是通过空荡荡的观察室暗示这座设施的异常，不需要想办法进入。",
+   "at": 240,
+   "ready_at": 253.71830773353577,
+   "took_sec": 13.7
+  },
+  {
+   "question": "方块怎么会悬在我面前，我是在用什么能力拿着它吗？",
+   "text": "这是游戏的搬运交互，不是传送门能力：靠近 Weighted Storage Cube 后按住或按下 E，就能把它固定在角色面前并随视角移动；再次按 E 会放下。移动或转身时松手可以给方块一点抛掷速度，但不能像武器那样远距离抓取。拿着方块时仍可正常行走，也能带它穿过传送门。",
+   "at": 360,
+   "ready_at": 373.71812200546265,
+   "took_sec": 13.7
+  },
+  {
+   "question": "墙上的“01”是第一关吗，刚才的“00”又算什么？",
+   "text": "“00”是序章性质的基础测试室，用来教移动、搬方块和按钮；“01”才是编号序列中的下一间正式测试室。Aperture 的主测试路线从 Chamber 00 编到 Chamber 19，因此按编号计算共有 20 间测试室。编号牌下方若出现小图标，则是在预告该房间涉及的机关或危险类型。",
+   "at": 480,
+   "ready_at": 493.7828092575073,
+   "took_sec": 13.8
+  },
+  {
+   "question": "这把东西看着像枪，它能打人或者造成伤害吗？",
+   "text": "它的正式名称是 Aperture Science Handheld Portal Device（光圈科技手持传送门装置），功能是把传送门投射到合适的表面，并不是常规武器；射出的能量不会直接伤害玩家、物体或敌人。它的“攻击性”来自间接利用空间和环境，例如让物体坠落或改变运动路线。当前版本只允许你放置蓝门，橙门仍由测试室固定提供。",
+   "at": 600,
+   "ready_at": 612.0102632045746,
+   "took_sec": 12.0
+  },
+  {
+   "question": "传送门里看到的那个穿橙色衣服的女人是谁，是另一个人吗？",
+   "text": "那就是玩家角色本人，名叫 Chell。传送门会实时显示另一端的真实空间，所以当两扇门朝向彼此或角度合适时，你能从第一人称视角看到自己的身体，甚至形成重复嵌套的画面。她穿的是 Aperture 测试对象的橙色制服，腿上的装置则是用于安全着陆的靴具；画面中并没有出现第二个 Chell。",
+   "at": 720,
+   "ready_at": 731.0608870983124,
+   "took_sec": 11.1
+  },
+  {
+   "question": "这个巨大的红色地板按钮正式叫什么，必须用方块压吗？",
+   "text": "它的正式名称是 Heavy Duty Super-Colliding Super Button，中文可译作“重型超碰撞超级按钮”，是 Aperture 故意取得很夸张的设备名。它按重量触发：玩家本人、Weighted Storage Cube 等足够重的物体都能压下去；但物体或人一离开，按钮通常会立刻复位，所以是否必须用方块取决于你还需不需要离开按钮去做别的事。",
+   "at": 840,
+   "ready_at": 850.6603350639343,
+   "took_sec": 10.7
+  },
+  {
+   "question": "从这么高的平台直接跳下去会摔死吗？",
+   "text": "不会。Chell 腿上的长距离坠落靴会吸收落地冲击，因此《Portal》里从任何高度落到安全地面都没有普通坠落伤害；真正危险的是落进毒水、火焰或其他致命区域。这个设定也意味着看见明显落差时不必按传统射击游戏的思路担心摔伤，高低差本身常常是可利用的环境条件。",
+   "at": 960,
+   "ready_at": 969.8866391181946,
+   "took_sec": 9.9
+  },
+  {
+   "question": "这些棕黑色、像软垫一样的墙板有什么特别，能在上面开门吗？",
+   "text": "它们属于不可承载传送门的表面，是关卡用来限制可选落点的视觉语言；传送门枪打上去只会产生短暂撞击效果，不会形成门。它们并不一定能挡住其他机关——例如高能量球仍可能在这类墙面上反弹。看到这种深色板材时，应把注意力转向房间里较亮、平整的白色墙板。",
+   "at": 1080,
+   "ready_at": 1094.5026152133942,
+   "took_sec": 14.5
+  }
+ ],
+ "wall_sec": 172,
+ "rubric_hit": 9,
+ "rubric_total": 9,
+ "spoiler": 0,
+ "served_fast": 1,
+ "served_lookup": 2,
+ "tasks": [
+  {
+   "task_id": "portal-e01-t01",
+   "type": "query",
+   "anchor_sec": 630,
+   "context_window_sec": [
+    0,
+    630
+   ],
+   "question": "我刚拿到的这个装置是干什么用的？怎么好像只能开蓝色的门？",
+   "hint_level": "full",
+   "scene": "Chamber 02：600s 从底座拿到传送门枪，正在练习开蓝门",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "这是 Aperture 的手持传送门装置（portal gun）",
+     "蓝橙两个门互通，进一个从另一个出",
+     "现在只能开蓝门，需配合关卡里固定的橙门；橙门能力之后才解锁"
+    ],
+    "spoiler_blocklist": [
+     "具体在哪一关解锁橙门",
+     "后续剧情"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t01.m4a",
+   "answer": "这就是传送门枪，用来在白墙上开传送门，让你从一个门进、另一个门出。你现在拿到的是早期版本，所以只能自己打蓝门；橙门暂时还是测试室里固定给你的，拿它跟你打出来的蓝门配对着走。",
+   "citations": [],
+   "latency_ms": 3642,
+   "served": "手上就有",
+   "notes_at_hand": 5,
+   "notes_total": 5,
+   "lookback_frames": 9,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "明确说了“这就是传送门枪”"
+     },
+     {
+      "hit": true,
+      "why": "说了“从一个门进、另一个门出”"
+     },
+     {
+      "hit": true,
+      "why": "说了“只能自己打蓝门；橙门暂时还是测试室里固定给你的”"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没提具体哪一关解锁橙门"
+     },
+     {
+      "violated": false,
+      "why": "没提任何后续剧情"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "只解释了当前机制和“橙门暂时固定”，没有展开后续关卡或剧情。",
+    "hint_level_ok": true,
+    "hint_level_why": "full 题下它把用途、双门互通和当前为何只能开蓝门都讲清了。",
+    "grounding": "na",
+    "grounding_why": "虽然提到“白墙”，但题面没给可核对的具体画面细节来源。",
+    "citation": "missing",
+    "citation_why": "must_cite 为真，但这段话里没有给任何来源。",
+    "spoken_ok": true,
+    "spoken_why": "是自然口语，信息量也够，没有念条目腔。",
+    "silence_ok": "na",
+    "verdict": "内容基本答对，也没有剧透，提示深度符合 full；主要问题是必需来源缺失。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 3685,
+     "tokens_in": 1766,
+     "tokens_out": 310,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t02",
+   "type": "query",
+   "anchor_sec": 1060,
+   "context_window_sec": [
+    0,
+    1060
+   ],
+   "question": "这个弹来弹去的发光球是什么？碰到会怎么样？",
+   "hint_level": "direction_only",
+   "scene": "Chamber 06：首次接触 energy ball，烧焦墙面的房间，主播挠头困惑",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "高能量球（High Energy Pellet），碰到人会造成致命伤害",
+     "会在墙面间反弹，墙上的焦痕就是它烧的",
+     "解谜方向：要用传送门改变它的路径送进接收器，具体摆门位置不说破"
+    ],
+    "spoiler_blocklist": [
+     "本房间完整解法（具体开门位置）"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t02.m4a",
+   "answer": "那个是高能量球，会沿直线飞，在墙面之间不断反弹。你碰到它会直接死，所以别站在它的来回轨迹上，尤其小心它从背后弹回来。它也能穿过传送门，出来后会按出口朝向继续飞。你看看房间里有没有能接住它的装置，再琢磨怎么替它改道。",
+   "citations": [
+    "传送门机制 (portal_mechanics.md)"
+   ],
+   "latency_ms": 9618,
+   "served": "得现查",
+   "notes_at_hand": 8,
+   "notes_total": 8,
+   "lookback_frames": 10,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“那个是高能量球”且“你碰到它会直接死”"
+     },
+     {
+      "hit": true,
+      "why": "说了“会沿直线飞，在墙面之间不断反弹”，对应焦痕来源"
+     },
+     {
+      "hit": true,
+      "why": "说了“有没有能接住它的装置，再琢磨怎么替它改道”，给了改路径送入接收器的方向"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没说本房间具体摆门位置或完整开门步骤"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "内容都围绕眼前的能量球、传送门和接收装置，没有提后续关卡或剧情。",
+    "hint_level_ok": true,
+    "hint_level_why": "只提示“接住它”“替它改道”，没给出照着做就能过的具体门位。",
+    "grounding": "ok",
+    "grounding_why": "把画面里的发光球认成“高能量球”，并解释了墙面反弹与焦痕，和题面一致。",
+    "citation": "ok",
+    "citation_why": "给了“传送门机制 (portal_mechanics.md)”，能对应它说的穿门后按出口朝向继续飞等机制。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语化提醒，像“别站在它的来回轨迹上”“你看看房间里有没有…”。",
+    "silence_ok": "na",
+    "verdict": "整体合格：事实点和解谜方向都答到了，也没有说破本房间解法。小扣点是补充了“穿过传送门后按出口朝向继续飞”的机制，信息稍多，但还没越级到完整步骤。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4450,
+     "tokens_in": 1797,
+     "tokens_out": 404,
+     "saw_frame": false
+    }
+   }
+  },
+  {
+   "task_id": "portal-e01-t11",
+   "type": "query",
+   "anchor_sec": 1200,
+   "context_window_sec": [
+    0,
+    1200
+   ],
+   "question": "地上这滩橙绿色的液体是什么？看着不像水。",
+   "hint_level": "full",
+   "scene": "Chamber 08：第一次见到有毒液体池",
+   "resources": [
+    "portal_mechanics"
+   ],
+   "grading": {
+    "rubric_points": [
+     "是有毒液体/毒液池，碰到会致命，不是普通的水",
+     "必须靠传送门跨越，不能直接踩进去或跳过去",
+     "只说明危险性质，不指出具体在哪开门跨过去"
+    ],
+    "spoiler_blocklist": [
+     "本房间传送门具体摆放位置"
+    ],
+    "must_cite": true
+   },
+   "tts": "/data/tts/portal-e01-t11.m4a",
+   "answer": "那是有毒污水，掉进去会持续掉血，很快就会死。你不会因为高处落地摔伤，但落进这东西里照样没救，所以别把它当普通水。把它当成不能踩的深坑就行，用传送门或者安全平台跨过去。落点最好留足余量，别贴着池边赌。",
+   "citations": [
+    "传送门机制 (portal_mechanics.md)"
+   ],
+   "latency_ms": 9667,
+   "served": "得现查",
+   "notes_at_hand": 9,
+   "notes_total": 9,
+   "lookback_frames": 11,
+   "judge": {
+    "rubric": [
+     {
+      "hit": true,
+      "why": "说了“有毒污水，掉进去会持续掉血，很快就会死…别把它当普通水”"
+     },
+     {
+      "hit": true,
+      "why": "说了“把它当成不能踩的深坑就行，用传送门或者安全平台跨过去”"
+     },
+     {
+      "hit": true,
+      "why": "只讲“用传送门或者安全平台跨过去”，没说本房间具体门位"
+     }
+    ],
+    "spoiler": [
+     {
+      "violated": false,
+      "why": "没有提到“本房间传送门具体摆放位置”"
+     }
+    ],
+    "leaked_future": false,
+    "leaked_future_why": "只在解释眼前这滩液体的性质和一般应对，没有讲锚点后的事件或新机制。",
+    "hint_level_ok": true,
+    "hint_level_why": "这是 full 题，它把危险性、不能踩、以及“别贴着池边赌”的易错点都讲清了，也没越级到具体摆位。",
+    "grounding": "ok",
+    "grounding_why": "把画面里的橙绿色液体识别为“有毒污水”，与题面“第一次见到有毒液体池”一致。",
+    "citation": "ok",
+    "citation_why": "给了来源“传送门机制 (portal_mechanics.md)”，能对应“毒液池/传送门跨越”的说明。",
+    "spoken_ok": true,
+    "spoken_why": "整体是口语化提醒，像陪看时会直接说的话，也有具体信息量。",
+    "silence_ok": "na",
+    "verdict": "整体合格：回答了毒液池的危险和基本过法，没剧透具体门位。小瑕疵是“持续掉血”比题面“致命”更细，但不影响本题判定。",
+    "_meta": {
+     "model": "gpt-5.4",
+     "latency_ms": 4470,
+     "tokens_in": 1765,
+     "tokens_out": 400,
+     "saw_frame": false
+    }
+   }
+  }
+ ]
+}
